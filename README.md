@@ -8,10 +8,11 @@ python setup.py install
 ## 02. Usage
 ### 02-1. Generate an ELIspot configuration.
 ```
-ace_generate_elispot_configuration.py [-h] 
-    --num_peptides NUM_PEPTIDES 
-    --num_peptides_per_pool NUM_PEPTIDES_PER_POOL 
-    --num_coverage NUM_COVERAGE 
+ace_generate_elispot_configuration.py [-h]
+    --num_peptides NUM_PEPTIDES
+    --num_peptides_per_pool NUM_PEPTIDES_PER_POOL
+    --num_coverage NUM_COVERAGE
+    --num_threads NUM_THREADS
     --output_tsv_file OUTPUT_TSV_FILE
 
 optional arguments:
@@ -22,6 +23,8 @@ optional arguments:
                         Number of peptides per pool. Please make sure this integer is a factor of the total number of peptides.
   --num_coverage NUM_COVERAGE
                         Total coverage (i.e. number of peptide replicates).
+  --num_threads NUM_THREADS
+                        Number of threads to parallelize the computation (default: 2). Recommended: 8.
   --output_tsv_file OUTPUT_TSV_FILE
                         Output TSV file.
 ```
