@@ -47,6 +47,14 @@ def parse_args():
         help="Total coverage (i.e. number of peptide replicates)."
     )
     arg_parser.add_argument(
+        "--num_threads",
+        dest="num_threads",
+        type=int,
+        required=True,
+        default=2,
+        help="Number of threads to parallelize the computation (default: 2). Recommended: 8."
+    )
+    arg_parser.add_argument(
         "--output_tsv_file",
         dest="output_tsv_file",
         type=str,
@@ -62,6 +70,7 @@ if __name__ == '__main__':
     df_solutions = solve_assay_configuration(
         n_peptides=args.num_peptides,
         n_peptides_per_pool=args.num_peptides_per_pool,
-        n_coverage=args.num_coverage
+        n_coverage=args.num_coverage,
+        num_threads=args.num_threads
     )
     df_solutions.to_csv(args.output_tsv_file, sep='\t', index=False)

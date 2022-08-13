@@ -22,7 +22,8 @@ logger = get_logger(__name__)
 def solve_assay_configuration(n_peptides: int,
                               n_peptides_per_pool: int,
                               n_coverage: int,
-                              peptide_ids: list = []):
+                              peptide_ids: list = [],
+                              num_threads=2):
     """
     This functions solves the assay configuration as a constraint problem.
 
@@ -34,6 +35,7 @@ def solve_assay_configuration(n_peptides: int,
     n_coverage              :   Coverage.
     peptide_ids             :   List of peptide IDs (optional). If this is
                                 specified, 'n_peptides' does not have to be specified.
+    num_threads             :   Number of threads (default: 2).
 
     Returns
     -------
@@ -111,9 +113,8 @@ def solve_assay_configuration(n_peptides: int,
     # Step 6. Solve
     logger.info("CP solver started")
     solver = cp_model.CpSolver()
-    solver.parameters.num_search_workers = 8
+    solver.parameters.num_search_workers = num_threads
     solver.Solve(model)
-    # print(solver.ResponseStats())
     logger.info("CP solver finished")
 
     # Step 7. Parse solution
