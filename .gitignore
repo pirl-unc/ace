@@ -2,3 +2,4 @@
 dist/
 build/
 ACE.egg-info/
+*.pyc

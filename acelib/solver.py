@@ -19,13 +19,13 @@ from acelib.logger import get_logger
 logger = get_logger(__name__)
 
 
-def solve_assay_configuration(n_peptides: int,
-                              n_peptides_per_pool: int,
-                              n_coverage: int,
-                              peptide_ids: list = [],
-                              num_threads=2):
+def generate_assay_configuration(n_peptides: int,
+                                 n_peptides_per_pool: int,
+                                 n_coverage: int,
+                                 peptide_ids: list = [],
+                                 num_threads=2):
     """
-    This functions solves the assay configuration as a constraint problem.
+    This functions generates the assay configuration as a constraint problem.
 
     Args
     ----
@@ -52,7 +52,7 @@ def solve_assay_configuration(n_peptides: int,
         return
 
     # Step 3. Derive the number of pools per coverage
-    n_pools = int(n_peptides / n_peptides_per_pool) # per coverage
+    n_pools = int(n_peptides / n_peptides_per_pool)
     logger.info("Number of peptides: %i." % n_peptides)
     logger.info("Number of coverage: %i." % n_coverage)
     logger.info("Number of peptides per pool: %i." % n_peptides_per_pool)
@@ -129,8 +129,21 @@ def solve_assay_configuration(n_peptides: int,
             curr_coverage_id = curr_bool_variable_elements[0]
             curr_pool_id = curr_bool_variable_elements[1]
             curr_peptide_id = curr_bool_variable_elements[2]
+
+            # Fix pool ID
+            if curr_coverage_id != "coverage_1":
+                curr_coverage_id_int = int(curr_coverage_id.split('_')[1])
+                curr_pool_id = 'pool_' + str(n_pools * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
+
             solutions_data['coverage_id'].append(curr_coverage_id)
             solutions_data['pool_id'].append(curr_pool_id)
             solutions_data['peptide_id'].append(curr_peptide_id)
-    df_solutions = pd.DataFrame(solutions_data)
-    return df_solutions
+    df_configuration = pd.DataFrame(solutions_data)
+    return df_configuration
+
+
+# from verification import *
+# df_configuration = generate_assay_configuration(n_peptides=25, n_peptides_per_pool=5, n_coverage=3, num_threads=8)
+# df_hit_peptides = identify_hit_peptides(df_configuration=df_configuration, hit_pool_ids=['pool_5', 'pool_9', 'pool_15'])
+# print(df_hit_peptides.head(n=25))
+

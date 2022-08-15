@@ -67,10 +67,10 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    df_solutions = solve_assay_configuration(
+    df_configuration = generate_assay_configuration(
         n_peptides=args.num_peptides,
         n_peptides_per_pool=args.num_peptides_per_pool,
         n_coverage=args.num_coverage,
         num_threads=args.num_threads
     )
-    df_solutions.to_csv(args.output_tsv_file, sep='\t', index=False)
+    df_configuration.to_csv(args.output_tsv_file, sep='\t', index=False)
