@@ -8,15 +8,17 @@ python setup.py install
 ## 02. Usage
 ### 02-1. Generate an ELIspot configuration.
 ```
-ace_generate_elispot_configuration.py [-h]
-    --num_peptides NUM_PEPTIDES
-    --num_peptides_per_pool NUM_PEPTIDES_PER_POOL
-    --num_coverage NUM_COVERAGE
-    --num_threads NUM_THREADS
+ace_generate_elispot_configuration.py [-h] 
+    --num_peptides NUM_PEPTIDES 
+    --num_peptides_per_pool NUM_PEPTIDES_PER_POOL 
+    --num_coverage NUM_COVERAGE 
+    --num_threads NUM_THREADS 
     --output_tsv_file OUTPUT_TSV_FILE
+    [--output_pdf_file OUTPUT_PDF_FILE]
 
-optional arguments:
-  -h, --help            show this help message and exit
+Generates an ELIspot configuration.
+
+required arguments:
   --num_peptides NUM_PEPTIDES
                         Total number of peptides.
   --num_peptides_per_pool NUM_PEPTIDES_PER_POOL
@@ -27,4 +29,13 @@ optional arguments:
                         Number of threads to parallelize the computation (default: 2). Recommended: 8.
   --output_tsv_file OUTPUT_TSV_FILE
                         Output TSV file.
+
+optional arguments:
+  --output_pdf_file OUTPUT_PDF_FILE
+                        Output PDF file.
+```
+
+## 03. Generating a tar.gz release file
+```
+python setup.py sdist
 ```

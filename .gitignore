@@ -1,5 +1,6 @@
 .idea/
 dist/
 build/
-ACE.egg-info/
+ace.egg-info/
 *.pyc
+*.DS_Store

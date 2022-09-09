@@ -11,8 +11,8 @@ Last updated date: Aug 12, 2022
 
 
 import pandas as pd
+from itertools import combinations
 from ortools.sat.python import cp_model
-from itertools import product, groupby, combinations
 from acelib.logger import get_logger
 
 
@@ -67,7 +67,6 @@ def generate_assay_configuration(n_peptides: int,
     # Step 5. Construct a constraint programming model
     model = cp_model.CpModel()
     data_dict = {
-        'combination_id': [],
         'coverage_id': [],
         'pool_id': [],
         'peptide_id': [],
@@ -77,9 +76,7 @@ def generate_assay_configuration(n_peptides: int,
     for curr_coverage_id in coverage_ids:
         for curr_pool_id in pool_ids:
             for curr_peptide_id in peptide_ids:
-                curr_combination_id = "%s/%s/%s" % (curr_coverage_id, curr_pool_id, curr_peptide_id)
-                curr_bool_var = model.NewBoolVar(curr_combination_id)
-                data_dict['combination_id'].append(curr_combination_id)
+                curr_bool_var = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, curr_pool_id, curr_peptide_id))
                 data_dict['coverage_id'].append(curr_coverage_id)
                 data_dict['pool_id'].append(curr_pool_id)
                 data_dict['peptide_id'].append(curr_peptide_id)
@@ -87,35 +84,47 @@ def generate_assay_configuration(n_peptides: int,
                 var_dict[(curr_coverage_id, curr_pool_id, curr_peptide_id)] = curr_bool_var
     df = pd.DataFrame(data_dict)
 
-    # Constraint 1: each peptide is in only one pool in each coverage
-    for name, group in df.groupby(['coverage_id', 'peptide_id']):
-        model.Add(sum(row['bool_variable'] for index, row in group.iterrows()) == 1)
+    # Constraint 1. Each peptide appears exactly once in each coverage
+    for curr_coverage_id in df['coverage_id'].unique():
+        for curr_peptide_id in df['peptide_id'].unique():
+            df_matched = df.loc[(df['coverage_id'] == curr_coverage_id) &
+                                (df['peptide_id'] == curr_peptide_id),:]
+            model.Add(sum(df_matched['bool_variable'].values.tolist()) == 1)
 
-    # Constraint 2: each pool consists of the fixed number of peptides
-    for name, group in df.groupby(['coverage_id', 'pool_id']):
-        model.Add(sum(row['bool_variable'] for index, row in group.iterrows()) == n_peptides_per_pool)
+    # Constraint 2. Each pool in each coverage has exactly the same number of peptides
+    for curr_coverage_id in df['coverage_id'].unique():
+        for curr_pool_id in df['pool_id'].unique():
+            df_matched = df.loc[(df['coverage_id'] == curr_coverage_id) &
+                                (df['pool_id'] == curr_pool_id),:]
+            model.Add(sum(df_matched['bool_variable'].values.tolist()) == n_peptides_per_pool)
 
-    # Constraint 3: two peptides cannot be in the same pool more than once across all coverages
+    # Constraint 3. No two peptides are in the same pool more than once
     for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
         peptide_pair_bool_variables = []
         for curr_coverage_id in coverage_ids:
             for curr_pool_id in pool_ids:
-                pair_bool_variable = model.NewBoolVar("%s/%s/%s/%s" % (curr_coverage_id, curr_pool_id, peptide_id_1, peptide_id_2))
+                pair_bool_variable = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, peptide_id_1, peptide_id_2))
                 peptide_1_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_1)]
                 peptide_2_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_2)]
 
                 # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
                 model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
                 peptide_pair_bool_variables.append(pair_bool_variable)
-        # All pairs can appear once
+        # All pairs can appear together in the same pool at most once
         model.Add(sum(peptide_pair_bool_variables) <= 1)
 
     # Step 6. Solve
     logger.info("CP solver started")
     solver = cp_model.CpSolver()
     solver.parameters.num_search_workers = num_threads
-    solver.Solve(model)
+    solver.enumerate_all_solutions = False
+    status = solver.Solve(model)
     logger.info("CP solver finished")
+
+    if status == cp_model.OPTIMAL:
+        logger.info("Solution is optimal.")
+    else:
+        logger.info("Solution is not optimal.")
 
     # Step 7. Parse solution
     solutions_data = {
@@ -141,9 +150,4 @@ def generate_assay_configuration(n_peptides: int,
     df_configuration = pd.DataFrame(solutions_data)
     return df_configuration
 
-
-# from verification import *
-# df_configuration = generate_assay_configuration(n_peptides=25, n_peptides_per_pool=5, n_coverage=3, num_threads=8)
-# df_hit_peptides = identify_hit_peptides(df_configuration=df_configuration, hit_pool_ids=['pool_5', 'pool_9', 'pool_15'])
-# print(df_hit_peptides.head(n=25))
 

@@ -10,8 +10,8 @@ DIR = (dirname(__file__) or '.')
 
 setup_args = {}
 setup_args.update(
-      name='ACE',
-      version='0.0.1',
+      name='ace',
+      version='0.0.4',
       description='ACE',
       author='Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan',
       author_email='ajslee@unc.edu, dhuvik@ad.unc.edu',
