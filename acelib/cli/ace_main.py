@@ -63,7 +63,7 @@ def run():
     elif args.which == 'visualize':
         run_ace_visualize_from_parsed_args(args=args)
     elif args.which == 'identify':
-        runace
+        run_ace_identify_from_parsed_args(args=args)
         a = 1
     elif args.which == 'verify':
         a = 1
