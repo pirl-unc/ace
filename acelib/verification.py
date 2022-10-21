@@ -11,7 +11,7 @@ Last updated date: Aug 15, 2022
 
 
 import pandas as pd
-from acelib.logger import get_logger
+from acelib.logging import get_logger
 
 
 logger = get_logger(__name__)

@@ -1,19 +1,30 @@
-#!/usr/bin/python3
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 """
 The purpose of this python3 script is to implement functions related to
 solving the constraint satisfaction problem on pool membership assignment.
-
-Author: Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan
-
-Last updated date: Aug 12, 2022
 """
+
+
+from __future__ import print_function, division, absolute_import
 
 
 import pandas as pd
 from itertools import combinations
 from ortools.sat.python import cp_model
-from acelib.logger import get_logger
+from .logging import get_logger
+from .default_parameters import *
 
 
 logger = get_logger(__name__)
@@ -23,24 +34,31 @@ def generate_assay_configuration(n_peptides: int,
                                  n_peptides_per_pool: int,
                                  n_coverage: int,
                                  peptide_ids: list = [],
-                                 num_threads=2):
+                                 disallowed_peptide_pairs: list = [],
+                                 num_processes=NUM_PROCESSES):
     """
-    This functions generates the assay configuration as a constraint problem.
+    Generates an assay configuration.
 
-    Args
-    ----
-    n_peptides              :   Number of total peptides.
-    n_peptides_per_pool     :   Number of peptides per pool.
+    Parameters
+    ----------
+    n_peptides               :  Number of total peptides.
+    n_peptides_per_pool      :  Number of peptides per pool.
                                 Make sure this integer is a factor of n_peptides.
-    n_coverage              :   Coverage.
-    peptide_ids             :   List of peptide IDs (optional). If this is
-                                specified, 'n_peptides' does not have to be specified.
-    num_threads             :   Number of threads (default: 2).
+    n_coverage               :  Coverage.
+    peptide_ids              :  List of peptide IDs (optional).
+                                If this is specified, 'n_peptides'
+                                does not have to be specified.
+    disallowed_peptide_pairs :  Disallowed peptide pairs (optional).
+                                Each value is a tuple
+                                (e.g. [('peptide_1', 'peptide_2')]).
+    num_processes            :  Number of processes.
 
     Returns
     -------
-    DataFrame with the following columns:
-    'coverage', 'pool_id', 'peptide_id'
+    df_configuration         :  DataFrame with the following columns:
+                                'coverage_id'
+                                'pool_id'
+                                'peptide_id'
     """
     # Step 1. Check if peptide IDs have been specified.
     if len(peptide_ids) > 0:
@@ -72,6 +90,7 @@ def generate_assay_configuration(n_peptides: int,
         'peptide_id': [],
         'bool_variable': []
     }
+    # Initialize the constraint programming model dictionary
     var_dict = {}
     for curr_coverage_id in coverage_ids:
         for curr_pool_id in pool_ids:
@@ -113,10 +132,14 @@ def generate_assay_configuration(n_peptides: int,
         # All pairs can appear together in the same pool at most once
         model.Add(sum(peptide_pair_bool_variables) <= 1)
 
+    # Constraint 4. Apply constraints for disallowed peptide pairs
+
+
+
     # Step 6. Solve
     logger.info("CP solver started")
     solver = cp_model.CpSolver()
-    solver.parameters.num_search_workers = num_threads
+    solver.parameters.num_search_workers = num_processes
     solver.enumerate_all_solutions = False
     status = solver.Solve(model)
     logger.info("CP solver finished")
@@ -149,5 +172,4 @@ def generate_assay_configuration(n_peptides: int,
             solutions_data['peptide_id'].append(curr_peptide_id)
     df_configuration = pd.DataFrame(solutions_data)
     return df_configuration
-
 

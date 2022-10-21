@@ -12,5 +12,13 @@
 
 
 """
-The purpose of this python3 script is to define ACE constants.
+The purpose of this python3 script is to define ACE default parameters.
 """
+
+
+# Number of processes.
+NUM_PROCESSES = 8
+
+# Minimum number of spot count for a pool to be considered a positive hit.
+MIN_POSITIVE_SPOT_COUNT = 300
+
