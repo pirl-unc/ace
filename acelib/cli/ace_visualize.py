@@ -21,8 +21,8 @@ from __future__ import print_function, division, absolute_import
 
 
 import pandas as pd
-from ..logging import get_logger
-from ..visualization import *
+from ..logger import get_logger
+from ..main import *
 
 
 logger = get_logger(__name__)
@@ -79,10 +79,6 @@ def run_ace_visualize_from_parsed_args(args):
                 output_pdf_file
     """
     df_configuration = pd.read_csv(args.configuration_tsv_file, sep='\t')
-    plt = plot_configuration_table(
-        df_configuration=df_configuration,
-        save_figure=True,
-        output_pdf_file=args.output_pdf_file
-    )
+    plt = run_ace_visualize(df_configuration=df_configuration)
     plt.savefig(args.output_pdf_file)
 

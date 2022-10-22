@@ -4,7 +4,7 @@ from acelib.main import *
 
 def test_generate_vanilla():
     n_peptides = 25
-    n_peptides_per_pool = 10
+    n_peptides_per_pool = 5
     n_coverage = 3
     df_configuration = run_ace_generate(
         n_peptides=n_peptides,

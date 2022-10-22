@@ -21,12 +21,15 @@ from __future__ import print_function, division, absolute_import
 
 
 import pandas as pd
+from .logger import get_logger
 from .default_parameters import *
+
+
+logger = get_logger(__name__)
 
 
 def identify_hit_peptides(df_readout: pd.DataFrame,
                           df_configuration: pd.DataFrame,
-                          hit_pool_ids: list,
                           min_positive_spot_count: int = MIN_POSITIVE_SPOT_COUNT) -> pd.DataFrame:
     """
     Identifies hit peptide IDs given read-outs from an ELIspot experiment.
@@ -42,7 +45,6 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
                                 'coverage_id'
                                 'pool_id'
                                 'peptide_id'
-    hit_pool_ids            :   List of pool IDs.
     min_positive_spot_count :   Minimum number of spots for a pool to be
                                 considered a positive hit.
 
@@ -52,19 +54,20 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
                                 'hit_peptide_id'
                                 'num_coverage'
                                 'pool_ids'
-    DataFrame with the following columns:
-    'hit_peptide_id', 'num_coverage', 'pool_ids'
     """
     # Step 1. Figure out the coverage
-    n_coverage = max([int(i.split('_')[1]) for i in df_configuration['coverage_id'].unique()])
+    max_coverage = max([int(i.split('_')[1]) for i in df_configuration['coverage_id'].unique()])
 
-    # Step 2. Identify hit peptide IDs
+    # Step 2. Identify hit pool IDs
+    hit_pool_ids = df_readout.loc[df_readout['spot_count'] >= min_positive_spot_count, 'pool_id'].values.tolist()
+
+    # Step 3. Identify hit peptide IDs
     hit_peptide_ids = set()
     for curr_pool_id in hit_pool_ids:
         for curr_peptide_id in df_configuration.loc[df_configuration['pool_id'] == curr_pool_id, 'peptide_id'].values.tolist():
             hit_peptide_ids.add(curr_peptide_id)
 
-    # Step 3. Identify coverage and pool IDs for each hit peptide
+    # Step 4. Identify coverage and pool IDs for each hit peptide
     data = {
         'hit_peptide_id': [],
         'num_coverage': [],
@@ -81,5 +84,11 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
         data['pool_ids'].append(','.join(curr_hit_peptide_pool_ids))
 
     df_hits = pd.DataFrame(data)
+    df_hits = df_hits.loc[df_hits['num_coverage'] == max_coverage,:]
+
+    if len(df_hits) == 0:
+        logger.warning("No peptide hit was identified.")
+
     return df_hits
+
 

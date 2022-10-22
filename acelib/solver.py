@@ -23,7 +23,7 @@ from __future__ import print_function, division, absolute_import
 import pandas as pd
 from itertools import combinations
 from ortools.sat.python import cp_model
-from .logging import get_logger
+from .logger import get_logger
 from .default_parameters import *
 
 
@@ -35,7 +35,7 @@ def generate_assay_configuration(n_peptides: int,
                                  n_coverage: int,
                                  peptide_ids: list = [],
                                  disallowed_peptide_pairs: list = [],
-                                 num_processes=NUM_PROCESSES):
+                                 num_processes=NUM_PROCESSES) -> pd.DataFrame:
     """
     Generates an assay configuration.
 
@@ -170,6 +170,7 @@ def generate_assay_configuration(n_peptides: int,
             solutions_data['coverage_id'].append(curr_coverage_id)
             solutions_data['pool_id'].append(curr_pool_id)
             solutions_data['peptide_id'].append(curr_peptide_id)
+
     df_configuration = pd.DataFrame(solutions_data)
     return df_configuration
 

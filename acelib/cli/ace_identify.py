@@ -20,9 +20,10 @@ and run ACE 'identify' command.
 from __future__ import print_function, division, absolute_import
 
 
+import pandas as pd
 from ..default_parameters import *
-from ..logging import get_logger
-from ..identification import *
+from ..logger import get_logger
+from ..main import *
 
 
 logger = get_logger(__name__)
@@ -91,16 +92,16 @@ def run_ace_identify_from_parsed_args(args):
     ----------
     args    :   An instance of argparse.ArgumentParser
                 with the following variables:
-                num_peptides
-                num_peptides_per_pool
-                num_coverage
-                num_processes
+                readout_tsv_file
+                configuration_tsv_file
+                min_positive_spot_count
                 output_tsv_file
     """
-    df_configuration = generate_assay_configuration(
-        n_peptides=args.num_peptides,
-        n_peptides_per_pool=args.num_peptides_per_pool,
-        n_coverage=args.num_coverage,
-        num_processes=args.num_processes
+    df_readout = pd.read_csv(args.readout_tsv_file)
+    df_configuration = pd.read_csv(args.configuration_tsv_file)
+    df_hits = run_ace_identify(
+        df_readout=df_readout,
+        df_configuration=df_configuration,
+        min_positive_spot_count=args.min_positive_spot_count
     )
-    df_configuration.to_csv(args.output_tsv_file, sep='\t', index=False)
+    df_hits.to_csv(args.output_tsv_file, sep='\t', index=False)

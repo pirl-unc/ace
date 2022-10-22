@@ -19,10 +19,12 @@ The purpose of this python3 script is to implement the primary ACE command.
 import argparse
 import pkg_resources
 import acelib
-from ..logging import get_logger
+import pandas as pd
+from ..logger import get_logger
 from .ace_generate import *
 from .ace_visualize import *
 from .ace_identify import *
+from .ace_verify import *
 
 
 logger = get_logger(__name__)
@@ -55,6 +57,7 @@ def run():
     sub_parsers = add_ace_generate_arg_parser(sub_parsers=sub_parsers)      # generate
     sub_parsers = add_ace_visualize_arg_parser(sub_parsers=sub_parsers)     # visualize
     sub_parsers = add_ace_identify_arg_parser(sub_parsers=sub_parsers)      # identify
+    sub_parsers = add_ace_verify_arg_parser(sub_parsers=sub_parsers)        # verify
     args = arg_parser.parse_args()
 
     # Step 2. Execute function based on CLI arguments
@@ -64,11 +67,8 @@ def run():
         run_ace_visualize_from_parsed_args(args=args)
     elif args.which == 'identify':
         run_ace_identify_from_parsed_args(args=args)
-        a = 1
     elif args.which == 'verify':
-        a = 1
-    elif args.which == 'visualize':
-        a = 1
+        run_ace_verify_from_parsed_args(args=args)
     else:
         raise Exception("Invalid command: %s" % args.which)
 

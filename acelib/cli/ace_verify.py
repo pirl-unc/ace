@@ -13,24 +13,24 @@
 
 """
 The purpose of this python3 script is to create parser
-and run ACE 'generate' command.
+and run ACE 'verify' command.
 """
 
 
 from __future__ import print_function, division, absolute_import
 
 
+import pandas as pd
 from ..logger import get_logger
-from ..default_parameters import *
 from ..main import *
 
 
 logger = get_logger(__name__)
 
 
-def add_ace_generate_arg_parser(sub_parsers):
+def add_ace_verify_arg_parser(sub_parsers):
     """
-    Adds 'generate' parser.
+    Adds 'verify' parser.
 
     Parameters
     ----------
@@ -41,13 +41,21 @@ def add_ace_generate_arg_parser(sub_parsers):
     An instance of argparse.ArgumentParser subparsers.
     """
     parser = sub_parsers.add_parser(
-        'generate',
-        help='Generates an ELIspot configuration.'
+        'verify',
+        help='Verifies whether an ELIspot configuration satisfies all ACE constraints.'
     )
     parser._action_groups.pop()
 
     # Required arguments
     parser_required = parser.add_argument_group('required arguments')
+    parser_required.add_argument(
+        "--configuration_tsv_file",
+        dest="configuration_tsv_file",
+        type=str,
+        required=True,
+        help="ELIspot configuration TSV file. "
+             "Expected columns: 'coverage_id', 'pool_id', 'peptide_id'."
+    )
     parser_required.add_argument(
         "--num_peptides",
         dest="num_peptides",
@@ -60,7 +68,7 @@ def add_ace_generate_arg_parser(sub_parsers):
         dest="num_peptides_per_pool",
         type=int,
         required=True,
-        help="Number of peptides per pool. Please make sure this integer is a factor of the total number of peptides."
+        help="Number of peptides per pool."
     )
     parser_required.add_argument(
         "--num_coverage",
@@ -69,43 +77,32 @@ def add_ace_generate_arg_parser(sub_parsers):
         required=True,
         help="Total coverage (i.e. number of peptide replicates)."
     )
-    parser_required.add_argument(
-        "--num_processes",
-        dest="num_processes",
-        type=int,
-        required=True,
-        default=NUM_PROCESSES,
-        help="Number of processes to parallelize the computation (recommended minimum: 8)."
-    )
-    parser_required.add_argument(
-        "--output_tsv_file",
-        dest="output_tsv_file",
-        type=str,
-        required=True,
-        help="Output TSV file."
-    )
-    parser.set_defaults(which='generate')
+    parser.set_defaults(which='verify')
     return sub_parsers
 
 
-def run_ace_generate_from_parsed_args(args):
+def run_ace_verify_from_parsed_args(args):
     """
-    Runs ACE 'generate' command using parameters from parsed arguments.
+    Runs ACE 'verify' command using parameters from parsed arguments.
 
     Parameters
     ----------
     args    :   An instance of argparse.ArgumentParser
                 with the following variables:
+                configuration_tsv_file
                 num_peptides
                 num_peptides_per_pool
                 num_coverage
-                num_processes
-                output_tsv_file
     """
-    df_configuration = run_ace_generate(
+    df_configuration = pd.read_csv(args.configuration_tsv_file, sep='\t')
+    is_valid = run_ace_verify(
+        df_configuration=df_configuration,
         n_peptides=args.num_peptides,
         n_peptides_per_pool=args.num_peptides_per_pool,
-        n_coverage=args.num_coverage,
-        num_processes=args.num_processes
+        n_coverage=args.num_coverage
     )
-    df_configuration.to_csv(args.output_tsv_file, sep='\t', index=False)
+    if is_valid:
+        logger.info("ELIspot configuration meets all ACE constraints and is valid.")
+    else:
+        logger.info("ELIspot configuration does not meet all ACE constraints and is not valid.")
+
