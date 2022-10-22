@@ -59,7 +59,7 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
     max_coverage = max([int(i.split('_')[1]) for i in df_configuration['coverage_id'].unique()])
 
     # Step 2. Identify hit pool IDs
-    hit_pool_ids = df_readout.loc[df_readout['spot_count'] >= min_positive_spot_count, 'pool_id'].values.tolist()
+    hit_pool_ids = df_readout.loc[df_readout['spot_count'] >= min_positive_spot_count, 'pool_id'].unique()
 
     # Step 3. Identify hit peptide IDs
     hit_peptide_ids = set()

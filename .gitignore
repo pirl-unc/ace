@@ -4,3 +4,4 @@ build/
 ace.egg-info/
 *.pyc
 *.DS_Store
+.coverage

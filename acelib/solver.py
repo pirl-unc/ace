@@ -118,6 +118,7 @@ def generate_assay_configuration(n_peptides: int,
             model.Add(sum(df_matched['bool_variable'].values.tolist()) == n_peptides_per_pool)
 
     # Constraint 3. No two peptides are in the same pool more than once
+    # At the same time, apply constraints for disallowed peptide pairs
     for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
         peptide_pair_bool_variables = []
         for curr_coverage_id in coverage_ids:
@@ -129,12 +130,13 @@ def generate_assay_configuration(n_peptides: int,
                 # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
                 model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
                 peptide_pair_bool_variables.append(pair_bool_variable)
-        # All pairs can appear together in the same pool at most once
-        model.Add(sum(peptide_pair_bool_variables) <= 1)
-
-    # Constraint 4. Apply constraints for disallowed peptide pairs
-
-
+        if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or \
+            (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
+            # Pairs cannot appear together in the same pool
+            model.Add(sum(peptide_pair_bool_variables) == 0)
+        else:
+            # All pairs can appear together in the same pool at most once
+            model.Add(sum(peptide_pair_bool_variables) <= 1)
 
     # Step 6. Solve
     logger.info("CP solver started")
