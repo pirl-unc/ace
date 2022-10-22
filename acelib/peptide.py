@@ -8,7 +8,7 @@ Author: Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan
 """
 import re
 from transformers import BertModel, BertTokenizer
-
+from sklearn.metrics.pairwise import cosine_similarity
 
 class Peptide:
 
@@ -39,6 +39,11 @@ class Peptide:
         return self.sequence
 
     def embed(self, sequence, tokenizer, encoder):
-        encoded_input = tokenizer(sequence, return_tensors='pt')
+        sequence_w_spaces = str.replace(sequence,  "", " ")[1:-1]
+        encoded_input = tokenizer(sequence_w_spaces, return_tensors='pt')
         output = encoder(**encoded_input)
-        return output
+        return output['pooler_output'].detach().numpy()
+
+    def distance2(self, peptide2):
+        sim = cosine_similarity(self.embedding, peptide2.embedding).item(0)
+        return sim
