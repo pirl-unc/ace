@@ -8,7 +8,7 @@ python setup.py install
 ## 02. Usage
 ### 02-1. Generate an ELIspot configuration.
 ```
-ace_generate_elispot_configuration.py [-h] 
+ace [-h] 
     --num_peptides NUM_PEPTIDES 
     --num_peptides_per_pool NUM_PEPTIDES_PER_POOL 
     --num_coverage NUM_COVERAGE 
@@ -38,4 +38,10 @@ optional arguments:
 ## 03. Generating a tar.gz release file
 ```
 python setup.py sdist
+```
+
+## 04. Generating an eel program
+pyinstaller generation
+```
+python -m eel acegui/ace_gui.py web --noconsole --onefile
 ```
