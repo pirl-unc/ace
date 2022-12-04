@@ -13,6 +13,7 @@
 
 import eel
 from acelib.main import run_ace_generate
+from acelib import devtools
 
 
 eel.init('')
@@ -27,14 +28,16 @@ def generate_configuration(num_peptides,
     num_peptides_per_pool = int(num_peptides_per_pool)
     num_coverage = int(num_coverage)
     num_cores = int(num_cores)
+    disallowed_peps = [],
     df_configuration = run_ace_generate(
         n_peptides=num_peptides,
         n_peptides_per_pool=num_peptides_per_pool,
         n_coverage=num_coverage,
-        num_processes=num_cores
+        num_processes=num_cores,
+        disallowed_peptide_pairs=disallowed_peps
     )
     return df_configuration.to_dict()
 
 
-eel.start('res/index.html', size=(1200, 1000))
+eel.start('res/index.html', size=(1200, 1000), port=devtools.get_open_port())
 

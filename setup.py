@@ -25,13 +25,15 @@ if __name__ == '__main__':
             version='0.0.5',
             description='Assay Configurator for ELIspot.',
             author='Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan',
-            author_email='ajslee@unc.edu, dhuvik@ad.unc.edu',
+            author_email='ajslee@unc.edu, dkarthikeyan1@unc.edu',
             install_requires=[
                   'pandas',
                   'ortools',
                   'seaborn',
                   'matplotlib',
-                  'transformers'
+                  'transformers',
+                  'psutil',
+                  'nltk'
             ],
             packages=find_packages(),
             entry_points={

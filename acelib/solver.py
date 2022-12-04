@@ -30,7 +30,7 @@ from .default_parameters import *
 logger = get_logger(__name__)
 
 
-def generate_assay_configuration(n_peptides: int,
+def generate_assay_configurationls(n_peptides: int,
                                  n_peptides_per_pool: int,
                                  n_coverage: int,
                                  peptide_ids: list = [],

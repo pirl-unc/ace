@@ -7,8 +7,7 @@ Last updated date: October 12, 2022
 Author: Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan
 """
 import re
-from transformers import BertModel, BertTokenizer
-
+import nltk
 
 class Peptide:
 
