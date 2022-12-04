@@ -10,8 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import tkinter
+import tkinter.filedialog
 import eel
+import pandas as pd
+from acelib import logger #Temporary Import
 from acelib.main import run_ace_generate
 from acelib import devtools
 
@@ -19,16 +22,34 @@ from acelib import devtools
 eel.init('')
 
 
+def get_tk_root():
+    root = tkinter.Tk()
+    root.withdraw()
+    root.wm_attributes('-topmost', 1)
+
+@eel.expose
+def upload_csv_bttn():
+    get_tk_root()
+    return tkinter.filedialog.askopenfilename(title = "Select Peptide List (*CSV)",filetypes = (("CSV Files","*.csv"),))
+
+
+def find_disallowed_peptides(csv):
+    df = pd.read_csv(csv)
+    print('Reached')
+    return []
+
+
 @eel.expose
 def generate_configuration(num_peptides,
                            num_peptides_per_pool,
                            num_coverage,
-                           num_cores):
+                           num_cores,
+                           path_to_seqs):
     num_peptides = int(num_peptides)
     num_peptides_per_pool = int(num_peptides_per_pool)
     num_coverage = int(num_coverage)
     num_cores = int(num_cores)
-    disallowed_peps = [],
+    disallowed_peps = find_disallowed_peptides(path_to_seqs),
     df_configuration = run_ace_generate(
         n_peptides=num_peptides,
         n_peptides_per_pool=num_peptides_per_pool,
