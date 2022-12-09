@@ -11,8 +11,7 @@
 # limitations under the License.
 
 
-from os.path import dirname, join
-from glob import glob
+from os.path import dirname
 from setuptools import setup, find_packages
 
 
@@ -27,13 +26,14 @@ if __name__ == '__main__':
             author='Jin Seok (Andy) Lee, Dhuvarakesh Karthikeyan',
             author_email='ajslee@unc.edu, dkarthikeyan1@unc.edu',
             install_requires=[
+                  'numpy',
                   'pandas',
                   'ortools',
+                  'torch',
                   'seaborn',
                   'matplotlib',
                   'transformers',
                   'psutil',
-                  'nltk'
             ],
             packages=find_packages(),
             entry_points={

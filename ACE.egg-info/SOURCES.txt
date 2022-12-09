@@ -16,6 +16,7 @@ acelib/identification.py
 acelib/logger.py
 acelib/main.py
 acelib/peptide.py
+acelib/sequence_features.py
 acelib/solver.py
 acelib/verification.py
 acelib/visualization.py

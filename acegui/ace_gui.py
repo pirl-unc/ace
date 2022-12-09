@@ -14,9 +14,9 @@ import tkinter
 import tkinter.filedialog
 import eel
 import pandas as pd
-from acelib import logger #Temporary Import
 from acelib.main import run_ace_generate
 from acelib import devtools
+from acelib.sequence_features import *
 
 
 eel.init('')
@@ -34,9 +34,12 @@ def upload_csv_bttn():
 
 
 def find_disallowed_peptides(csv):
-    df = pd.read_csv(csv)
-    print('Reached')
-    return []
+    if len(csv) == 0:
+        return []
+    df = pd.read_csv(csv, header=0)
+    peps = list(df['Peptide'])
+    a = get_disallowed_peptides(peps, dummy_embed, ratio_similarity, 0.6)
+    return a
 
 
 @eel.expose
