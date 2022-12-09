@@ -10,11 +10,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import tkinter
 import tkinter.filedialog
 import eel
 import pandas as pd
-from acelib import logger #Temporary Import
+from acelib import logger # Temporary Import
 from acelib.main import run_ace_generate
 from acelib import devtools
 
@@ -27,10 +28,12 @@ def get_tk_root():
     root.withdraw()
     root.wm_attributes('-topmost', 1)
 
+
 @eel.expose
 def upload_csv_bttn():
     get_tk_root()
-    return tkinter.filedialog.askopenfilename(title = "Select Peptide List (*CSV)",filetypes = (("CSV Files","*.csv"),))
+    return tkinter.filedialog.askopenfilename(title="Select Peptide List (*CSV)",
+                                              filetypes=(("CSV Files","*.csv"),))
 
 
 def find_disallowed_peptides(csv):
@@ -60,5 +63,4 @@ def generate_configuration(num_peptides,
     return df_configuration.to_dict()
 
 
-eel.start('res/index.html', size=(1200, 1000), port=devtools.get_open_port())
-
+eel.start('views/index.html', size=(1200, 1000), port=devtools.get_open_port())

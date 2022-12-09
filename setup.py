@@ -32,8 +32,7 @@ if __name__ == '__main__':
                   'seaborn',
                   'matplotlib',
                   'transformers',
-                  'psutil',
-                  'nltk'
+                  'psutil'
             ],
             packages=find_packages(),
             entry_points={

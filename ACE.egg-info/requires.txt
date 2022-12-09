@@ -1,7 +1,0 @@
-pandas
-ortools
-seaborn
-matplotlib
-transformers
-psutil
-nltk

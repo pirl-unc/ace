@@ -11,8 +11,6 @@
 # limitations under the License.
 
 
-#!/usr/bin/python3
-
 """
 The purpose of this python3 script is to
 implement functions related to verifying an ELIspot configuration.

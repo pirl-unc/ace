@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <title>ACE</title>
     <link href="style.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="res/ace_logo_icon.svg">
     <script type="text/javascript" src="/eel.js"></script>
-    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript" src="generate.js"></script>
 </head>
 
 <body>
@@ -23,39 +24,28 @@
                     <div class="container">
                         <h3 class="text-normal text-no-margin margin-bottom-small">Number of peptides</h3>
                         <input class="input-box" type="number" id="number-of-peptides" min="1" placeholder="e.g. 200">
-                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptides per pool</h3>
+                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptides per
+                            pool</h3>
                         <input class="input-box" type="number" id="number-of-peptides-per-pool" min="1" max="10"
                                placeholder="e.g. 10">
-                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptide repeats (coverage)</h3>
+                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptide repeats
+                            (coverage)</h3>
                         <input class="input-box" type="number" id="number-of-coverage" min="1" max="3"
                                placeholder="e.g. 3">
                     </div>
-                    <button class="text-blue-button align-right margin-top-small" onclick="clearAssayParameters()">Clear</button>
+                    <button class="btn-blue-text align-right margin-top-small" onclick="clearAssayParameters()">Clear
+                    </button>
                 </tr>
                 <tr>
                     <h3 class="text-bold margin-bottom-small margin-top-large">Biological Parameters</h3>
                 </tr>
                 <tr>
                     <div class="container">
-                        <h3 class="text-normal text-no-margin margin-bottom-small" style="display: inline-block;">Disallowed peptide
-                            pairs</h3>
-                        <h3 class="text-normal text-no-margin text-light-grey margin-bottom-small" style="display: inline-block;">
-                            (optional)</h3>
-                        <textarea id="disallowed-peptide-pairs" class="input-text-area" rows="1" placeholder="e.g. 1,2"
-                                  oninput="auto_grow(this)"></textarea>
-                        <div style="display: inline-block; width: 100%; padding: 0em; margin: 0em;">
-                            <button class="text-blue-button align-right margin-top-small padding-right-zero"
-                                    style="display: inline-block;" onclick="clearDisallowedPeptidePairs()">
-                                Clear
-                            </button>
-                            <button class="text-blue-button align-left margin-top-small padding-left-zero"
-                                    style="display: inline-block;">
-                                Click
-                                here to upload a CSV file
-                            </button>
-                        </div>
-                        <h3 class="text-normal text-no-margin margin-top">Enforce sequence constraints</h3>
-                        <input type="text" id="input_CSV" class="optional_input" placeholder="Path to CSV File", style="display: inline-block;" onclick="getCSV()">
+                        <h3 class="text-normal text-no-margin">Enforce sequence constraints</h3>
+                        <button class="btn-blue-text align-left margin-top-small padding-left-zero margin-bottom"
+                                style="display: inline-block;" onclick="getCSV()">
+                            Click here to upload a CSV file
+                        </button>
                     </div>
                 </tr>
                 <tr>

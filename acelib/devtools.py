@@ -16,8 +16,13 @@ The purpose of this python3 script is to
 serve as a developer toolkit to be ignored by the user
 """
 
-import psutil
+
 import random
+import socket
+from acelib.logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def find_port_addr(connection):
@@ -27,11 +32,15 @@ def find_port_addr(connection):
         return
 
 
-def get_open_port():
-    connections = psutil.net_connections()
-    existing_ports = [find_port_addr(conx) for conx in connections]
-    proposed_port = 1111
-    while proposed_port in existing_ports:
-        proposed_port = random.randint(1111, 9999)
-    return proposed_port
-
+def get_open_port() -> int:
+    port = 1
+    for i in range(10000):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.bind(("127.0.0.1", i))
+        except socket.error as e:
+             continue
+        s.close()
+        port = i
+        break
+    return port
