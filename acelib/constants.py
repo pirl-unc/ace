@@ -14,8 +14,11 @@
 """
 The purpose of this python3 script is to define ACE constants.
 """
+
+
 import pandas as pd
 from transformers import BertModel, BertTokenizer
+
 
 _AMINO_ACID_PROPERTIES = pd.DataFrame(map(lambda x: x.split(","),
                                ("1.29,0.9,0,0.049,1.8,0,0,0.047,0.065,0.78,67,1,0,0,1;"

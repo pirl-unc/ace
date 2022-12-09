@@ -1,8 +1,0 @@
-numpy
-pandas
-ortools
-torch
-seaborn
-matplotlib
-transformers
-psutil
