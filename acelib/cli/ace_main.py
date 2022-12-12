@@ -22,7 +22,6 @@ import acelib
 import pandas as pd
 from ..logger import get_logger
 from .ace_generate import *
-from .ace_visualize import *
 from .ace_identify import *
 from .ace_verify import *
 
@@ -55,7 +54,6 @@ def run():
     # Step 1. Initialize argument parser
     arg_parser, sub_parsers = init_arg_parser()
     sub_parsers = add_ace_generate_arg_parser(sub_parsers=sub_parsers)      # generate
-    sub_parsers = add_ace_visualize_arg_parser(sub_parsers=sub_parsers)     # visualize
     sub_parsers = add_ace_identify_arg_parser(sub_parsers=sub_parsers)      # identify
     sub_parsers = add_ace_verify_arg_parser(sub_parsers=sub_parsers)        # verify
     args = arg_parser.parse_args()
@@ -63,8 +61,6 @@ def run():
     # Step 2. Execute function based on CLI arguments
     if args.which == 'generate':
         run_ace_generate_from_parsed_args(args=args)
-    elif args.which == 'visualize':
-        run_ace_visualize_from_parsed_args(args=args)
     elif args.which == 'identify':
         run_ace_identify_from_parsed_args(args=args)
     elif args.which == 'verify':

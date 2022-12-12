@@ -20,7 +20,7 @@ from acelib import devtools
 from acelib.sequence_features import *
 
 
-eel.init('')
+eel.init('views')
 
 
 def get_tk_root():
@@ -66,4 +66,4 @@ def generate_configuration(num_peptides,
     return df_configuration.to_dict()
 
 
-eel.start('views/index.html', size=(1200, 1000), port=devtools.get_open_port())
+eel.start('index.html', size=(1200, 1000), port=devtools.get_open_port())

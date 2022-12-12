@@ -44,5 +44,7 @@ _AMINO_ACID_PROPERTIES = pd.DataFrame(map(lambda x: x.split(","),
                            columns=['alpha', 'beta', 'charge', 'core', 'hydropathy', 'pH', 'polarity', 'rim', 'surface', 'turn', 'volume', 'strength', 'disorder', 'high_contact', 'count'],
                            index=['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']).astype(float)
 
-_PROTBERT_TOKENIZER = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
-_PROTBERT_MODEL = BertModel.from_pretrained("Rostlab/prot_bert")
+# _PROTBERT_TOKENIZER = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
+# _PROTBERT_MODEL = BertModel.from_pretrained("Rostlab/prot_bert")
+_PROTBERT_TOKENIZER = ''
+_PROTBERT_MODEL = ''

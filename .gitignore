@@ -7,3 +7,6 @@ ace.egg-info/
 .coverage
 acegui/views/res/ace_video_placeholder.mp4
 ACE.egg-info/
+acegui/build/
+acegui/dist
+acegui/ace_gui.spec

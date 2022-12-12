@@ -30,10 +30,7 @@ if __name__ == '__main__':
                   'pandas',
                   'ortools',
                   'torch',
-                  'seaborn',
-                  'matplotlib',
-                  'transformers',
-                  'psutil',
+                  'transformers'
             ],
             packages=find_packages(),
             entry_points={
