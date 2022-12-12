@@ -13,14 +13,15 @@
 <body>
 
 <div>
-    <video class="intro-video" preload="true" autoplay loop muted>
+    <video class="video" preload="true" autoplay loop muted>
         <source src="res/ace_video_placeholder.mp4" type="video/mp4">
     </video>
-    <div class="intro-over-video">
-        <img src="res/ace_logo.svg" alt="ACE Logo" style="width: 75%; display: block; margin-left: auto; margin-right: auto;">
-        <button class="btn-white-round margin-top-large" onclick="location.replace('generate.html')">
-            <div class="well">
-                <div class="well-child">
+    <div class="video-overlay">
+        <img src="res/ace_logo.svg" alt="ACE Logo"
+             style="width: 75%; display: block; margin-left: auto; margin-right: auto;">
+        <button class="btn-accent margin-top-large margin-right-small" onclick="location.replace('generate.html')">
+            <div class="well-icon">
+                <div class="well-icon-child">
                     <span></span>
                     <span></span>
                     <span></span><br/>
@@ -33,6 +34,23 @@
                 </div>
             </div>
             Generate
+        </button>
+
+        <button class="btn-white margin-top-large margin-left-small" onclick="location.replace('identify.html')">
+            <div class="well-icon">
+                <div class="well-icon-child">
+                    <span></span>
+                    <span></span>
+                    <span></span><br/>
+                    <span></span>
+                    <span></span>
+                    <span></span><br/>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            Identify
         </button>
     </div>
 
