@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ACE</title>
+    <link href="style.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="res/ace_logo_icon.svg">
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="identify.js"></script>
+
+    <div class="navbar">
+        <div class="navbar-child">
+            <a href="#"><img class="navbar-logo" src="res/ace_logo_icon.svg"/></a>
+            <nav>
+                <ul style="float: right">
+                    <li><a href=# alt="generate">Generate</a></li>
+                    <li><a href=# alt="identify">Identify</a></li>
+                    <li><a href=# alt="about">About</a></li>
+                    <li><a href=# alt="faq">FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</head>
+
+<body>
+<div>
+    <div class="container-parent">
+        <div class="container-child-small">
+            <h1 class="text-center margin-top-med">Identify Hit Peptides</h1>
+            <div class="container-dropshadow margin-top-med padding-top-med padding-left-med padding-right-med padding-bottom-large">
+                <table>
+                    <tr>
+                        <h3 class="text-bold margin-top-none margin-bottom-small">ACE Configuration File</h3>
+                    </tr>
+                    <tr>
+                        <div class="container-file-select margin-top-small">
+                            <p class="text-bold">Select a file from your computer.</p>
+                            <p class="text-normal margin-top-med">Specify the ACE configuration (Excel) file.</p>
+                            <button class="btn-select-file text-bold margin-top-med">Select file</button>
+                        </div>
+                        <p class="align-right">No selected file</p>
+                    </tr>
+                    <tr>
+                        <h3 class="text-bold margin-top-large margin-bottom-med">ELIspot Counts File</h3>
+                    </tr>
+                    <tr>
+                        <div class="container-file-select margin-top-small">
+                            <p class="text-bold">Select a file from your computer.</p>
+                            <p class="text-normal margin-top-med">Specify the ACE configuration (Excel) file.</p>
+                            <button class="btn-select-file text-bold margin-top-med">Select file</button>
+                        </div>
+                        <p class="align-right">No selected file</p>
+                    </tr>
+                </table>
+            </div>
+            <div class="margin-top-large margin-bottom-large"
+                 style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <button class="btn-primary-text" style="float: left;">Back
+                    </button>
+                </div>
+                <div>
+                    <button class="btn-primary-round-inactive" style="float: right;" onclick="generateConfiguration()">Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
