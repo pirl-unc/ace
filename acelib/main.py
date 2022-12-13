@@ -17,5 +17,4 @@ from __future__ import print_function, division, absolute_import
 import pandas as pd
 from .solver import generate_assay_configuration as run_ace_generate
 from .identification import identify_hit_peptides as run_ace_identify
-from .visualization import plot_configuration_table as run_ace_visualize
 from .verification import verify_configuration_constraints as run_ace_verify
