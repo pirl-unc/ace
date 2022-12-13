@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 494.2 187.1" style="enable-background:new 0 0 494.2 187.1;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+	.st1{font-family:'ShreeDev0714-Italic';}
+	.st2{font-size:18px;}
+	.st3{fill:#FFFFFF;stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	.st4{font-family:'ShreeDev0714-Bold';}
+	.st5{font-size:128px;}
+	.st6{letter-spacing:16;}
+	.st7{fill:#2484C7;stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	.st8{font-size:64px;}
+	.st9{fill:url(#SVGID_1_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	
+		.st10{fill:url(#SVGID_00000132806708981107598660000014473307663528346260_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	
+		.st11{fill:url(#SVGID_00000005255746841538368060000004837110973773020604_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	
+		.st12{fill:url(#SVGID_00000045603227328170420610000014198092056047803037_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	
+		.st13{fill:url(#SVGID_00000168080359582708284070000007770414501385459076_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	
+		.st14{fill:url(#SVGID_00000060729977490579924750000002847164058370861235_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;}
+	.st15{font-family:'ShreeDev0714';}
+	.st16{font-size:36px;}
+</style>
+<text transform="matrix(1 0 0 1 61.9912 179.5613)" class="st0 st1 st2">Determining peptide immunogenicity at scale.</text>
+<g>
+	<circle class="st3" cx="93.7" cy="37.8" r="34.8"/>
+	<path class="st3" d="M93.7,72.6c-9.1,0.4-18.4-1.7-27.9-6.2c0.2,0.6,0.2,1,0.4,1.3c1.2,2.6,3.1,4.5,5.6,5.8
+		c3.4,1.7,6.8,3.4,10.2,5.1c4.6,2.3,7,6,6.9,11.2c0,3.3,0,6.6,0,9.8c0,1.1,0.3,1.5,1.5,1.5c1.1,0,2.2,0,3.3,0c1.1,0,2.2,0,3.3,0
+		c1.1,0,1.5-0.4,1.5-1.5c0-3.3,0-6.6,0-9.8c0-5.2,2.3-8.9,6.9-11.2c3.4-1.7,6.8-3.4,10.2-5.1c2.6-1.3,4.4-3.2,5.6-5.8
+		c0.2-0.4,0.2-0.8,0.4-1.3C112.1,70.9,102.8,72.9,93.7,72.6z"/>
+	<text transform="matrix(1 0 0 1 145.8752 101.0422)" class="st3 st4 st5 st6">ACE</text>
+	<text transform="matrix(1 0 0 1 68.9041 62.3277)" class="st7 st4 st8">1</text>
+	<radialGradient id="SVGID_1_" cx="78.2361" cy="12.5784" r="2.941" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	<path class="st9" d="M81.2,12.6c0,1.6-1.3,2.9-2.9,2.9c-1.6,0-2.9-1.3-2.9-2.9c0-1.6,1.3-2.9,2.9-2.9C79.9,9.6,81.2,11,81.2,12.6z"
+		/>
+	
+		<radialGradient id="SVGID_00000009564540318526917280000000865719956658853765_" cx="72.549" cy="17.5145" r="2.1531" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	
+		<path style="fill:url(#SVGID_00000009564540318526917280000000865719956658853765_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;" d="
+		M74.7,17.5c0,1.2-1,2.2-2.1,2.2c-1.2,0-2.2-1-2.2-2.1c0-1.2,1-2.2,2.1-2.2C73.7,15.4,74.7,16.3,74.7,17.5z"/>
+	
+		<radialGradient id="SVGID_00000093137297853929662750000000371656763288516778_" cx="69.0925" cy="22.5723" r="1.8718" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	
+		<path style="fill:url(#SVGID_00000093137297853929662750000000371656763288516778_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;" d="
+		M71,22.6c0,1-0.8,1.9-1.9,1.9c-1.1,0-1.9-0.8-1.9-1.9c0-1,0.8-1.9,1.9-1.9C70.1,20.7,71,21.5,71,22.6z"/>
+	
+		<radialGradient id="SVGID_00000003809475859534942580000012174915305479391133_" cx="109.4048" cy="63.6751" r="2.941" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	
+		<path style="fill:url(#SVGID_00000003809475859534942580000012174915305479391133_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;" d="
+		M112.3,63.7c0,1.6-1.3,2.9-2.9,2.9c-1.6,0-2.9-1.3-2.9-2.9c0-1.6,1.3-2.9,2.9-2.9C111,60.7,112.3,62.1,112.3,63.7z"/>
+	
+		<radialGradient id="SVGID_00000048472261481410608780000004153600266512746123_" cx="114.8095" cy="59.7505" r="2.1531" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	
+		<path style="fill:url(#SVGID_00000048472261481410608780000004153600266512746123_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;" d="
+		M117,59.7c0,1.2-1,2.2-2.1,2.2c-1.2,0-2.2-1-2.2-2.1c0-1.2,1-2.2,2.1-2.2C116,57.6,117,58.5,117,59.7z"/>
+	
+		<radialGradient id="SVGID_00000138555582492606733200000015861206125248737666_" cx="118.9237" cy="55.0065" r="1.8718" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#9FC9E5"/>
+		<stop  offset="1" style="stop-color:#2383C5"/>
+	</radialGradient>
+	
+		<path style="fill:url(#SVGID_00000138555582492606733200000015861206125248737666_);stroke:#231F20;stroke-width:0.25;stroke-miterlimit:10;" d="
+		M120.8,55c0,1-0.8,1.9-1.9,1.9c-1.1,0-1.9-0.8-1.9-1.9c0-1,0.8-1.9,1.9-1.9C120,53.1,120.8,54,120.8,55z"/>
+</g>
+<g>
+	<text transform="matrix(1 0 0 1 1.6082 151.9042)" class="st0 st15 st16">Assay Configurator for ELIspot</text>
+	<rect x="1.9" y="160.4" class="st0" width="23.3" height="1"/>
+	<rect x="112.9" y="160.4" class="st0" width="23.3" height="1"/>
+	<rect x="375.7" y="160.4" class="st0" width="23.3" height="1"/>
+</g>
+</svg>

@@ -5,19 +5,19 @@
     <meta charset="UTF-8">
     <title>ACE</title>
     <link href="style.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="res/ace_logo_icon.svg">
+    <link rel="icon" type="image/x-icon" href="res/icon_ace_small.svg">
     <script type="text/javascript" src="/eel.js"></script>
     <script type="text/javascript" src="generate.js"></script>
 
     <div class="navbar">
         <div class="navbar-child">
-            <a href="#"><img class="navbar-logo" src="res/ace_logo_icon.svg"/></a>
+            <a href="landing.html"><img class="navbar-logo" src="res/icon_ace_large.svg"/></a>
             <nav>
                 <ul style="float: right">
-                    <li><a href=# alt="generate">Generate</a></li>
-                    <li><a href=# alt="identify">Identify</a></li>
-                    <li><a href=# alt="about">About</a></li>
-                    <li><a href=# alt="faq">FAQ</a></li>
+                    <li><a href="generate.html" alt="generate">Generate</a></li>
+                    <li><a href="identify.html" alt="identify">Identify</a></li>
+                    <li><a href="about.html" alt="about">About</a></li>
+                    <li><a href="faq.html" alt="faq">FAQ</a></li>
                 </ul>
             </nav>
         </div>
@@ -36,12 +36,20 @@
                         <h3 class="text-bold margin-top-none margin-bottom-small">Peptide Sequences</h3>
                     </tr>
                     <tr>
-                        <div class="container-file-select margin-top-small">
-                            <p class="text-bold">Select a file from your computer.</p>
-                            <p class="text-normal margin-top-med">Specify the peptide sequences CSV file.</p>
-                            <button class="btn-select-file text-bold margin-top-med">Select file</button>
+                        <div id="div-file-select">
+                            <div class="container-file-select margin-top-small">
+                                <p class="text-bold">Select a file from your computer.</p>
+                                <p class="text-normal margin-top-med">Specify the peptide sequences CSV file.</p>
+                                <button class="btn-select-file text-bold margin-top-med" onclick="getCSV()">Select file
+                                </button>
+                            </div>
+                            <p class="text-no-selected-file">No selected file</p>
                         </div>
-                        <p class="align-right">No selected file</p>
+                        <div id="div-file-selected" class="container-file-selected">
+                            <img class="icon-small" src="res/icon_file.svg"/>
+                            <p id="peptide-sequence-file-path" class="text-filepath">/asdfasdf/asdfasdfadsf/asdfasdf/asdf/asdf/asdf/asdf/asdf/asdf/asdfasdfasdfas/dfasdfasdf/asdfasd/fasdf/asdfa/sdfasdfasdf/file.csv</p>
+                            <img class="icon-small" src="res/icon_clear.svg"/>
+                        </div>
                     </tr>
                     <tr>
                         <h3 class="text-bold margin-top-med margin-bottom-med">Parameters</h3>
@@ -81,7 +89,8 @@
                     </button>
                 </div>
                 <div>
-                    <button class="btn-primary-round-inactive" style="float: right;" onclick="generateConfiguration()">Generate
+                    <button class="btn-primary-round-inactive" style="float: right;" onclick="generateConfiguration()">
+                        Generate
                     </button>
                 </div>
             </div>

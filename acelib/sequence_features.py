@@ -10,19 +10,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Purpose of this Code is to Handle the Sequence Similarity Elements of the ACE CP-SAT
 """
+
+
 import torch
 import numpy as np
-from acelib.constants import _PROTBERT_TOKENIZER, _PROTBERT_MODEL
 import difflib
 
 
-def bert_embed(sequence, tokenizer=_PROTBERT_TOKENIZER, encoder=_PROTBERT_MODEL):
-        encoded_input = tokenizer(" ".join(sequence), return_tensors='pt')
-        output = encoder(**encoded_input)
-        return torch.mean(output.last_hidden_state, 1).detach().numpy()[0]
+def bert_embed(sequence, tokenizer, encoder):
+    """
+
+    Parameters
+    ----------
+    sequence    :
+    tokenizer   :
+    encoder     :
+
+    Returns
+    -------
+    """
+    encoded_input = tokenizer(" ".join(sequence), return_tensors='pt')
+    output = encoder(**encoded_input)
+    return torch.mean(output.last_hidden_state, 1).detach().numpy()[0]
 
 
 def cosine_similarity(emb1, emb2):
