@@ -26,17 +26,17 @@
 
 <body>
 <div>
-    <div class="parent">
-        <div class="child-35percent">
+    <div class="container-parent">
+        <div class="container-child-small">
             <h1 class="text-center margin-top-med">Generate an ELIspot Configuration</h1>
-            <div class="dropshadow-box margin-top-med">
+            <div class="container-dropshadow margin-top-med padding-top-med padding-right-med padding-bottom-med padding-left-med">
 
                 <table>
                     <tr>
                         <h3 class="text-bold margin-top-none margin-bottom-small">Peptide Sequences</h3>
                     </tr>
                     <tr>
-                        <div class="file-select-box margin-top-small">
+                        <div class="container-file-select margin-top-small">
                             <p class="text-bold">Select a file from your computer.</p>
                             <p class="text-normal margin-top-med">Specify the peptide sequences CSV file.</p>
                             <button class="btn-select-file text-bold margin-top-med">Select file</button>
@@ -74,13 +74,14 @@
                     </tr>
                 </table>
             </div>
-            <div class="margin-top-large margin-bottom-large" style="display: flex;   align-items: center; justify-content: space-between;">
+            <div class="margin-top-large margin-bottom-large"
+                 style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <button class="btn-primary-text" style="float: left;">Back
                     </button>
                 </div>
                 <div>
-                    <button class="btn-primary-round" style="float: right;" onclick="generateConfiguration()">Generate
+                    <button class="btn-primary-round-inactive" style="float: right;" onclick="generateConfiguration()">Generate
                     </button>
                 </div>
             </div>
