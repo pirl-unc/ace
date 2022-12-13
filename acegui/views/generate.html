@@ -8,74 +8,83 @@
     <link rel="icon" type="image/x-icon" href="res/ace_logo_icon.svg">
     <script type="text/javascript" src="/eel.js"></script>
     <script type="text/javascript" src="generate.js"></script>
+
+    <div class="navbar">
+        <div class="navbar-child">
+            <a href="#"><img class="navbar-logo" src="res/ace_logo_icon.svg"/></a>
+            <nav>
+                <ul style="float: right">
+                    <li><a href=# alt="generate">Generate</a></li>
+                    <li><a href=# alt="identify">Identify</a></li>
+                    <li><a href=# alt="about">About</a></li>
+                    <li><a href=# alt="faq">FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
 </head>
 
 <body>
+<div>
+    <div class="parent">
+        <div class="child-35percent">
+            <h1 class="text-center margin-top-med">Generate an ELIspot Configuration</h1>
+            <div class="dropshadow-box margin-top-med">
 
-<div class="parent">
-    <div class="child">
-        <h1 class="text-center">Generate an ELIspot Configuration</h1>
-        <form>
-            <table>
-                <tr>
-                    <h3 class="text-bold margin-bottom-small margin-top-large">Assay Parameters</h3>
-                </tr>
-                <tr>
-                    <div class="container">
-                        <h3 class="text-normal text-no-margin margin-bottom-small">Number of peptides</h3>
-                        <input class="input-box" type="number" id="number-of-peptides" min="1" placeholder="e.g. 200">
-                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptides per
-                            pool</h3>
-                        <input class="input-box" type="number" id="number-of-peptides-per-pool" min="1" max="10"
-                               placeholder="e.g. 10">
-                        <h3 class="text-normal text-no-margin margin-top margin-bottom-small">Number of peptide repeats
-                            (coverage)</h3>
-                        <input class="input-box" type="number" id="number-of-coverage" min="1" max="3"
-                               placeholder="e.g. 3">
-                    </div>
-                    <button class="btn-blue-text align-right margin-top-small" onclick="clearAssayParameters()">Clear
-                    </button>
-                </tr>
-                <tr>
-                    <h3 class="text-bold margin-bottom-small margin-top-large">Biological Parameters</h3>
-                </tr>
-                <tr>
-                    <div class="container">
-                        <h3 class="text-normal text-no-margin margin-bottom-small" style="display: inline-block;">Disallowed peptide
-                            pairs</h3>
-                        <h3 class="text-normal text-no-margin text-light-grey margin-bottom-small" style="display: inline-block;">
-                            (optional)</h3>
-                        <textarea id="disallowed-peptide-pairs" class="input-text-area" rows="1" placeholder="e.g. 1,2"
-                                  oninput="auto_grow(this)"></textarea>
-                        <div style="display: inline-block; width: 100%; padding: 0em; margin: 0em;">
-                            <button class="btn-blue-text align-right margin-top-small padding-right-zero"
-                                    style="display: inline-block;" onclick="clearDisallowedPeptidePairs()">
-                                Clear
-                            </button>
-                            <button class="text-blue-button align-left margin-top-small padding-left-zero"
-                                    style="display: inline-block;">
-                                Click
-                                here to upload a CSV file
-                            </button>
+                <table>
+                    <tr>
+                        <h3 class="text-bold margin-top-none margin-bottom-small">Peptide Sequences</h3>
+                    </tr>
+                    <tr>
+                        <div class="file-select-box margin-top-small">
+                            <p class="text-bold">Select a file from your computer.</p>
+                            <p class="text-normal margin-top-med">Specify the peptide sequences CSV file.</p>
+                            <button class="btn-select-file text-bold margin-top-med">Select file</button>
                         </div>
-                        <h3 class="text-normal text-no-margin margin-top">Enforce sequence constraints</h3>
-                        <input type="text" id="input_CSV" class="input-text-area" placeholder="Path to CSV File", style="display: inline-block;" onclick="getCSV()">
-                    </div>
-                </tr>
-                <tr>
-                    <h3 class="text-bold margin-bottom-small margin-top-large">Hardware Parameter</h3>
-                </tr>
-                <tr>
-                    <div class="container">
-                        <h3 class="text-normal text-no-margin margin-bottom-small">Number of cores</h3>
-                        <input class="input-box" type="number" id="number-of-cores" min="1" value="1">
-                    </div>
-                </tr>
-            </table>
-            <input id="submit-button" type="button" class="submit btn-blue margin-top-large margin-bottom-large"
-                   value="GENERATE"
-                   onclick="generateConfiguration()">
-        </form>
+                        <p class="align-right">No selected file</p>
+                    </tr>
+                    <tr>
+                        <h3 class="text-bold margin-top-med margin-bottom-med">Parameters</h3>
+                    </tr>
+                    <tr>
+                        <p class="margin-left-med">Peptides count</p>
+                        <input class="input-box margin-left-med margin-top-small" type="number"
+                               id="number-of-peptides" min="1" placeholder="e.g. 200">
+                    </tr>
+                    <tr>
+                        <p class="margin-left-med margin-top-med">Peptides per pool</p>
+                        <input class="input-box margin-left-med margin-top-small" type="number"
+                               id="number-of-peptides-per-pool" min="1" placeholder="e.g. 10">
+                    </tr>
+                    <tr>
+                        <p class="margin-left-med margin-top-med">Peptides repeats</p>
+                        <input class="input-box margin-left-med margin-top-small" type="number"
+                               id="number-of-coverage" min="1" placeholder="e.g. 3">
+                    </tr>
+                    <tr>
+                        <p class="margin-left-med margin-top-med">Number of cores</p>
+                        <input class="input-box margin-left-med margin-top-small" type="number"
+                               id="number-of-cores" min="1" placeholder="1">
+                    </tr>
+                    <tr>
+                        <div class="margin-left-med margin-top-med">
+                            <label><input id="enforce-peptide-constraints" class="margin-right-med"
+                                          type="checkbox"/>Enforce sequence constraints</label>
+                        </div>
+                    </tr>
+                </table>
+            </div>
+            <div class="margin-top-large margin-bottom-large" style="display: flex;   align-items: center; justify-content: space-between;">
+                <div>
+                    <button class="btn-primary-text" style="float: left;">Back
+                    </button>
+                </div>
+                <div>
+                    <button class="btn-primary-round" style="float: right;" onclick="generateConfiguration()">Generate
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
