@@ -17,6 +17,8 @@ import eel
 import pandas as pd
 from acelib.main import run_ace_generate
 from acelib import devtools
+from acelib import third_party_api
+from acelib import constants
 from acelib.sequence_features import *
 
 
@@ -48,6 +50,15 @@ def find_disallowed_peptides(csv):
 
 
 @eel.expose
+def download_probert_data() -> bool:
+    try:
+        third_party_api.get_bert_model(model=constants.ROSTLAB_PROT_BERT)
+    except:
+        return False
+    return True
+
+
+@eel.expose
 def generate_configuration(num_peptides,
                            num_peptides_per_pool,
                            num_coverage,
@@ -68,4 +79,5 @@ def generate_configuration(num_peptides,
     return df_configuration.to_dict()
 
 
-eel.start('landing.html', size=(1200, 1000), port=devtools.get_open_port())
+
+eel.start('index.html', size=(1920, 1080), port=devtools.get_open_port())

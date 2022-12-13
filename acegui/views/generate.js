@@ -25,8 +25,8 @@ function clearAssayParameters() {
 
 async function getCSV() {
 	var csv = await eel.upload_csv_bttn()();
-		if (csv) {
-			document.getElementById("path-to-csv").value = csv;
-		}
-		return csv;
+        let csvFilePath = String(csv);
+        if (csvFilePath.length > 0) {
+            document.getElementById("peptide-sequence-file-path").innerHTML = csvFilePath;
+        }
 	}
