@@ -10,3 +10,4 @@ ACE.egg-info/
 acegui/build/
 acegui/dist
 acegui/ace_gui.spec
+notebooks/.ipynb_checkpoints/sequence_properties-checkpoint.ipynb
