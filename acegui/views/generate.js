@@ -1,4 +1,5 @@
 function generateConfiguration() {
+    var path_to_csv = document.getElementById("path-to-csv").value
     var numPeptides = document.getElementById("number-of-peptides").value
     var numPeptidesPerPool = document.getElementById("number-of-peptides-per-pool").value
     var numCoverage = document.getElementById("number-of-coverage").value
@@ -7,7 +8,8 @@ function generateConfiguration() {
         numPeptides,
         numPeptidesPerPool,
         numCoverage,
-        numCores
+        numCores,
+        path_to_csv
     )(renderConfiguration)
 }
 
@@ -24,7 +26,7 @@ function clearAssayParameters() {
 async function getCSV() {
 	var csv = await eel.upload_csv_bttn()();
 		if (csv) {
-			document.getElementById("input_CSV").value = csv;
+			document.getElementById("path-to-csv").value = csv;
 		}
 		return csv;
 	}

@@ -29,9 +29,11 @@ def get_tk_root():
     root.wm_attributes('-topmost', 1)
 
 
+
 @eel.expose
 def upload_csv_bttn():
     get_tk_root()
+    print(get_tk_root())
     return tkinter.filedialog.askopenfilename(title="Select Peptide List (*CSV)",
                                               filetypes=(("CSV Files","*.csv"),))
 
@@ -66,4 +68,4 @@ def generate_configuration(num_peptides,
     return df_configuration.to_dict()
 
 
-eel.start('index.html', size=(1200, 1000), port=devtools.get_open_port())
+eel.start('landing.html', size=(1200, 1000), port=devtools.get_open_port())

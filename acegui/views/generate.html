@@ -14,9 +14,9 @@
             <a href="#"><img class="navbar-logo" src="res/ace_logo_icon.svg"/></a>
             <nav>
                 <ul style="float: right">
-                    <li><a href=# alt="generate">Generate</a></li>
-                    <li><a href=# alt="identify">Identify</a></li>
-                    <li><a href=# alt="about">About</a></li>
+                    <li><a href='generate.html' alt="generate">Generate</a></li>
+                    <li><a href='identify.html' alt="identify">Identify</a></li>
+                    <li><a href='about.html' alt="about">About</a></li>
                     <li><a href=# alt="faq">FAQ</a></li>
                 </ul>
             </nav>
@@ -39,8 +39,9 @@
                         <div class="container-file-select margin-top-small">
                             <p class="text-bold">Select a file from your computer.</p>
                             <p class="text-normal margin-top-med">Specify the peptide sequences CSV file.</p>
-                            <button class="btn-select-file text-bold margin-top-med">Select file</button>
-                        </div>
+                            <!-- <button class="btn-select-file text-bold margin-top-med" onclick="getCSV()" value=>Select file</button> -->
+                            <input type="text" id="path-to-csv" placeholder="Path to CSV File" onclick="getCSV()">
+
                         <p class="align-right">No selected file</p>
                     </tr>
                     <tr>
