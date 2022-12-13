@@ -545,6 +545,7 @@ input {
 .navbar {
     background-color: var(--grey4);
     align-items: center;
+    margin-top: 0!important;
     width: 100%;
     position: fixed;
     height: 48px;
