@@ -39,6 +39,13 @@ def upload_csv_bttn():
     return tkinter.filedialog.askopenfilename(title="Select Peptide List (*CSV)",
                                               filetypes=(("CSV Files","*.csv"),))
 
+@eel.expose
+def upload_xls_bttn():
+    get_tk_root()
+    print(get_tk_root())
+    return tkinter.filedialog.askopenfilename(title="Select Peptide List (*XLS)",
+                                              filetypes=(("Excel Files","*.xlsx"),
+                                                         ("Excel Files","*.xls")))
 
 def find_disallowed_peptides(csv):
     if len(csv) == 0:
