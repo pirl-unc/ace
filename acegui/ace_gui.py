@@ -106,9 +106,8 @@ def identify_positives(plate_readout_path,
                                 df_readout=reformat_plate_reader(plate_readout),
                                 df_configuration=config_df
     )
-    #df_hits = utils.assign_96_well_plate_physical_ids(df_configuration=df_hits)
 
-    return df_hits.to_dict()
+    return (df_hits.to_dict(), config_df.to_dict())
 
 
 eel.start('index.html', size=(1920, 1080), port=utils.get_open_port())
