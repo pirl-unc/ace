@@ -16,7 +16,7 @@ import tkinter.filedialog
 import eel
 import pandas as pd
 from acelib.main import run_ace_generate
-from acelib import devtools
+from acelib import utils
 from acelib import third_party_api
 from acelib import constants
 from acelib.sequence_features import *
@@ -31,22 +31,18 @@ def get_tk_root():
     root.wm_attributes('-topmost', 1)
 
 
-
 @eel.expose
 def upload_csv_bttn():
     get_tk_root()
-    print(get_tk_root())
     return tkinter.filedialog.askopenfilename(title="Select Peptide List (*CSV)",
                                               filetypes=(("CSV Files","*.csv"),))
 
 
-def find_disallowed_peptides(csv):
-    if len(csv) == 0:
-        return []
-    df = pd.read_csv(csv, header=0)
-    peps = list(df['Peptide'])
-    a = get_disallowed_peptides(peps, dummy_embed, ratio_similarity, 0.6)
-    return a
+@eel.expose
+def read_peptide_sequences_csv_file(file_path):
+    df = pd.read_csv(file_path)
+    peptide_sequences = df['Peptide'].values.tolist()
+    return peptide_sequences
 
 
 @eel.expose
@@ -63,12 +59,12 @@ def generate_configuration(num_peptides,
                            num_peptides_per_pool,
                            num_coverage,
                            num_cores,
-                           path_to_seqs):
+                           peptide_sequences):
     num_peptides = int(num_peptides)
     num_peptides_per_pool = int(num_peptides_per_pool)
     num_coverage = int(num_coverage)
     num_cores = int(num_cores)
-    disallowed_peps = find_disallowed_peptides(path_to_seqs),
+    disallowed_peps = get_disallowed_peptides(peptide_sequences, dummy_embed, ratio_similarity, 0.8)
     df_configuration = run_ace_generate(
         n_peptides=num_peptides,
         n_peptides_per_pool=num_peptides_per_pool,
@@ -76,8 +72,8 @@ def generate_configuration(num_peptides,
         num_processes=num_cores,
         disallowed_peptide_pairs=disallowed_peps
     )
+    df_configuration = utils.assign_96_well_plate_physical_ids(df_configuration=df_configuration)
     return df_configuration.to_dict()
 
 
-
-eel.start('index.html', size=(1920, 1080), port=devtools.get_open_port())
+eel.start('index.html', size=(1920, 1080), port=utils.get_open_port())

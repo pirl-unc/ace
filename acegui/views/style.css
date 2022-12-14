@@ -92,7 +92,7 @@ p {
 }
 
 .text-filepath {
-    width: 100%;
+    width: 85%;
     font-size: 0.8em;
     text-align: right;
     color: black;
@@ -545,7 +545,6 @@ input {
 .navbar {
     background-color: var(--grey4);
     align-items: center;
-    margin-top: 0!important;
     width: 100%;
     position: fixed;
     height: 48px;
@@ -1059,10 +1058,36 @@ input:focus {
     }
 }
 
-.icon-small {
+.icon-file {
     display: inline-block;
     height: 24px;
     vertical-align: middle;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.icon-clear {
+    display: inline-block;
+    height: 24px;
+    vertical-align: middle;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.icon-clear-active {
+    display: none;
+    height: 24px;
+    vertical-align: middle;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.span-icon:hover img[id="icon-clear-initial"] {
+    display: none;
+}
+
+.span-icon:hover img[id="icon-clear-hover"] {
+    display: inline-block;
 }
 
 /*
@@ -1079,7 +1104,7 @@ input:focus {
     margin-top: 0.4em;
 }
 
-#index-parent-div {
+.container-center {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1091,7 +1116,7 @@ input:focus {
     transform: translate(-50%, -50%);
 }
 
-#index-dot-pulse {
+.dot-pulse {
     position: relative;
     left: -9999px;
     width: 12px;
@@ -1106,7 +1131,7 @@ input:focus {
     animation-delay: 0.25s;
 }
 
-#index-dot-pulse::before, #index-dot-pulse::after {
+.dot-pulse::before, .dot-pulse::after {
     content: "";
     display: inline-block;
     position: absolute;
@@ -1118,13 +1143,13 @@ input:focus {
     color: #2484C7;
 }
 
-#index-dot-pulse::before {
+.dot-pulse::before {
     box-shadow: 9984px 0 0 -5px;
     animation: dot-pulse-before 1.5s infinite linear;
     animation-delay: 0s;
 }
 
-#index-dot-pulse::after {
+.dot-pulse::after {
     box-shadow: 10014px 0 0 -5px;
     animation: dot-pulse-after 1.5s infinite linear;
     animation-delay: 0.5s;
