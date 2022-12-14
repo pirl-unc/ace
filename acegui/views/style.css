@@ -109,6 +109,11 @@ p {
     text-decoration: underline;
 }
 
+.text-peptide-sequence-list-item-selected {
+    color: var(--accent2);
+    font-weight: bold;
+}
+
 .btn-accent {
     box-sizing: border-box;
     width: 9em;
