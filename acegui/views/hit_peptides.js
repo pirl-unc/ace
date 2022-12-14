@@ -8,9 +8,6 @@ var wellIdToPeptideIds = '';    // key = [plate number, plate well ID], value = 
 var peptideIdsSequences = '';   // array of [peptide ID, sequence, peptide ID formatted pretty]
 var hitPeptideIdsSequences = '';   // array of [peptide ID, sequence, peptide ID formatted pretty]
 var selectedPlateNumber = 1;
-var previouslySelectedPeptideId = '';
-var previouslySelectedWellId = '';
-var selectedWellIds = '';
 
 window.onload = function() {
     hitConfigs = JSON.parse(localStorage["hit-peptides"]);
@@ -20,11 +17,10 @@ window.onload = function() {
     loadConfigurationData(hitPools);
     loadWells(1);
     renderHitPeptides(hitConfigs);
-
+    console.log(plateReadout);
 };
 
 function loadHitConfig(hitConfigs) { // Load relevant info from JSON Streamed Pandas DF
-
     // Get peptides
     hitPeptides = Object.create(null); //Working List of Hit Peptides
     hitPools = Object.create(null);
@@ -34,7 +30,6 @@ function loadHitConfig(hitConfigs) { // Load relevant info from JSON Streamed Pa
     }
 
     // Get Pools
-
     for (const [poolIdIdx, poolIds] of Object.entries(hitConfigs['pool_ids'])){
         for (const poolId of poolIds.split(',')){
             hitPools[hitPeptides[poolIdIdx]].add(poolId)
@@ -125,7 +120,7 @@ function getHitPeptides(hitPools) {
     return hitPeptideIdsSequences
 }
 
-function loadHitPeptides(hitPeptideIdsSequences) {
+async function loadHitPeptides(hitPeptideIdsSequences) {
     // Step 1. Clear the existing list
     document.getElementById("hit-peptide-list").innerHTML = "";
     // Step 2. Update the list
@@ -133,14 +128,14 @@ function loadHitPeptides(hitPeptideIdsSequences) {
     for (let i = 0; i < Object.keys(hitPeptideIdsSequences).length; i++) {
         var entry = document.createElement('li');
         entry.setAttribute("id", hitPeptideIdsSequences[i][0]);
-        entry.classList.add('text-peptide-sequence-list-item');
+        entry.classList.add('text-hit-peptide-list-item');
         entry.innerHTML = hitPeptideIdsSequences[i][2];
         entry.setAttribute("onclick", "onclickPeptideSequenceListItem(this.id)");
         list.appendChild(entry);
     }
 }
 
-function get_well(pool_id){
+function getWell(pool_id) {
     const alphabetUp = "ABCDEFGH".split("");
     let int_id = parseInt(pool_id.split("_")[1]);
     let plate = Math.floor(int_id / 96);
@@ -164,21 +159,21 @@ function get_well(pool_id){
     return alphabetUp[row-1] + col.toString()
 }
 
-function loadHitPools() {
+async function loadHitPools() {
     // Change the class of all wells in use
-    let result_pools = new Set;
+    let result_pools = new Set();
     for (const set of Object.values(hitPools))
-        for (const element of set)
+        for (const element of set) {
             result_pools.add(element);
+        }
 
     for (const poolId of result_pools) {
-        document.getElementById(get_well(poolId)).className = "btn-plate-hit-pool";
-        document.getElementById(get_well(poolId)).setAttribute("onclick", "onclickWell(this.id)");
+        document.getElementById(getWell(poolId)).className = "btn-plate-hit-pool";
+        document.getElementById(getWell(poolId)).setAttribute("onclick", "onclickWell(this.id)");
     }
-
 }
 
-function loadWells(plateNumber) {
+async function loadWells(plateNumber) {
     // Change the class of all wells in use
     for (const [key, value] of Object.entries(wellIdToPeptideIds)) {
         let currPlateNumber = key.split(',')[0];
@@ -190,106 +185,28 @@ function loadWells(plateNumber) {
     }
 }
 
-function onclickPeptideSequenceListItem(peptideId) {
-    // Step 1. Unselect previously selected peptide and wells
-    if (previouslySelectedPeptideId) {
-        // Unselect peptide
-        document.getElementById(previouslySelectedPeptideId).className = "text-peptide-sequence-list-item";
-
-        // Unselect wells
-        let wellIdsArr = Array.from(peptideIdToWellIds[previouslySelectedPeptideId]);
-        for (let i = 0; i < wellIdsArr.length; i++) {
-            let currPlateNumber = wellIdsArr[i][0];
-            let currPlateWellId = wellIdsArr[i][1];
-            if (currPlateNumber == selectedPlateNumber) {
-                document.getElementById(currPlateWellId).className = "btn-plate-assigned";
-            }
-        }
-    }
-
-    // Step 2. Update previously selected peptide id
-    previouslySelectedPeptideId = peptideId;
-
-    // Step 3. Update the class of current peptide id
-    document.getElementById(peptideId).className = "text-peptide-sequence-list-item-selected";
-
-    // Step 4. Select all corresponding wells
-    let plateUniqueIdsArr = Array.from(peptideIdToWellIds[peptideId]);
-    selectedWellIds = new Set();
-    var plate1Count = 0;
-    var plate2Count = 0;
-    var plate3Count = 0;
-    var plate4Count = 0;
-    var plate5Count = 0;
-    for (let i = 0; i < plateUniqueIdsArr.length; i++) {
-        let currPlateNumber = plateUniqueIdsArr[i][0];
-        let currPlateWellId = plateUniqueIdsArr[i][1];
-        if (currPlateNumber == selectedPlateNumber) {
-            document.getElementById(currPlateWellId).className = "btn-plate-peptide-pool";
-            selectedWellIds.add(currPlateWellId);
-        }
-        if (currPlateNumber == 1) {
-            plate1Count++;
-        }
-        if (currPlateNumber == 2) {
-            plate2Count++;
-        }
-        if (currPlateNumber == 3) {
-            plate3Count++;
-        }
-        if (currPlateNumber == 4) {
-            plate4Count++;
-        }
-        if (currPlateNumber == 5) {
-            plate5Count++;
-        }
-    }
-    if (plate1Count > 0) {
-        document.getElementById("panel-1-pools-count").className = "text-panel-pools-count-enabled";
-        document.getElementById("panel-1-pools-count").innerHTML = plate1Count + " pools";
-    } else {
-        document.getElementById("panel-1-pools-count").className = "text-panel-pools-count-disabled";
-    }
-    if (plate2Count > 0) {
-        document.getElementById("panel-2-pools-count").className = "text-panel-pools-count-enabled";
-        document.getElementById("panel-2-pools-count").innerHTML = plate2Count + " pools";
-    } else {
-        document.getElementById("panel-2-pools-count").className = "text-panel-pools-count-disabled";
-    }
-    if (plate3Count > 0) {
-        document.getElementById("panel-3-pools-count").className = "text-panel-pools-count-enabled";
-        document.getElementById("panel-3-pools-count").innerHTML = plate3Count + " pools";
-    } else {
-        document.getElementById("panel-3-pools-count").className = "text-panel-pools-count-disabled";
-    }
-    if (plate4Count > 0) {
-        document.getElementById("panel-4-pools-count").className = "text-panel-pools-count-enabled";
-        document.getElementById("panel-4-pools-count").innerHTML = plate4Count + " pools";
-    } else {
-      document.getElementById("panel-4-pools-count").className = "text-panel-pools-count-disabled";
-    }
-    if (plate5Count > 0) {
-        document.getElementById("panel-5-pools-count").className = "text-panel-pools-count-enabled";
-        document.getElementById("panel-5-pools-count").innerHTML = plate5Count + " pools";
-    } else {
-      document.getElementById("panel-5-pools-count").className = "text-panel-pools-count-disabled";
-    }
-
+async function updateHitRate(hitPeptideIdsSequences) {
+    let numHits = hitPeptideIdsSequences.length;
+    let numTotal = peptideIdsSequences.length;
+    let hitRate = Math.round((numHits / numTotal) * 100 * 100) / 100;
+    document.getElementById("hit-rate").innerHTML = "Hit rate: " + numHits + "/" + numTotal + " (" + hitRate + "%)"
 }
 
-function rerun_from_slider(){
-    var spotCount = document.getElementById("spot-slider").value
-    document.getElementById("thresholdValue").innerText = spotCount
-    // If there has been some amount of time until
-    let hitConfigs = eel.ace_identify_helper(plateReadout, elispotConfiguration, parseInt(spotCount))(renderHitPeptides)
+function onupdateSlider() {
+    let spotCount = document.getElementById("spot-slider").value
+    document.getElementById("thresholdValue").innerHTML = spotCount
+    let hitConfigs = eel.ace_identify_helper(
+        plateReadout,
+        elispotConfiguration,
+        parseInt(spotCount)
+    )(renderHitPeptides)
 }
 
-async function renderHitPeptides(hitConfigs){
-
+async function renderHitPeptides(hitConfigs) {
     let [hitPeptides, hitPools] =  loadHitConfig(hitConfigs);
     let hitPeptideIdsSequences = getHitPeptides(hitPools)
     loadHitPeptides(hitPeptideIdsSequences);
     loadWells(1);
     loadHitPools(hitPools);
-
+    updateHitRate(hitPeptideIdsSequences);
 }

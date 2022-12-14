@@ -40,34 +40,48 @@
                             <div class="container-file-select margin-top-small">
                                 <p class="text-bold">Select a file from your computer.</p>
                                 <p class="text-normal margin-top-med">Specify the ACE configuration file.</p>
-                                <button class="btn-select-file text-bold margin-top-med" onclick="getXLS('configs')">Select file
+                                <button class="btn-select-file text-bold margin-top-med" onclick="getXLS('configs')">
+                                    Select file
                                 </button>
                             </div>
+                            <p class="text-no-selected-file">No selected file</p>
                         </div>
-                        <div id="config-file-selected" class="container-file-selected">
-                            <img class="icon-small" src="res/icon_file.svg"/>
-                            <p id="config-file-path" class="text-filepath">No File Selected.</p>
-                            <img class="icon-small" src="res/icon_clear.svg"/>
+                        <div id="config-file-selected" class="container-file-selected" style="display: none;">
+                            <img class="icon-file" src="res/icon_file.svg"/>
+                            <p id="config-file-path" class="text-filepath"></p>
+                            <span class="span-icon">
+                                <img class="icon-clear" src="res/icon_clear.svg"
+                                     onclick="clearConfigurationFilePath()"/>
+                                <img class="icon-clear-active" src="res/icon_clear_hover.svg"
+                                     onclick="clearConfigurationFilePath()"/>
+                            </span>
                         </div>
                     </tr>
                     <tr>
                         <h3 class="text-bold margin-top-large margin-bottom-med">ELIspot Counts File</h3>
                     </tr>
                     <tr>
-                        <div id="count-file-select">
+                        <div id="counts-file-select">
                             <div class="container-file-select margin-top-small">
                                 <p class="text-bold">Select a file from your computer.</p>
-                                <p class="text-normal margin-top-med">Specify the ACE configuration file.</p>
-                                <button class="btn-select-file text-bold margin-top-med" onclick="getXLS('counts')">Select file
+                                <p class="text-normal margin-top-med">Specify the ELIspot counts file.</p>
+                                <button class="btn-select-file text-bold margin-top-med" onclick="getXLS('counts')">
+                                    Select file
                                 </button>
                             </div>
-                        </div>
-                        <div id="count-file-selected" class="container-file-selected">
-                            <img class="icon-small" src="res/icon_file.svg"/>
-                            <p id="counts-file-path" class="text-filepath">No File Selected.</p>
-                            <img class="icon-small" src="res/icon_clear.svg"/>
+                            <p class="text-no-selected-file">No selected file</p>
                         </div>
 
+                        <div id="counts-file-selected" class="container-file-selected" style="display: none;">
+                            <img class="icon-file" src="res/icon_file.svg"/>
+                            <p id="counts-file-path" class="text-filepath"></p>
+                            <span class="span-icon">
+                                <img class="icon-clear" src="res/icon_clear.svg"
+                                     onclick="clearCountsFilePath()"/>
+                                <img class="icon-clear-active" src="res/icon_clear_hover.svg"
+                                     onclick="clearCountsFilePath()"/>
+                            </span>
+                        </div>
                     </tr>
                 </table>
             </div>
@@ -78,7 +92,8 @@
                     </a>
                 </div>
                 <div>
-                    <button class="btn-primary-round-active" style="float: right;" onclick="identifyPositives()">Generate
+                    <button class="btn-primary-round-active" style="float: right;" onclick="identifyPositives()">
+                        Identify
                     </button>
                 </div>
             </div>

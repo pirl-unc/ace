@@ -91,9 +91,6 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
 
     #df_hits = df_hits[df_hits['num_coverage'] == max_coverage]
 
-    if len(df_hits) == 0:
-        logger.warning("No peptide hit was identified.")
-
     return df_hits
 
 

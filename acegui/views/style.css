@@ -101,6 +101,10 @@ p {
     word-wrap: break-word;
 }
 
+.text-hit-peptide-list-item {
+    color: var(--accent2);
+}
+
 .text-peptide-sequence-list-item:hover {
     color: var(--primary4);
     text-decoration: underline;
@@ -632,7 +636,7 @@ input {
 }
 
 .container-child-small {
-    width: 35%;
+    width: 40%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -915,7 +919,7 @@ input:focus {
     margin: 0em;
     line-height: 250%;
     font-size: 0.8em;
-    height: 320px;
+    height: 380px;
 }
 
 .video {
@@ -1120,11 +1124,11 @@ input:focus {
     margin-bottom: auto;
 }
 
-.span-icon:hover img[id="icon-clear-initial"] {
+.span-icon:hover img[class="icon-clear"] {
     display: none;
 }
 
-.span-icon:hover img[id="icon-clear-hover"] {
+.span-icon:hover img[class="icon-clear-active"] {
     display: inline-block;
 }
 
