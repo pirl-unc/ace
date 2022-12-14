@@ -79,7 +79,10 @@ def generate_configuration(num_peptides,
         num_processes=num_cores,
         disallowed_peptide_pairs=disallowed_peps
     )
-    df_configuration = utils.assign_96_well_plate_physical_ids(df_configuration=df_configuration)
+    df_configuration = utils.assign_96_well_plate_physical_ids(
+        df_configuration=df_configuration,
+        peptide_sequences=peptide_sequences
+    )
     return df_configuration.to_dict()
 
 

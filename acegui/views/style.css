@@ -104,6 +104,11 @@ p {
     word-wrap: break-word;
 }
 
+.text-peptide-sequence-list-item:hover {
+    color: var(--primary4);
+    text-decoration: underline;
+}
+
 .btn-accent {
     box-sizing: border-box;
     width: 9em;

@@ -1,11 +1,4 @@
 
-async function getCSV() {
-	var csv = await eel.upload_csv_bttn()();
-        let csvFilePath = String(csv);
-        if (csvFilePath.length > 0) {
-            document.getElementById("peptide-sequence-file-path").innerHTML = csvFilePath;
-        }
-	}
 
 async function getXLS(type) {
 	var xls = await eel.upload_xls_bttn()();

@@ -23,11 +23,6 @@ function renderConfiguration(configuration) {
     window.location.href="configuration.html";
 }
 
-function clearAssayParameters() {
-    document.getElementById("number-of-peptides").innerHTML = ""
-    document.getElementById("number-of-peptides-per-pool").innerHTML = ""
-    document.getElementById("number-of-coverage").innerHTML = ""
-}
 function showSelectedFilePath(csvFilePath) {
     document.getElementById("div-file-select").style.display = "none";
     document.getElementById("div-file-selected").style.display = "flex";
