@@ -25,25 +25,56 @@ from acelib.sequence_features import *
 eel.init('views')
 
 
-def get_tk_root():
+@eel.expose
+def download_xls_bttn():
     root = tkinter.Tk()
     root.withdraw()
     root.wm_attributes('-topmost', 1)
+    file_path = tkinter.filedialog.asksaveasfilename(
+        title="Save ACE Configuration File",
+        defaultextension='.xlsx'
+    )
+    root.update()
+    root.destroy()
+    return file_path
 
 
 @eel.expose
 def upload_csv_bttn():
-    get_tk_root()
-    return tkinter.filedialog.askopenfilename(title="Select Peptide List (*CSV)",
-                                              filetypes=(("CSV Files","*.csv"),))
+    root = tkinter.Tk()
+    root.withdraw()
+    root.wm_attributes('-topmost', 1)
+    file_path = tkinter.filedialog.askopenfilename(
+        title="Select Peptide List (*CSV)",
+        filetypes=(("CSV Files","*.csv"),)
+    )
+    root.update()
+    root.destroy()
+    return file_path
+
 
 @eel.expose
 def upload_xls_bttn():
-    get_tk_root()
-    print(get_tk_root())
-    return tkinter.filedialog.askopenfilename(title="Select Peptide List (*XLS)",
-                                              filetypes=(("Excel Files","*.xlsx"),
-                                                         ("Excel Files","*.xls")))
+    root = tkinter.Tk()
+    root.withdraw()
+    root.wm_attributes('-topmost', 1)
+    file_path = tkinter.filedialog.askopenfilename(
+        title="Select Peptide List (*XLS)",
+        filetypes=(("Excel Files","*.xlsx"),
+                   ("Excel Files","*.xls"))
+    )
+    root.update()
+    root.destroy()
+    return file_path
+
+
+@eel.expose
+def write_elispot_configuration_excel(configuration_dict, file_path):
+    df = pd.DataFrame(configuration_dict)
+    print(df.head(n=1000))
+    df.to_excel(file_path, sheet_name='ACE_config', index=False)
+    return True
+
 
 @eel.expose
 def read_peptide_sequences_csv_file(file_path):
@@ -85,15 +116,17 @@ def generate_configuration(num_peptides,
     )
     return df_configuration.to_dict()
 
+
 def reformat_plate_reader(plate_readout):
     spot_counts = plate_readout.to_numpy().flatten()
     pool_ids = ["pool_" + str(i) for i in np.arange(1, len(spot_counts)+1)]
     d = {'pool_id': pool_ids, 'spot_count': spot_counts}
     return pd.DataFrame(d)
+
+
 @eel.expose
 def identify_positives(plate_readout_path,
                        config_path):
-
     plate_readout = pd.read_excel(
                                 plate_readout_path,
                                 skiprows=2,
@@ -101,13 +134,11 @@ def identify_positives(plate_readout_path,
                                 nrows=8
     )
     config_df = pd.read_excel(config_path)
-
     df_hits = run_ace_identify(
                                 df_readout=reformat_plate_reader(plate_readout),
                                 df_configuration=config_df
     )
     #df_hits = utils.assign_96_well_plate_physical_ids(df_configuration=df_hits)
-
     return df_hits.to_dict()
 
 

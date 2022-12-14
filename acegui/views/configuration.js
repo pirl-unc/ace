@@ -15,6 +15,23 @@ window.onload = function() {
     loadWells(1);
 };
 
+async function exportConfiguration() {
+	var excel = await eel.download_xls_bttn()();
+        let excelFilePath = String(excel);
+        if (excelFilePath.length > 0) {
+            let returnValue = eel.write_elispot_configuration_excel(
+                elispotConfiguration,
+                excelFilePath
+            )(onfinishExport)
+        }
+}
+
+function onfinishExport(returnValue) {
+    if (returnValue) {
+        window.alert("Successfully exported ELIspot configuration file.");
+    }
+}
+
 function onclickPeptideSequenceListItem(peptideId) {
     // Step 1. Unselect previously selected peptide and wells
     if (previouslySelectedPeptideId) {
@@ -41,6 +58,11 @@ function onclickPeptideSequenceListItem(peptideId) {
     // Step 4. Select all corresponding wells
     let plateUniqueIdsArr = Array.from(peptideIdToWellIds[peptideId]);
     selectedWellIds = new Set();
+    var plate1Count = 0;
+    var plate2Count = 0;
+    var plate3Count = 0;
+    var plate4Count = 0;
+    var plate5Count = 0;
     for (let i = 0; i < plateUniqueIdsArr.length; i++) {
         let currPlateNumber = plateUniqueIdsArr[i][0];
         let currPlateWellId = plateUniqueIdsArr[i][1];
@@ -48,7 +70,53 @@ function onclickPeptideSequenceListItem(peptideId) {
             document.getElementById(currPlateWellId).className = "btn-plate-peptide-pool";
             selectedWellIds.add(currPlateWellId);
         }
+        if (currPlateNumber == 1) {
+            plate1Count++;
+        }
+        if (currPlateNumber == 2) {
+            plate2Count++;
+        }
+        if (currPlateNumber == 3) {
+            plate3Count++;
+        }
+        if (currPlateNumber == 4) {
+            plate4Count++;
+        }
+        if (currPlateNumber == 5) {
+            plate5Count++;
+        }
     }
+    if (plate1Count > 0) {
+        document.getElementById("panel-1-pools-count").className = "text-panel-pools-count-enabled";
+        document.getElementById("panel-1-pools-count").innerHTML = plate1Count + " pools";
+    } else {
+        document.getElementById("panel-1-pools-count").className = "text-panel-pools-count-disabled";
+    }
+    if (plate2Count > 0) {
+        document.getElementById("panel-2-pools-count").className = "text-panel-pools-count-enabled";
+        document.getElementById("panel-2-pools-count").innerHTML = plate2Count + " pools";
+    } else {
+        document.getElementById("panel-2-pools-count").className = "text-panel-pools-count-disabled";
+    }
+    if (plate3Count > 0) {
+        document.getElementById("panel-3-pools-count").className = "text-panel-pools-count-enabled";
+        document.getElementById("panel-3-pools-count").innerHTML = plate3Count + " pools";
+    } else {
+        document.getElementById("panel-3-pools-count").className = "text-panel-pools-count-disabled";
+    }
+    if (plate4Count > 0) {
+        document.getElementById("panel-4-pools-count").className = "text-panel-pools-count-enabled";
+        document.getElementById("panel-4-pools-count").innerHTML = plate4Count + " pools";
+    } else {
+      document.getElementById("panel-4-pools-count").className = "text-panel-pools-count-disabled";
+    }
+    if (plate5Count > 0) {
+        document.getElementById("panel-5-pools-count").className = "text-panel-pools-count-enabled";
+        document.getElementById("panel-5-pools-count").innerHTML = plate5Count + " pools";
+    } else {
+      document.getElementById("panel-5-pools-count").className = "text-panel-pools-count-disabled";
+    }
+
 }
 
 function onclickWell(wellId) {
