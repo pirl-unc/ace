@@ -1,4 +1,4 @@
-
+var hitConfigs = ''
 var hitPeptides = '';           //
 var hitPools = '';              //
 var plateReadout = '';
@@ -17,6 +17,9 @@ window.onload = function() {
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
     plateReadout = JSON.parse(localStorage['plate-readout'])
     renderHitPeptides(hitConfigs);
+    for (var i = 0; i < localStorage.length; i++){
+        console.log(localStorage.getItem(localStorage.key(i)));
+    }
 };
 
 function loadHitConfig(hitConfigs) { // Load relevant info from JSON Streamed Pandas DF
