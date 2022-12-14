@@ -18,6 +18,7 @@ This will assist in the calculation of sequence level features to be included in
 
 
 import re
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class Peptide:
