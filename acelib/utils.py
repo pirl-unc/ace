@@ -45,7 +45,7 @@ def get_open_port() -> int:
     return port
 
 
-def assign_96_well_plate_physical_ids(df_configuration):
+def assign_96_well_plate_physical_ids(df_configuration, peptide_sequences):
     """
     Assigns physical plate pool IDs for a given ELIspot configuration
     for the use of 96-well plates.
@@ -53,13 +53,16 @@ def assign_96_well_plate_physical_ids(df_configuration):
     Parameters
     ----------
     df_configuration    :   DataFrame of ELIspot configuration.
-    plate_size          :   Number of pools.
+    peptide_sequences   :   Peptide sequences.
 
     Returns
     -------
     df_configuration    :   DataFrame of ELIspot configuration with the
                             following columns added:
-                            'plate_number', 'plate_well_id'
+                            'sequence'
+                            'plate_number',
+                            'plate_well_id',
+                            'plate_unique_id'
     """
     df_wells = df_configuration.loc[:,['coverage_id', 'pool_id']].drop_duplicates()
     curr_plate_number = 1
@@ -90,16 +93,24 @@ def assign_96_well_plate_physical_ids(df_configuration):
 
     plate_numbers = []
     plate_well_ids = []
+    plate_unique_ids = []
+    peptide_sequence_values = []
     for index, row in df_configuration.iterrows():
         curr_coverage_id = row['coverage_id']
         curr_pool_id = row['pool_id']
+        curr_peptide_id = row['peptide_id']
+        curr_peptide_idx = int(curr_peptide_id.split('_')[1]) - 1
         df_matched = df_wells.loc[
             (df_wells['coverage_id'] == curr_coverage_id) &
             (df_wells['pool_id'] == curr_pool_id),:
         ]
+        peptide_sequence_values.append(peptide_sequences[curr_peptide_idx])
         plate_numbers.append(df_matched['plate_number'].values.tolist()[0])
         plate_well_ids.append(df_matched['plate_well_id'].values.tolist()[0])
+        plate_unique_ids.append('plate' + str(df_matched['plate_number'].values.tolist()[0]) + '_' + df_matched['plate_well_id'].values.tolist()[0])
 
+    df_configuration['sequence'] = peptide_sequence_values
     df_configuration['plate_number'] = plate_numbers
     df_configuration['plate_well_id'] = plate_well_ids
+    df_configuration['plate_unique_id'] = plate_unique_ids
     return df_configuration
