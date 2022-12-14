@@ -15,6 +15,7 @@ import tkinter
 import tkinter.filedialog
 import eel
 import pandas as pd
+import multiprocessing
 from acelib.main import run_ace_generate, run_ace_identify
 from acelib import utils
 from acelib import third_party_api
@@ -25,11 +26,20 @@ from acelib.sequence_features import *
 eel.init('views')
 
 
+# root.withdraw()
+# root.wm_attributes('-topmost', True)
+
+
 @eel.expose
 def download_xls_bttn():
     root = tkinter.Tk()
-    root.withdraw()
-    root.wm_attributes('-topmost', 1)
+    root.wm_withdraw()
+    root.wm_attributes('-topmost', True)
+    child_window = tkinter.Toplevel(root)
+    child_window.title("Export File")
+    child_window.focus()
+    child_window.update()
+    child_window.destroy()
     file_path = tkinter.filedialog.asksaveasfilename(
         title="Save ACE Configuration File",
         defaultextension='.xlsx'
@@ -42,8 +52,13 @@ def download_xls_bttn():
 @eel.expose
 def upload_csv_bttn():
     root = tkinter.Tk()
-    root.withdraw()
-    root.wm_attributes('-topmost', 1)
+    root.wm_withdraw()
+    root.attributes('-topmost', True)
+    child_window = tkinter.Toplevel(root)
+    child_window.title("Select File")
+    child_window.focus()
+    child_window.update()
+    child_window.destroy()
     file_path = tkinter.filedialog.askopenfilename(
         title="Select Peptide List (*CSV)",
         filetypes=(("CSV Files","*.csv"),)
@@ -57,7 +72,12 @@ def upload_csv_bttn():
 def upload_xls_bttn():
     root = tkinter.Tk()
     root.withdraw()
-    root.wm_attributes('-topmost', 1)
+    root.wm_attributes('-topmost', True)
+    child_window = tkinter.Toplevel(root)
+    child_window.title("Export File")
+    child_window.focus()
+    child_window.update()
+    child_window.destroy()
     file_path = tkinter.filedialog.askopenfilename(
         title="Select Peptide List (*XLS)",
         filetypes=(("Excel Files","*.xlsx"),
@@ -70,9 +90,32 @@ def upload_xls_bttn():
 
 @eel.expose
 def write_elispot_configuration_excel(configuration_dict, file_path):
+    # Step 1. ELIspot configuration
     df = pd.DataFrame(configuration_dict)
-    print(df.head(n=1000))
-    df.to_excel(file_path, sheet_name='ACE_config', index=False)
+
+    # Step 2. ELIspot configuration for bench-side
+    data = {
+        'peptide_id': [],
+        'sequence': [],
+        'plate_unique_ids': []
+    }
+    for curr_peptide_id in df['peptide_id'].unique():
+        df_matched = df.loc[df['peptide_id'] == curr_peptide_id,:]
+        curr_sequence = df_matched['sequence'].values.tolist()[0]
+        curr_plate_unique_ids = ','.join(df_matched['plate_unique_id'].unique())
+        data['peptide_id'].append(curr_peptide_id)
+        data['sequence'].append(curr_sequence)
+        data['plate_unique_ids'].append(curr_plate_unique_ids)
+    df_bench_output = pd.DataFrame(data)
+
+    # Step 3. Write to file
+    df_bench_output["order"] = df_bench_output["peptide_id"].str.split("_", 1).str[1].astype(int)
+    df_bench_output = df_bench_output.sort_values(by=['order'], ascending=True)
+    df_bench_output = df_bench_output.loc[:,['peptide_id', 'sequence', 'plate_unique_ids']]
+    with pd.ExcelWriter(file_path) as writer:
+        df.to_excel(writer, sheet_name="ACE_config", index=False)
+        df_bench_output.to_excel(writer, sheet_name="Bench_ready", index=False)
+
     return True
 
 
@@ -123,6 +166,7 @@ def reformat_plate_reader(plate_readout):
     d = {'pool_id': pool_ids, 'spot_count': spot_counts}
     return pd.DataFrame(d)
 
+
 @eel.expose
 def ace_identify_helper(
         dict_readout,
@@ -133,6 +177,7 @@ def ace_identify_helper(
     df_config = pd.DataFrame(dict_config)
     df_hits = run_ace_identify(df_readout, df_config, min_spot_count)
     return df_hits.to_dict()
+
 
 @eel.expose
 def identify_positives(plate_readout_path,
@@ -152,4 +197,6 @@ def identify_positives(plate_readout_path,
     return (df_hits.to_dict(), config_df.to_dict(), reformat_plate_reader(plate_readout).to_dict())
 
 
-eel.start('index.html', size=(1920, 1080), port=utils.get_open_port())
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    eel.start('landing.html', size=(1920, 1080), port=utils.get_open_port())

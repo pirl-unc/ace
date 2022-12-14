@@ -9,6 +9,7 @@ var selectedWellIds = '';
 
 window.onload = function() {
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
+    localStorage.removeItem("elispot-configuration");
     selectedWellIds = new Set();
     loadConfigurationData();
     loadPeptideSequencesList();

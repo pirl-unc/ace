@@ -15,7 +15,7 @@ var selectedWellIds = '';
 window.onload = function() {
     hitConfigs = JSON.parse(localStorage["hit-peptides"]);
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
-    plateReadout = JSON.parse(localStorage['plate-readout'])
+    plateReadout = JSON.parse(localStorage['plate-readout']);
     renderHitPeptides(hitConfigs);
     for (var i = 0; i < localStorage.length; i++){
         console.log(localStorage.getItem(localStorage.key(i)));

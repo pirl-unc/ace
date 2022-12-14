@@ -42,9 +42,6 @@ python setup.py sdist
 
 ## 04. Generating an eel program
 pyinstaller generation
-```
-python -m eel acegui/ace_gui.py views --noconsole --onedir
-
-python -m eel ace_gui.py views --onedir --hidden-import=pytorch --collect-data torch --copy-metadata torch --copy-metadata tqdm --copy-metadata regex --copy-metadata requests --copy-metadata packaging --copy-metadata filelock --copy-metadata numpy --copy-metadata tokenizers
-
+```ls
+python -m eel ace_gui.py views --onedir --noconsole --windowed --clean --hidden-import=pytorch --collect-data torch --copy-metadata torch --copy-metadata tqdm --copy-metadata regex --copy-metadata requests --copy-metadata packaging --copy-metadata filelock --copy-metadata numpy --copy-metadata tokenizers
 ```
