@@ -30,7 +30,8 @@ if __name__ == '__main__':
                   'pandas',
                   'ortools',
                   'torch',
-                  'transformers'
+                  'transformers',
+                  'openpyxl'
             ],
             packages=find_packages(),
             entry_points={
