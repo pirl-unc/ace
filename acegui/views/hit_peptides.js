@@ -1,4 +1,4 @@
-
+var hitConfigs = ''
 var hitPeptides = '';           //
 var hitPools = '';              //
 var plateReadout = '';
@@ -15,7 +15,7 @@ var selectedWellIds = '';
 window.onload = function() {
     hitConfigs = JSON.parse(localStorage["hit-peptides"]);
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
-    plateReadout = JSON.parse(localStorage['plate-readout'])
+    plateReadout = JSON.parse(localStorage['plate-readout']);
     renderHitPeptides(hitConfigs);
 };
 

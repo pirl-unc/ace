@@ -59,7 +59,6 @@ function checkInputValidity() {
     } else {
         isGenerationReady = false;
         document.getElementById("btn-generate").className = "btn-primary-round-inactive";
-        window.alert("This is not a valid set of Conifguration Parameters please clear and try again.")
     }
 }
 
