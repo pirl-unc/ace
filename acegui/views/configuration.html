@@ -33,7 +33,7 @@
                     <h1 class="text-h1-vanilla">ELIspot Configuration</h1>
                 </div>
                 <div style="width: 50%; margin-top: auto; margin-bottom: auto;">
-                    <button class="btn-export align-right">
+                    <button class="btn-export align-right" onclick="exportConfiguration()">
                         <img src="res/icon_export.svg" style="margin-right: 0.2em; vertical-align: middle;"/>
                         <span style="vertical-align: middle">Export</span>
                     </button>
@@ -55,9 +55,9 @@
                         </div>
                     </div>
                     <div class="selected-pool-container margin-top-large">
-                        <h2 class="text-no-margin">Selected Pool: None</h2>
-                        <div class="container-selected-pool-inactive margin-top-small">
-                            <p>Select a pool to display pool features.</p>
+                        <h2 id="selected-pool-id" class="text-no-margin">Selected Pool: None</h2>
+                        <div id="container-selected-pool-features" class="container-selected-pool-inactive margin-top-small">
+                            <p id="selected-pool-features">Select a pool to display pool features.</p>
                         </div>
                     </div>
                 </div>
@@ -65,23 +65,23 @@
                     <div class="plates">
                         <div id="panel-1" class="container-panel-active">
                             <button>Plate 1 (96)</button>
-                            <p id="panel-1-pools-count">3 pools</p>
+                            <p id="panel-1-pools-count" class="text-panel-pools-count-disabled">3 pools</p>
                         </div>
                         <div id="panel-2" class="container-panel-inactive margin-left-med">
-                            <button>Plate 2 (96)</button>
-                            <p id="panel-2-pools-count">3 pools</p>
+                            <button style="">Plate 2 (96)</button>
+                            <p id="panel-2-pools-count" class="text-panel-pools-count-disabled">3 pools</p>
                         </div>
                         <div id="panel-3" class="container-panel-inactive margin-left-med">
                             <button>Plate 3 (96)</button>
-                            <p id="panel-3-pools-count">3 pools</p>
+                            <p id="panel-3-pools-count" class="text-panel-pools-count-disabled">3 pools</p>
                         </div>
                         <div id="panel-4" class="container-panel-inactive margin-left-med">
                             <button>Plate 4 (96)</button>
-                            <p id="panel-4-pools-count">3 pools</p>
+                            <p id="panel-4-pools-count" class="text-panel-pools-count-disabled">3 pools</p>
                         </div>
                         <div id="panel-5" class="container-panel-inactive margin-left-med">
                             <button>Plate 5 (96)</button>
-                            <p id="panel-5-pools-count">3 pools</p>
+                            <p id="panel-5-pools-count" class="text-panel-pools-count-disabled">3 pools</p>
                         </div>
                     </div>
                     <div id="plate" class="container-plate-grid container-dropshadow margin-top-small">
