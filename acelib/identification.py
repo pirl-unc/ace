@@ -93,7 +93,7 @@ def identify_hit_peptides(df_readout: pd.DataFrame,
 
     if len(df_hits) == 0:
         logger.warning("No peptide hit was identified.")
-    print(df_hits)
+
     return df_hits
 
 

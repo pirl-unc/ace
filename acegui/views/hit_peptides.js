@@ -16,10 +16,11 @@ window.onload = function() {
     hitConfigs = JSON.parse(localStorage["hit-peptides"]);
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
     plateReadout = JSON.parse(localStorage['plate-readout']);
+    let [hitPeptides, hitPools] =  loadHitConfig(hitConfigs);
+    loadConfigurationData(hitPools);
+    loadWells(1);
     renderHitPeptides(hitConfigs);
-    for (var i = 0; i < localStorage.length; i++){
-        console.log(localStorage.getItem(localStorage.key(i)));
-    }
+
 };
 
 function loadHitConfig(hitConfigs) { // Load relevant info from JSON Streamed Pandas DF
@@ -112,16 +113,19 @@ function loadConfigurationData(hitPools) {
         peptideIdsSequences.push([currPeptideId, currPeptideSequence, currPeptideIdPretty + ' (' + currPeptideSequence + ')']);
     }
 
+}
+
+function getHitPeptides(hitPools) {
     hitPeptideIdsSequences = [];
     for (const concatIdSeq of peptideIdsSequences){
         if (Object.keys(hitPools).includes(concatIdSeq[0])){
             hitPeptideIdsSequences.push(concatIdSeq);
         }
     }
-
+    return hitPeptideIdsSequences
 }
 
-function loadHitPeptides() {
+function loadHitPeptides(hitPeptideIdsSequences) {
     // Step 1. Clear the existing list
     document.getElementById("hit-peptide-list").innerHTML = "";
     // Step 2. Update the list
@@ -276,13 +280,16 @@ function onclickPeptideSequenceListItem(peptideId) {
 function rerun_from_slider(){
     var spotCount = document.getElementById("spot-slider").value
     document.getElementById("thresholdValue").innerText = spotCount
+    // If there has been some amount of time until
     let hitConfigs = eel.ace_identify_helper(plateReadout, elispotConfiguration, parseInt(spotCount))(renderHitPeptides)
 }
 
-function renderHitPeptides(hitConfigs){
+async function renderHitPeptides(hitConfigs){
+
     let [hitPeptides, hitPools] =  loadHitConfig(hitConfigs);
-    loadConfigurationData(hitPools);
+    let hitPeptideIdsSequences = getHitPeptides(hitPools)
+    loadHitPeptides(hitPeptideIdsSequences);
     loadWells(1);
-    loadHitPeptides();
     loadHitPools(hitPools);
+
 }
