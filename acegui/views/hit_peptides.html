@@ -44,8 +44,8 @@
                     <h2 class="text-no-margin">Spot Count Threshold</h2>
                     <div class="container-dropshadow padding-top-med padding-right-med padding-bottom-med padding-left-med margin-top-small">
                         <div class="container-slider-parent">
-                            <input class="slider-spots-threshold" type="range" min="0" max="1000" value="300"
-                                   oninput="thresholdValue.innerText = this.value">
+                            <input class="slider-spots-threshold" id="spot-slider" type="range" min="0" max="1000" value="300"
+                                   oninput="rerun_from_slider()">
                             <p id="thresholdValue" class="text-spots-threshold">300</p>
                         </div>
                     </div>

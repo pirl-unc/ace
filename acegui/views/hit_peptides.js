@@ -1,6 +1,7 @@
-var hitConfigs = '';            // Input 1
+
 var hitPeptides = '';           //
 var hitPools = '';              //
+var plateReadout = '';
 var elispotConfiguration = '';  // Input 2
 var peptideIdToWellIds = '';    // key = peptide ID, value = set of [plate number, plate well ID]
 var wellIdToPeptideIds = '';    // key = [plate number, plate well ID], value = set of peptide IDs
@@ -14,14 +15,11 @@ var selectedWellIds = '';
 window.onload = function() {
     hitConfigs = JSON.parse(localStorage["hit-peptides"]);
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
-    console.log(hitPools);
-    loadHitConfig();
-    loadConfigurationData();
-    loadWells(1);
-    loadHitPeptides();
-    loadHitPools();
+    plateReadout = JSON.parse(localStorage['plate-readout'])
+    renderHitPeptides(hitConfigs);
 };
-function loadHitConfig() { // Load relevant info from JSON Streamed Pandas DF
+
+function loadHitConfig(hitConfigs) { // Load relevant info from JSON Streamed Pandas DF
 
     // Get peptides
     hitPeptides = Object.create(null); //Working List of Hit Peptides
@@ -38,9 +36,10 @@ function loadHitConfig() { // Load relevant info from JSON Streamed Pandas DF
             hitPools[hitPeptides[poolIdIdx]].add(poolId)
         }
     }
+    return [hitPeptides, hitPools]
 }
 
-function loadConfigurationData() {
+function loadConfigurationData(hitPools) {
     // Step 1. Load peptideIdToWellIds
     // Initialize peptideIdToWellIds keys
     peptideIdToWellIds = Object.create(null);
@@ -155,14 +154,11 @@ function get_well(pool_id){
             row = row + 1;
         }
     }
-    console.log(row)
-    console.log(col)
     return alphabetUp[row-1] + col.toString()
 }
 
 function loadHitPools() {
     // Change the class of all wells in use
-    console.log(hitPools)
     let result_pools = new Set;
     for (const set of Object.values(hitPools))
         for (const element of set)
@@ -272,4 +268,18 @@ function onclickPeptideSequenceListItem(peptideId) {
       document.getElementById("panel-5-pools-count").className = "text-panel-pools-count-disabled";
     }
 
+}
+
+function rerun_from_slider(){
+    var spotCount = document.getElementById("spot-slider").value
+    document.getElementById("thresholdValue").innerText = spotCount
+    let hitConfigs = eel.ace_identify_helper(plateReadout, elispotConfiguration, parseInt(spotCount))(renderHitPeptides)
+}
+
+function renderHitPeptides(hitConfigs){
+    let [hitPeptides, hitPools] =  loadHitConfig(hitConfigs);
+    loadConfigurationData(hitPools);
+    loadWells(1);
+    loadHitPeptides();
+    loadHitPools(hitPools);
 }

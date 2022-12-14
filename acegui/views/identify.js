@@ -11,5 +11,6 @@ function renderHitPeptides(joined_output) {
 
     localStorage["hit-peptides"] = JSON.stringify(joined_output[0]);
     localStorage["elispot-configuration"] = JSON.stringify(joined_output[1]);
+    localStorage["plate-readout"] = JSON.stringify(joined_output[2]);
     window.location.href="hit_peptides.html";
 }

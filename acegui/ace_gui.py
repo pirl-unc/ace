@@ -123,6 +123,16 @@ def reformat_plate_reader(plate_readout):
     d = {'pool_id': pool_ids, 'spot_count': spot_counts}
     return pd.DataFrame(d)
 
+@eel.expose
+def ace_identify_helper(
+        dict_readout,
+        dict_config,
+        min_spot_count
+    ):
+    df_readout = pd.DataFrame(dict_readout)
+    df_config = pd.DataFrame(dict_config)
+    df_hits = run_ace_identify(df_readout, df_config, min_spot_count)
+    return df_hits.to_dict()
 
 @eel.expose
 def identify_positives(plate_readout_path,
