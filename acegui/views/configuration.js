@@ -3,32 +3,87 @@ var peptideIdToWellIds = '';    // key = peptide ID, value = set of [plate numbe
 var wellIdToPeptideIds = '';    // key = [plate number, plate well ID], value = set of peptide IDs
 var peptideIdsSequences = '';   // array of [peptide ID, sequence, peptide ID formatted pretty]
 var selectedPlateNumber = 1;
+var previouslySelectedPeptideId = '';
+var previouslySelectedWellId = '';
+var selectedWellIds = '';
 
 window.onload = function() {
     elispotConfiguration = JSON.parse(localStorage["elispot-configuration"]);
-    console.log(elispotConfiguration);
+    selectedWellIds = new Set();
     loadConfigurationData();
     loadPeptideSequencesList();
     loadWells(1);
 };
 
 function onclickPeptideSequenceListItem(peptideId) {
-    // Step 1. Update the class of current peptide id
+    // Step 1. Unselect previously selected peptide and wells
+    if (previouslySelectedPeptideId) {
+        // Unselect peptide
+        document.getElementById(previouslySelectedPeptideId).className = "text-peptide-sequence-list-item";
+
+        // Unselect wells
+        let wellIdsArr = Array.from(peptideIdToWellIds[previouslySelectedPeptideId]);
+        for (let i = 0; i < wellIdsArr.length; i++) {
+            let currPlateNumber = wellIdsArr[i][0];
+            let currPlateWellId = wellIdsArr[i][1];
+            if (currPlateNumber == selectedPlateNumber) {
+                document.getElementById(currPlateWellId).className = "btn-plate-assigned";
+            }
+        }
+    }
+
+    // Step 2. Update previously selected peptide id
+    previouslySelectedPeptideId = peptideId;
+
+    // Step 3. Update the class of current peptide id
     document.getElementById(peptideId).className = "text-peptide-sequence-list-item-selected";
 
-    // Step 2. Select all corresponding wells
+    // Step 4. Select all corresponding wells
     let plateUniqueIdsArr = Array.from(peptideIdToWellIds[peptideId]);
+    selectedWellIds = new Set();
     for (let i = 0; i < plateUniqueIdsArr.length; i++) {
         let currPlateNumber = plateUniqueIdsArr[i][0];
         let currPlateWellId = plateUniqueIdsArr[i][1];
         if (currPlateNumber == selectedPlateNumber) {
             document.getElementById(currPlateWellId).className = "btn-plate-peptide-pool";
+            selectedWellIds.add(currPlateWellId);
         }
     }
 }
 
 function onclickWell(wellId) {
-    console.log(wellId);
+    // Step 1. Unselect previously selected well
+    if (previouslySelectedWellId) {
+        if (selectedWellIds.has(previouslySelectedWellId)) {
+            document.getElementById(previouslySelectedWellId).className = "btn-plate-peptide-pool";
+        } else {
+            document.getElementById(previouslySelectedWellId).className = "btn-plate-assigned";
+        }
+    }
+
+    // Step 2. Update previously selected well id
+    previouslySelectedWellId = wellId;
+
+    // Step 3. Select well
+    if (selectedWellIds.has(wellId)) {
+        document.getElementById(wellId).className = "btn-plate-selected-peptide-pool";
+    } else {
+        document.getElementById(wellId).className = "btn-plate-selected-pool";
+    }
+
+    // Step 4. Update selected pool features
+    document.getElementById("container-selected-pool-features").className = "container-selected-pool-active";
+    var htmlValue = "Peptides in this pool:";
+    let peptideIds = Array.from(wellIdToPeptideIds[selectedPlateNumber + "," + wellId]);
+    for (let i = 0; i < peptideIdsSequences.length; i++) {
+        if (peptideIds.includes(peptideIdsSequences[i][0])) {
+            htmlValue = htmlValue + "<br/>" + peptideIdsSequences[i][2];
+        }
+    }
+    document.getElementById("selected-pool-features").innerHTML = htmlValue;
+
+    // Step 5. Update selected pool id
+    document.getElementById("selected-pool-id").innerHTML = "Selected Pool: " + wellId;
 }
 
 function loadConfigurationData() {
