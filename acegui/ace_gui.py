@@ -139,7 +139,7 @@ def identify_positives(plate_readout_path,
                                 df_configuration=config_df
     )
 
-    return (df_hits.to_dict(), config_df.to_dict())
+    return (df_hits.to_dict(), config_df.to_dict(), reformat_plate_reader(plate_readout).to_dict())
 
 
 eel.start('index.html', size=(1920, 1080), port=utils.get_open_port())
