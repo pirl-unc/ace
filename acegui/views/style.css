@@ -125,7 +125,8 @@ p {
 .btn-accent {
     box-sizing: border-box;
     width: 9em;
-    background-color: var(--accent2);
+    /* background-color: var(--accent2); */
+    background-color: black;
     color: white;
     padding-top: var(--space_med);
     padding-bottom: var(--space_med);
@@ -145,7 +146,8 @@ p {
 }
 
 .btn-accent:hover {
-    background-color: var(--accent1);
+    /* background-color: var(--accent1); */
+    background-color: #323233;
     transition: 0.4s;
 }
 
