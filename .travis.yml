@@ -26,14 +26,14 @@ install:
   - conda config --add channels bioconda
   - conda config --add channels conda-forge
   - conda install -c conda-forge mamba
-  - mamba install pandas=1.5.0
+  - mamba install pandas=1.5.2
   - mamba install numpy=1.23.1
   - mamba install pylint
   - mamba install coveralls
   - mamba install pytest
   - mamba install pytest-cov
   - python -m pip install --upgrade --user ortools
-  - conda install -c anaconda openpyxl
+  - mamba install openpyxl
   - conda install pytorch torchvision -c pytorch
   - conda install -c conda-forge transformers
   - pip install . --verbose

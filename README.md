@@ -2,37 +2,26 @@
 
 ## 01. Installation
 ```
-python setup.py install
+pip install . --verbose
 ```
 
 ## 02. Usage
 ### 02-1. Generate an ELIspot configuration.
 ```
-ace [-h] 
-    --num_peptides NUM_PEPTIDES 
-    --num_peptides_per_pool NUM_PEPTIDES_PER_POOL 
-    --num_coverage NUM_COVERAGE 
-    --num_threads NUM_THREADS 
-    --output_tsv_file OUTPUT_TSV_FILE
-    [--output_pdf_file OUTPUT_PDF_FILE]
+usage: ace [-h] [--version] {generate,identify,verify} ...
 
-Generates an ELIspot configuration.
+ACE: Assay Configurator for ELIspot.
 
-required arguments:
-  --num_peptides NUM_PEPTIDES
-                        Total number of peptides.
-  --num_peptides_per_pool NUM_PEPTIDES_PER_POOL
-                        Number of peptides per pool. Please make sure this integer is a factor of the total number of peptides.
-  --num_coverage NUM_COVERAGE
-                        Total coverage (i.e. number of peptide replicates).
-  --num_threads NUM_THREADS
-                        Number of threads to parallelize the computation (default: 2). Recommended: 8.
-  --output_tsv_file OUTPUT_TSV_FILE
-                        Output TSV file.
+positional arguments:
+  {generate,identify,verify}
+                        ACE sub-commands.
+    generate            Generates an ELIspot experiment configuration.
+    identify            Identify hit peptide IDs given read-outs from an ELIspot experiment.
+    verify              Verifies whether an ELIspot configuration satisfies all ACE constraints.
 
 optional arguments:
-  --output_pdf_file OUTPUT_PDF_FILE
-                        Output PDF file.
+  -h, --help            show this help message and exit
+  --version, -v         show program's version number and exit
 ```
 
 ## 03. Generating a tar.gz release file

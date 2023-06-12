@@ -2,7 +2,7 @@
 dist/
 build/
 __pycache__/
-ace.egg-info/
+src/ace.egg-info/
 *.pyc
 .coverage*
 *.DS_Store
