@@ -1,0 +1,27 @@
+project:
+  type: website
+
+website:
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - section: "Basics"
+        contents:
+          - index.qmd
+      - section: "Commands"
+        contents:
+          - generate.qmd
+          - identify.qmd
+          - verify.qmd
+      - section: "API"
+        contents:
+          - python_api.qmd
+      - section: "Support"
+        contents:
+          - faq.qmd
+
+format:
+  html:
+    theme: materia
+    css: style.css

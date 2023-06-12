@@ -1,1 +1,1 @@
-nosetests test --with-coverage --cover-package=acelib
+pytest --cov-report=term-missing --cov=acelib test/
