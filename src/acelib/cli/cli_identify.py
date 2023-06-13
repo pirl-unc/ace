@@ -21,7 +21,7 @@ from __future__ import print_function, division, absolute_import
 
 
 import pandas as pd
-from ..aid_plate_reader import AidPlateReader
+from ..aid_plate_reader import AIDPlateReader
 from ..constants import ReadOutFileTypes
 from ..default_parameters import *
 from ..logger import get_logger
@@ -120,7 +120,7 @@ def run_ace_identify_from_parsed_args(args):
         df_hits_all = pd.DataFrame()
         plate_id = 1
         for file in args.readout_files:
-            df_hits = AidPlateReader.load_readout_file(excel_file=file, plate_id=plate_id)
+            df_hits = AIDPlateReader.load_readout_file(excel_file=file, plate_id=plate_id)
             df_hits_all = pd.concat([df_hits_all, df_hits])
             plate_id += 1
         df_readout = pd.merge(df_configuration, df_hits_all, on=['plate_id', 'well_id'])

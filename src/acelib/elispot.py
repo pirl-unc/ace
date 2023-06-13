@@ -190,7 +190,7 @@ class ELIspot:
 
     @staticmethod
     def assign_well_ids(
-            df_configuration,
+            df_configuration: pd.DataFrame,
             plate_type: str
     ) -> pd.DataFrame:
         """
@@ -248,7 +248,6 @@ class ELIspot:
         hit_pool_ids            :   Hit pool IDs.
         df_configuration        :   DataFrame of ELIspot configuration.
                                     Expected columns:
-                                    'coverage_id'
                                     'pool_id'
                                     'peptide_id'
 

@@ -1,0 +1,106 @@
+---
+title: "Python API"
+---
+
+Here is a list of `ACE` classes and methods:
+
+| Class                                   | Description                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| [AIDPlateReader](#aidplatereader)       | AID plate reader.                                                               |
+| [ELIspot](#elispot)                     | An ELIspot.                                                                     |
+
+<br/>
+
+## AIDPlateReader
+
+### load_readout_file
+
+Loads an AID plate reader readout file.
+
+```python
+@staticmethod
+load_readout_file(excel_file: str, plate_id: int) -> pd.DataFrame
+```
+
+| Input                          | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `excel_file`                   | AID plate reader results Excel file.                                                     |
+| `plate_id`                     | Plate ID (e.g. 1).                                                                       |
+
+| Output                         | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_counts`                    | DataFrame with the following columns: 'plate_id', 'well_id', 'spot_count'.               |
+
+<br/>
+
+## ELIspot
+
+### assign_well_ids
+
+Assign well IDs to an ELIspot experiment configuration.
+
+```python
+@staticmethod
+assign_well_ids(df_configuration: pd.DataFrame, plate_type: str) -> pd.DataFrame
+```
+
+| Input                          | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+| `plate_type`                   | Plate type (allowed values: '96-well_plate').                                            |
+
+| Output                         | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id', 'plate_id', 'well_id'.    |
+
+### generate_configuration
+
+Generate an ELIspot experiment configuration.
+
+```python
+generate_configuration(self, disallowed_peptide_pairs: List[Tuple[str,str]]) -> pd.DataFrame
+```
+
+| Input                          | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `disallowed_peptide_pairs`     | List of tuples (peptide ID, peptide ID).                                                 |
+
+| Output                         | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+
+### identify_hit_peptides
+
+Identify hit peptides.
+
+```python
+@staticmethod
+identify_hit_peptides(hit_pool_ids: List[str], df_configuration: pd.DataFrame) -> pd.DataFrame:
+```
+
+| Input                          | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `hit_pool_ids`                 | List of hit pool IDs.                                                                    |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+
+| Output                         | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_hits`                      | DataFrame with the following columns: 'peptide_id', 'pool_ids', 'num_coverage'           |
+
+### verify_configuration
+
+Verify an ELIspot configuration.
+
+```python
+@staticmethod
+verify_configuration(df_configuration: pd.DataFrame, num_coverage: int) -> bool:
+```
+
+| Input                          | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+| `num_coverage`                 | Coverage.                                                                                |
+
+| Output                         | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `is_valid`                     | True if the ELIspot configuration meets the following criteria:<br/>(1) Each peptide is in 'num_coverage' number of different pools.<br/>(2) Each peptide is in exactly one unique combination of pool IDs.<br/>False otherwise. |

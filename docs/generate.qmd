@@ -1,0 +1,31 @@
+---
+title: "generate"
+---
+
+This command generates an ELIspot experiment configuration.
+
+```bash
+uage: ace generate [-h] 
+    --num-peptides NUM_PEPTIDES 
+    --num-peptides-per-pool NUM_PEPTIDES_PER_POOL 
+    --num-coverage NUM_COVERAGE 
+    --num-processes NUM_PROCESSES
+    --output-csv-file OUTPUT_CSV_FILE 
+    [--peptides-csv-file PEPTIDES_CSV_FILE] 
+    [--assign-well-ids ASSIGN_WELL_IDS] 
+    [--plate-type PLATE_TYPE]
+```
+
+| Required Parameter         | Description                                                            |
+| -------------------------- | ---------------------------------------------------------------------- |
+| `--num-peptides`           | Total number of peptides.                                              |
+| `--num-peptides-per-pool`  | Number of peptides per pool                                            |
+| `--num-coverage`           | Coverage (i.e. number of peptide replicates; recommended: 3).          |
+| `--num-processes`          | Number of processes (default: 4)                                       |
+| `--output-csv-file`        | Output CSV file.                                                       |
+
+| Optional Parameter         | Description                                                            |
+| -------------------------- | ---------------------------------------------------------------------- |
+| `--peptides-csv-file`      | CSV file with the following columns: 'peptide_id', 'peptide_sequence'. If you specify a file, then the value supplied for `--num-peptides` will be ignored (but must still be supplied). |
+| `--assign-well-ids`        | If true, assigns plate and well IDs for each pool ID (default: true).  |
+| `--plate-type`             | Plate type. Allowed values: 96-well plate (default: 96-well_plate).    |

@@ -1,0 +1,18 @@
+---
+title: "FAQ"
+---
+
+1. **What is the maximum number of peptides that you can supply for ACE?** <br/>
+We have locally tested up to 800 peptides (5 peptides per pool with 3x coverage). It takes about # hours with # cores.
+
+2. **What is the maximum number of peptides per pool that you can supply for ACE?** <br/>
+Please limit the number of peptides per pool to 10.
+
+3. **I heard that there is a version of ACE that has a graphical user interface (GUI). Where can I find it?** <br/>
+Yes, ACE is available with a GUI. Here is the link to the GUI software: [link](https://github.com/pirl-unc/ace-gui).
+
+4. **How can I cite ACE?** <br/>
+Please refer to [here](index.qmd#citation) for the citation information.
+
+5. **Why is your software called ACE?** <br/>
+One scorching day in summer in Chapel Hill, NC, the two co-first authors of ACE started learning golf together. Soon after, they stumbled upon the [Social Golfer Problem](https://www.csplib.org/Problems/prob010/), which happened to be the perfect problem statement of the high-throughput ELIspot configuration problem that their lab was trying to optimize that same summer. Had it not been for their keen interest in golf, they would not have made the connection between the social golfer problem and the ELIspot configuration problem. In golf, the term 'ace' is synonymous with 'hole-in-one', which aligns with the purpose of ACE to identify positive hit peptides in a single ELIspot assay run.

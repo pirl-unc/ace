@@ -25,10 +25,10 @@ logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
-class AidPlateReader:
+class AIDPlateReader:
 
     @staticmethod
-    def load_readout_file(excel_file, plate_id) -> pd.DataFrame:
+    def load_readout_file(excel_file: str, plate_id: int) -> pd.DataFrame:
         """
         Loads an AID plate reader Excel file.
 

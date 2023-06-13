@@ -1,0 +1,16 @@
+---
+title: "verify"
+---
+
+This command identifies positive hit peptides from an ELIspot experiment.
+
+```bash
+usage: ace verify [-h] 
+    --configuration-csv-file CONFIGURATION_CSV_FILE 
+    --num-coverage NUM_COVERAGE
+```
+
+| Required Parameter          | Description                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `--configuration-csv-file`  | ELIspot configuration CSV file. Expected columns: 'coverage_id', 'pool_id', 'peptide_id'. |
+| `--num-coverage`            | Total coverage (i.e. number of peptide replicates).                                       |

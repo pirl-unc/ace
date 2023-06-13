@@ -51,7 +51,7 @@ ROSTLAB_PROT_BERT = "Rostlab/prot_bert"
 
 
 class PlateTypes:
-    PLATE_96_WELLS = '96-well plate'
+    PLATE_96_WELLS = '96-well_plate'
     ALL = [
         PLATE_96_WELLS
     ]

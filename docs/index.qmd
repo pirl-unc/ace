@@ -8,15 +8,17 @@ title: "Getting Started"
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.0.7.0`
+**Latest Stable Version**: `0.0.6.0`
 
-**Updated date**: June 9, 2023
+**Updated date**: June 12, 2023
 
 `ACE` is a python library and command-line software for: 
 
 1. Generating an optimized configuration for ELIspot assays.
 2. Identifying (deconvoluting) hit wells (pools) from ELIspot assays.
 3. Verifying whether a given ELIspot configuration is conducive to identification of unique peptide hits.
+
+If you wish to use the **Graphical User Interface (GUI)** version of ACE, please visit [here](https://github.com/pirl-unc/ace-gui).
 
 ## **Installation**
 
@@ -27,13 +29,27 @@ conda install ace
 ## **Command Line Interface**
 
 ```markdown
+usage: ace [-h] [--version] {generate,identify,verify} ...
 
+ACE: Assay Configurator for ELIspot.
+
+positional arguments:
+  {generate,identify,verify}
+                        ACE sub-commands.
+    generate            Generates an ELIspot experiment configuration.
+    identify            Identify hit peptide IDs given read-outs from an ELIspot experiment.
+    verify              Verifies whether an ELIspot configuration satisfies all ACE constraints.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version, -v         show program's version number and exit
 ```
 
 **ACE includes the following commands:** 
 
 * [generate](generate.qmd) (generate an ELIspot assay configuration)
 * [identify](identify.qmd) (identify hit peptides from ELIspot assay results)
+* [verify](verify.qmd) (verify an ELIspot experiment configuration)
 
 ## **Citation**
 
