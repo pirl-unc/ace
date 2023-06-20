@@ -126,8 +126,8 @@ def run_ace_identify_from_parsed_args(args):
         df_readout = pd.merge(df_configuration, df_hits_all, on=['plate_id', 'well_id'])
         hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= args.min_positive_spot_count, 'pool_id'].unique())
 
-    df_hits = run_ace_identify(
+    df_hits_max = run_ace_identify(
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )
-    df_hits.to_csv(args.output_csv_file, index=False)
+    df_hits_max.to_csv(args.output_csv_file, index=False)

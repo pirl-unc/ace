@@ -1,4 +1,5 @@
 import pandas as pd
+from .data import get_data_path
 from acelib.main import run_ace_generate
 
 
@@ -28,3 +29,6 @@ def test_generate_disallowed_peptide_pairs():
         num_processes=1,
         dissimilarity_inference_func=func
     )
+
+def test_generate_recycle_configuration():
+    df_template_configuration = get_data_path(name='100peptides_5perpool_3x.csv')

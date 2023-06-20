@@ -48,7 +48,7 @@ def run_ace_generate(
                                         The function outputs a list of tuples (peptide ID 1, peptide ID 2)
                                         in the descending order of similarity.
                                         If CP-SAT solver cannot find an optimal solution, the experiment
-                                        generation will forgo the last element in the sorted list as a constraint.
+                                        generation will iteratively forgo the last element in the sorted list as a constraint.
     assign_well_ids                 :   If true, assigns plate and well IDs to each pool ID.
     plate_type                      :   Plate type (allowed values: '96-well plate').
 
@@ -89,11 +89,12 @@ def run_ace_generate(
             break
 
     # Step 4. Assign plate and well IDs
-    if assign_well_ids:
-        df_configuration = ELIspot.assign_well_ids(
-            df_configuration=df_configuration,
-            plate_type=plate_type
-        )
+    if status == cp_model.OPTIMAL:
+        if assign_well_ids:
+            df_configuration = ELIspot.assign_well_ids(
+                df_configuration=df_configuration,
+                plate_type=plate_type
+            )
     return status, df_configuration
 
 
@@ -106,23 +107,92 @@ def run_ace_identify(
 
     Parameters
     ----------
-    hit_pool_ids        :   Hit pool IDs.
-    df_configuration    :   DataFrame with the following columns:
-                            'pool_id'
-                            'peptide_id'
+    hit_pool_ids                    :   Hit pool IDs.
+    df_configuration                :   DataFrame with the following columns:
+                                        'pool_id'
+                                        'peptide_id'
 
     Returns
     -------
-    df_hit_peptides     :   DataFrame with the following columns:
-                            'peptide_id'
-                            'pool_ids'
-                            'num_coverage'
+    df_hits_max                     :   DataFrame with the following columns:
+                                        'peptide_id'
+                                        'pool_ids'
+                                        'num_coverage'
+                                        'deconvolution_result'
     """
-    df_hit = ELIspot.identify_hit_peptides(
+    return ELIspot.identify_hit_peptides(
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )
-    return df_hit
+
+
+def run_ace_generate_with_precomputed_configuration(
+        df_peptides: pd.DataFrame,
+        df_template_configuration: pd.DataFrame,
+        num_peptides_per_pool: int,
+        num_coverage: int,
+        dissimilarity_inference_func: Callable[[pd.DataFrame], List[Tuple[str,str]]] = None,
+        assign_well_ids: bool = True,
+        plate_type: str = PlateTypes.PLATE_96_WELLS
+) -> Tuple[int, pd.DataFrame]:
+    """
+    Generate an ELIspot configuration by recycling a pre-computed configuration.
+
+    Parameters
+    ----------
+    df_peptides                     :   DataFrame with the following columns:
+                                        'peptide_id'
+                                        'peptide_sequence'
+    df_template_configuration       :   DataFrame with the following columns:
+                                        'coverage_id'
+                                        'pool_id'
+                                        'peptide_id'
+    num_peptides_per_pool           :   Number of peptides per pool.
+    num_coverage                    :   Number of coverage (i.e. number of peptide replicates).
+    dissimilarity_inference_func    :   Custom function to predicting dissimilarity between two peptides.
+                                        The function takes as input a pandas DataFrame with the following columns:
+                                        'peptide_id', 'peptide_'sequence'.
+                                        The function outputs a list of tuples (peptide ID 1, peptide ID 2)
+                                        in the descending order of similarity.
+                                        If CP-SAT solver cannot find an optimal solution, the experiment
+                                        generation will iteratively forgo the last element in the sorted list as a constraint.
+    assign_well_ids                 :   If true, assigns plate and well IDs to each pool ID.
+    plate_type                      :   Plate type (allowed values: '96-well plate').
+
+    Returns
+    -------
+    status
+    df_configuration        :   pd.DataFrame with the following columns:
+                                'pool_id',
+                                'peptide_id'
+    """
+    # Step 1. Create an ELIspot configuration
+    elispot = ELIspot(
+        num_peptides_per_pool=num_peptides_per_pool,
+        num_coverage=num_coverage,
+        num_processes=1,
+        peptide_ids=list(df_peptides['peptide_id'].unique())
+    )
+
+    # Step 2. Identify disallowed peptide pairs
+    if dissimilarity_inference_func is not None:
+        disallowed_peptide_pairs = dissimilarity_inference_func(df_peptides)
+    else:
+        disallowed_peptide_pairs = []
+
+    # Step 3. Generate an ELIspot experiment configuration
+    df_configuration = elispot.recycle_configuration(
+        df_template_configuration=df_template_configuration,
+        disallowed_peptide_pairs=disallowed_peptide_pairs
+    )
+
+    # Step 4. Assign plate and well IDs
+    if assign_well_ids:
+        df_configuration = ELIspot.assign_well_ids(
+            df_configuration=df_configuration,
+            plate_type=plate_type
+        )
+    return df_configuration
 
 
 def run_ace_verify(

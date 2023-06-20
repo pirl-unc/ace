@@ -2,7 +2,13 @@
 title: "verify"
 ---
 
-This command identifies positive hit peptides from an ELIspot experiment.
+This command checks whether a given ELIspot configuration meets all of the following criteria:
+
+1. Each peptide is represented in `--num-coverage` number of different pools.
+2. Each peptide belongs to exactly one unique combination of pool IDs.
+
+If an ELIspot configuration meets the above criteria, then we know exactly which peptide is a positive hit peptide when 
+`--num-coverage` number of pools have positive spot counts.
 
 ```bash
 usage: ace verify [-h] 

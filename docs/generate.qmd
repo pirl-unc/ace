@@ -29,3 +29,16 @@ uage: ace generate [-h]
 | `--peptides-csv-file`      | CSV file with the following columns: 'peptide_id', 'peptide_sequence'. If you specify a file, then the value supplied for `--num-peptides` will be ignored (but must still be supplied). |
 | `--assign-well-ids`        | If true, assigns plate and well IDs for each pool ID (default: true).  |
 | `--plate-type`             | Plate type. Allowed values: 96-well plate (default: 96-well_plate).    |
+
+## Notes on Input Parameters
+
+Owing to the inherent computational complexity of searching for a configuration that guarantees a unique combination of pool IDs for each peptide, 
+there is a practical upper limit to some of the input parameters based on internal testing. These are `--num-peptides-per-pool` and `--num-coverage`: 
+
+![](resources/ace_parameter_limits.png)
+
+## Notes on Configuration Generation Heuristic
+
+When `--num-peptides` or the number of unique peptides in `--peptides-csv-file` exceeds 100, `ACE` has a built-in heuristic to linearly scale the 
+computation time of configuration generation to the number of peptides. In essence, `ACE` recycles a pre-computed configuration for a smaller number of peptides but 
+for the same `--num-peptides-per-pool` and `--num-coverage` to generate a configuration for the desired input parameters. 

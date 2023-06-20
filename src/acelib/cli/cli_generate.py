@@ -18,10 +18,11 @@ and run ACE 'generate' command.
 
 
 import pandas as pd
-from ..constants import PlateTypes
+from ortools.sat.python import cp_model
+from ..constants import GenerateModes, PlateTypes
 from ..default_parameters import *
 from ..logger import get_logger
-from ..main import run_ace_generate
+from ..main import run_ace_generate, run_ace_generate_with_precomputed_configuration
 
 
 logger = get_logger(__name__)
@@ -59,14 +60,16 @@ def add_ace_generate_arg_parser(sub_parsers):
         dest="num_peptides_per_pool",
         type=int,
         required=True,
-        help="Number of peptides per pool (i.e. well)."
+        choices=range(2, 11),
+        help="Number of peptides per pool (i.e. well). Minimum: 2. Maximum: 10."
     )
     parser_required.add_argument(
         "--num-coverage",
         dest="num_coverage",
         type=int,
         required=True,
-        help="Total coverage (i.e. number of peptide replicates)."
+        choices=range(2, 6),
+        help="Total coverage (i.e. number of peptide replicates). Minimum: 2. Maximum: 5."
     )
     parser_required.add_argument(
         "--num-processes",
@@ -144,6 +147,9 @@ def run_ace_generate_from_parsed_args(args):
             data['peptide_sequence'].append('')
         df_peptides = pd.DataFrame(data)
 
+    if args.num_peptides_per_pool > 10:
+        logger.info('ACE only supports up to 10 peptides per pool.')
+
     status, df_configuration = run_ace_generate(
         df_peptides=df_peptides,
         num_peptides_per_pool=args.num_peptides_per_pool,
@@ -153,4 +159,32 @@ def run_ace_generate_from_parsed_args(args):
         plate_type=args.plate_type
     )
 
-    df_configuration.to_csv(args.output_csv_file, index=False)
+    # if len(list(df_peptides['peptide_id'].unique())) > 100:
+    #     # Pick a pre-computed configuration
+    #     filename = 'ace_100peptides_%iperpool_%ix.tsv' % (args.num_peptides_per_pool, args.num_coverage)
+    #     df_template_configuration = pd.read_csv(filename)
+    #
+    #     df_configuration = run_ace_generate_with_precomputed_configuration(
+    #         df_peptides=df_peptides,
+    #         df_template_configuration=df_template_configuration,
+    #         num_peptides_per_pool=args.num_peptides_per_pool,
+    #         num_coverage=args.num_coverage,
+    #         dissimilarity_inference_func=
+    #
+    #             dissimilarity_inference_func: Callable[[pd.DataFrame], List[Tuple[str, str]]] = None,
+    #             assign_well_ids: bool = True,
+    #             plate_type: str = PlateTypes.PLATE_96_WELLS
+    #     ) -> Tuple[int, pd.DataFrame]:
+    #
+    # else:
+    #     status, df_configuration = run_ace_generate(
+    #         df_peptides=df_peptides,
+    #         num_peptides_per_pool=args.num_peptides_per_pool,
+    #         num_coverage=args.num_coverage,
+    #         num_processes=args.num_processes,
+    #         assign_well_ids=args.assign_well_ids,
+    #         plate_type=args.plate_type
+    #     )
+
+    if status == cp_model.OPTIMAL:
+        df_configuration.to_csv(args.output_csv_file, index=False)

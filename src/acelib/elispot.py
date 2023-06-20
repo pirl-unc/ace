@@ -17,14 +17,15 @@ The purpose of this python3 script is to implement the ELIspot dataclass.
 
 
 import itertools
+import math
 import pandas as pd
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
-from itertools import combinations
+from itertools import combinations, product
 from ortools.sat.python import cp_model
 from typing import List, Tuple
-from .constants import PlateTypes
+from .constants import DeconvolutionResults, PlateTypes
 from .logger import get_logger
 
 
@@ -158,35 +159,141 @@ class ELIspot:
 
         if status == cp_model.OPTIMAL:
             logger.info('Solution is optimal.')
+
+            # Step 7. Parse solution
+            solutions_data = {
+                'coverage_id': [],
+                'pool_id': [],
+                'peptide_id': []
+            }
+            for curr_bool_variable in df['bool_variable'].values.tolist():
+                if solver.Value(curr_bool_variable) == 1:
+                    curr_bool_variable_elements = str(curr_bool_variable).split("/")
+                    curr_coverage_id = curr_bool_variable_elements[0]
+                    curr_pool_id = curr_bool_variable_elements[1]
+                    curr_peptide_id = curr_bool_variable_elements[2]
+
+                    # Fix pool ID
+                    if curr_coverage_id != "coverage_1":
+                        curr_coverage_id_int = int(curr_coverage_id.split('_')[1])
+                        curr_pool_id = 'pool_' + str(
+                            num_pools_per_coverage * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
+
+                    solutions_data['coverage_id'].append(curr_coverage_id)
+                    solutions_data['pool_id'].append(curr_pool_id)
+                    solutions_data['peptide_id'].append(curr_peptide_id)
+
+            df_configuration = pd.DataFrame(solutions_data)
+            df_configuration = df_configuration[df_configuration['peptide_id'].isin(self.__dummy_peptide_ids) == False]
+            # df_configuration = df_configuration.drop(columns=['coverage_id'])
         else:
             logger.info('Solution is not optimal.')
+            df_configuration = pd.DataFrame()
 
-        # Step 7. Parse solution
-        solutions_data = {
-            'coverage_id': [],
+        return status, df_configuration
+
+    def recycle_configuration(
+            self,
+            df_template_configuration: pd.DataFrame,
+            disallowed_peptide_pairs: List[Tuple[str, str]] = []
+    ) -> pd.DataFrame:
+        """
+        Recycle a pre-computed configuration to scale configuration generation
+        for a bigger number of peptides.
+
+        Parameters
+        ----------
+        df_template_configuration   :   DataFrame of a pre-computed configuration
+                                        with the following columns:
+                                        'pool_id'
+                                        'peptide_id'
+        disallowed_peptide_pairs    :   List of tuples (peptide ID, peptide ID).
+
+        Returns
+        -------
+        df_configuration            :   DataFrame with the following columns:
+                                        'pool_id'
+                                        'peptide_id'
+        """
+        # Step 1. Calculate the number of batches
+        peptide_ids_template = list(df_template_configuration['peptide_id'].unique())
+        num_peptides_template = len(list(df_template_configuration['peptide_id'].unique()))
+        num_pools_template = max(int(i.split('_')[1]) for i in list(df_template_configuration['pool_id'].unique()))
+        num_batches = math.ceil(self.num_peptides / num_peptides_template)
+
+        # Step 2. Create all necessary combinations of template peptide ID and batch ID
+        counter = 0
+        peptide_batch_ids = []
+        for batch_id in range(1, num_batches + 1):
+            for peptide_id in peptide_ids_template:
+                peptide_batch_ids.append((peptide_id, batch_id))
+                counter += 1
+                if counter == self.num_peptides:
+                    break
+            if counter == self.num_peptides:
+                break
+
+        # Step 3. First map the disallowed peptide pairs
+        data = {
+            'template_peptide_id': [],
+            'peptide_id': [],
+            'batch_id': []
+        }
+        lookup_dict = {}
+        for pair in disallowed_peptide_pairs:
+            peptide_id_1 = pair[0]
+            peptide_id_2 = pair[1]
+            if peptide_id_1 not in lookup_dict.keys():
+                template_peptide_id_1 = peptide_batch_ids[0][0]
+                batch_id_1 = peptide_batch_ids[0][1]
+                peptide_batch_ids.pop(0)
+                lookup_dict[peptide_id_1] = batch_id_1
+                data['template_peptide_id'].append(template_peptide_id_1)
+                data['peptide_id'].append(peptide_id_1)
+                data['batch_id'].append(batch_id_1)
+            else:
+                batch_id_1 = lookup_dict[peptide_id_1]
+
+            if peptide_id_2 not in lookup_dict.keys():
+                for i in peptide_batch_ids:
+                    if peptide_batch_ids[i][1] != batch_id_1:
+                        break
+                template_peptide_id_2 = peptide_batch_ids[i][0]
+                batch_id_2 = peptide_batch_ids[i][1]
+                peptide_batch_ids.pop(i)
+                lookup_dict[peptide_id_2] = batch_id_2
+                data['template_peptide_id'].append(template_peptide_id_2)
+                data['peptide_id'].append(batch_id_2)
+                data['batch_id'].append(batch_id_2)
+
+        # Step 4. Map the peptides in the template configuration to self.peptide_ids
+        for peptide_id in self.peptide_ids:
+            if peptide_id not in lookup_dict.keys():
+                peptide_batch_id = peptide_batch_ids[0]
+                peptide_batch_ids.pop(0)
+                data['template_peptide_id'].append(peptide_batch_id[0])
+                data['peptide_id'].append(peptide_id)
+                data['batch_id'].append(peptide_batch_id[1])
+        df_peptides = pd.DataFrame(data)
+
+        # Step 5. Recycle pre-computed configuration
+        data = {
             'pool_id': [],
             'peptide_id': []
         }
-        for curr_bool_variable in df['bool_variable'].values.tolist():
-            if solver.Value(curr_bool_variable) == 1:
-                curr_bool_variable_elements = str(curr_bool_variable).split("/")
-                curr_coverage_id = curr_bool_variable_elements[0]
-                curr_pool_id = curr_bool_variable_elements[1]
-                curr_peptide_id = curr_bool_variable_elements[2]
-
-                # Fix pool ID
-                if curr_coverage_id != "coverage_1":
-                    curr_coverage_id_int = int(curr_coverage_id.split('_')[1])
-                    curr_pool_id = 'pool_' + str(num_pools_per_coverage * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
-
-                solutions_data['coverage_id'].append(curr_coverage_id)
-                solutions_data['pool_id'].append(curr_pool_id)
-                solutions_data['peptide_id'].append(curr_peptide_id)
-
-        df_configuration = pd.DataFrame(solutions_data)
-        df_configuration = df_configuration[df_configuration['peptide_id'].isin(self.__dummy_peptide_ids) == False]
-        df_configuration = df_configuration.drop(columns=['coverage_id'])
-        return status, df_configuration
+        for curr_batch_id in range(1, num_batches + 1):
+            for index, value in df_template_configuration.iterrows():
+                curr_template_pool_id = value['pool_id']
+                curr_template_peptide_id = value['peptide_id']
+                pool_id = 'pool_%i' % (int(curr_template_pool_id.split('_')[1]) + (curr_batch_id - 1) * num_pools_template)
+                peptide_id = df_peptides.loc[
+                    (df_peptides['template_peptide_id'] == curr_template_peptide_id) &
+                    (df_peptides['batch_id'] == curr_batch_id)
+                ,'peptide_id'].values.tolist()[0]
+                data['pool_id'].append(pool_id)
+                data['peptide_id'].append(peptide_id)
+        df_configuration = pd.DataFrame(data)
+        return df_configuration
 
     @staticmethod
     def assign_well_ids(
@@ -212,11 +319,13 @@ class ELIspot:
                                 'well_id'
         """
         if plate_type == PlateTypes.PLATE_96_WELLS:
-            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-            col_prefixes = range(1, 13)
-            well_ids = ['%s%s' % (i[0], i[1]) for i in list(itertools.product(row_prefixes, col_prefixes))]
+            def get_96_well_plate_ids():
+                row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                col_prefixes = range(1, 13)
+                return ['%s%s' % (i[0], i[1]) for i in list(itertools.product(row_prefixes, col_prefixes))]
+
             curr_plate_id = 1
-            curr_well_ids = well_ids
+            curr_well_ids = get_96_well_plate_ids()
             pool_well_ids_dict = {
                 'pool_id': [],
                 'plate_id': [],
@@ -224,7 +333,7 @@ class ELIspot:
             }
             for pool_id in sorted(df_configuration['pool_id'].unique()):
                 if len(curr_well_ids) == 0:
-                    curr_well_ids = well_ids
+                    curr_well_ids = get_96_well_plate_ids()
                     curr_plate_id += 1
                 curr_well_id = curr_well_ids[0]
                 curr_well_ids.pop(0)
@@ -245,27 +354,35 @@ class ELIspot:
 
         Parameters
         ----------
-        hit_pool_ids            :   Hit pool IDs.
-        df_configuration        :   DataFrame of ELIspot configuration.
-                                    Expected columns:
-                                    'pool_id'
-                                    'peptide_id'
+        hit_pool_ids                    :   Hit pool IDs.
+        df_configuration                :   DataFrame of ELIspot configuration.
+                                            Expected columns:
+                                            'pool_id'
+                                            'peptide_id'
 
         Returns
         -------
-        df_hits                 :   DataFrame with the following columns:
-                                    'peptide_id'
-                                    'pool_ids'
-                                    'num_coverage'
+        df_hits_max                     :   DataFrame with the following columns:
+                                            'peptide_id'
+                                            'pool_ids'
+                                            'num_coverage'
+                                            'deconvolution_result'
         """
-        # Step 1. Identify hit peptide IDs
+        # Step 1. Get the configuration's maximum coverage
+        configuration_max_coverage = -1
+        for coverage_id in df_configuration['coverage_id'].unique():
+            num_coverage = int(coverage_id.split('_')[1])
+            if num_coverage > configuration_max_coverage:
+                configuration_max_coverage = num_coverage
+
+        # Step 2. Identify hit peptide IDs
         hit_peptides_dict = defaultdict(list)
         for curr_pool_id in hit_pool_ids:
             curr_hit_peptide_ids = df_configuration.loc[df_configuration['pool_id'] == curr_pool_id, 'peptide_id'].values.tolist()
             for curr_hit_peptide_id in curr_hit_peptide_ids:
                 hit_peptides_dict[curr_hit_peptide_id].append(curr_pool_id)
 
-        # Step 2. Identify coverage and pool IDs for each hit peptide
+        # Step 3. Identify coverage and pool IDs for each hit peptide
         data = {
             'peptide_id': [],
             'pool_ids': [],
@@ -273,10 +390,52 @@ class ELIspot:
         }
         for key, value in hit_peptides_dict.items():
             data['peptide_id'].append(key)
-            data['pool_ids'].append(','.join(value))
+            data['pool_ids'].append(';'.join(value))
             data['num_coverage'].append(len(value))
         df_hits = pd.DataFrame(data)
-        return df_hits
+
+        # Step 4. Identify peptide maximum coverage
+        hit_peptide_max_coverage = df_hits['num_coverage'].max()
+        df_hits_max = df_hits[df_hits['num_coverage'] == hit_peptide_max_coverage]
+        if len(df_hits_max) == 0:
+            logger.info('Returning as there are no peptides with the desired hit coverage (%ix).' % configuration_max_coverage)
+            return pd.DataFrame()
+
+        # Step 5. Identify hit pool IDs and the associated peptide IDs
+        hit_pool_ids_dict = defaultdict(list) # key = pool ID, value = list of peptide IDs
+        for index, value in df_hits_max.iterrows():
+            peptide_id = value['peptide_id']
+            pool_ids = value['pool_ids'].split(';')
+            for pool_id in pool_ids:
+                hit_pool_ids_dict[pool_id].append(peptide_id)
+
+        # Step 6. For the peptides that have the maximum coverage,
+        # identify second-round assay peptides
+        second_round_assay_peptide_ids = set()
+        for peptide_id in df_hits_max['peptide_id'].unique():
+            pool_ids = df_configuration.loc[df_configuration['peptide_id'] == peptide_id,'pool_id'].values.tolist()
+            unique = False
+            for pool_id in pool_ids:
+                if len(hit_pool_ids_dict[pool_id]) == 1:
+                    unique = True
+            if not unique:
+                second_round_assay_peptide_ids.add(peptide_id)
+
+        # Step 7. Identify hit peptide IDs.
+        data = {
+            'peptide_id': [],
+            'deconvolution_result': []
+        }
+        for peptide_id in df_hits_max['peptide_id'].unique():
+            if peptide_id not in second_round_assay_peptide_ids:
+                data['peptide_id'].append(peptide_id)
+                data['deconvolution_result'].append(DeconvolutionResults.HIT)
+            else:
+                data['peptide_id'].append(peptide_id)
+                data['deconvolution_result'].append(DeconvolutionResults.CANDIDATE_HIT)
+        df_deconvolution = pd.DataFrame(data)
+        df_hits_max = pd.merge(df_hits_max, df_deconvolution, on=['peptide_id'])
+        return df_hits_max
 
     @staticmethod
     def verify_configuration(
