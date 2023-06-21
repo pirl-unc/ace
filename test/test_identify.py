@@ -11,8 +11,8 @@ def test_identify_small_configuration(small_elispot_configuration):
         hit_pool_ids=hit_pool_ids,
         df_configuration=small_elispot_configuration
     )
-    expected_peptide_ids = ['peptide_1', 'peptide_10'].sort()
-    hit_peptide_ids = df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist().sort()
+    expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
+    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 def test_identify_small_configuration_aid_version():
@@ -26,8 +26,8 @@ def test_identify_small_configuration_aid_version():
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )
-    expected_peptide_ids = ['peptide_1', 'peptide_10'].sort()
-    hit_peptide_ids = df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist().sort()
+    expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
+    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 def test_identify_small_configuration_pool_id_version():
@@ -40,10 +40,10 @@ def test_identify_small_configuration_pool_id_version():
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )
-    expected_peptide_ids = ['peptide_1', 'peptide_7', 'peptide_14', 'peptide_25'].sort()
+    expected_peptide_ids = sorted(['peptide_1', 'peptide_7', 'peptide_14', 'peptide_25'])
     expected_second_round_peptide_ids = ['peptide_9']
-    hit_peptide_ids = df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist().sort()
-    second_round_assay_peptide_ids = df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.CANDIDATE_HIT, 'peptide_id'].values.tolist()
+    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
+    second_round_assay_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.CANDIDATE_HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == expected_peptide_ids, 'peptide_1, peptide_7, peptide_14, peptide_25 are hits.'
     assert second_round_assay_peptide_ids == expected_second_round_peptide_ids, 'peptide_9 is a candidate hit.'
 
@@ -53,6 +53,6 @@ def test_identify_medium_configuration(medium_elispot_configuration):
         hit_pool_ids=hit_pool_ids,
         df_configuration=medium_elispot_configuration
     )
-    expected_peptide_ids = ['peptide_1', 'peptide_10', 'peptide_100'].sort()
-    hit_peptide_ids = df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist().sort()
+    expected_peptide_ids = sorted(['peptide_1', 'peptide_10', 'peptide_100'])
+    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'

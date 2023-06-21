@@ -25,7 +25,7 @@ requires = [
 
 [project]
 name = "ace"
-version = "0.0.6.0"
+version = "0.0.6.1"
 requires-python = ">=3.7"
 keywords = [
     "elispot assay",

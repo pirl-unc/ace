@@ -17,25 +17,25 @@ This will assist in the calculation of sequence level features to be included in
 """
 
 
-import re
-from sklearn.metrics.pairwise import cosine_similarity
-
-
-class Peptide:
-
-    def __init__(self, id, sequence, tokenizer, model):
-        self.id = id
-        self.sequence = re.sub(r'[UZOB]', 'X', sequence)
-
-    def __str__(self):
-        return self.sequence
-
-    def embed(self, sequence, tokenizer, encoder):
-        sequence_w_spaces = str.replace(sequence,  "", " ")[1:-1]
-        encoded_input = tokenizer(sequence_w_spaces, return_tensors='pt')
-        output = encoder(**encoded_input)
-        return output['pooler_output'].detach().numpy()
-
-    def distance2(self, peptide2):
-        sim = cosine_similarity(self.embedding, peptide2.embedding).item(0)
-        return sim
+# import re
+# from sklearn.metrics.pairwise import cosine_similarity
+#
+#
+# class Peptide:
+#
+#     def __init__(self, id, sequence, tokenizer, model):
+#         self.id = id
+#         self.sequence = re.sub(r'[UZOB]', 'X', sequence)
+#
+#     def __str__(self):
+#         return self.sequence
+#
+#     def embed(self, sequence, tokenizer, encoder):
+#         sequence_w_spaces = str.replace(sequence,  "", " ")[1:-1]
+#         encoded_input = tokenizer(sequence_w_spaces, return_tensors='pt')
+#         output = encoder(**encoded_input)
+#         return output['pooler_output'].detach().numpy()
+#
+#     def distance2(self, peptide2):
+#         sim = cosine_similarity(self.embedding, peptide2.embedding).item(0)
+#         return sim
