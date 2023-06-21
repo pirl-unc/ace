@@ -6,5 +6,4 @@ find src test -name '*.py' \
   --errors-only \
   --disable=unsubscriptable-object,not-an-iterable,no-member
 
-
 echo 'Passes pylint check'

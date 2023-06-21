@@ -19,6 +19,7 @@ before_install:
   # Useful for debugging any issues with conda
   - conda info -a
   - python --version
+  - chmod +x lint.sh
 install:
   - >
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
@@ -38,7 +39,7 @@ install:
   - conda install -c conda-forge transformers
   - pip install . --verbose
 before_script:
-  - ./lint.sh
+  - bash lint.sh
 script:
   - pytest --cov-report=term-missing --cov=acelib test/
 after_success:
