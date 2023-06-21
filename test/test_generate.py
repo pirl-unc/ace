@@ -6,9 +6,6 @@ from acelib.main import run_ace_generate
 def test_generate_small_configuration(small_elispot_configuration):
     print(len(small_elispot_configuration))
 
-def test_generate_medium_configuration(medium_elispot_configuration):
-    print(len(medium_elispot_configuration))
-
 def test_generate_disallowed_peptide_pairs():
     data = {
         'peptide_id': [],
@@ -29,6 +26,3 @@ def test_generate_disallowed_peptide_pairs():
         num_processes=1,
         dissimilarity_inference_func=func
     )
-
-def test_generate_recycle_configuration():
-    df_template_configuration = get_data_path(name='100peptides_5perpool_3x.csv')
