@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from .data import get_data_path
-from acelib.main import run_ace_generate
+from src.acelib.main import run_ace_generate
 
 
 @pytest.fixture

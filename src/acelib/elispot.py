@@ -38,7 +38,9 @@ class ELIspot:
     num_coverage: int
     num_processes: int
     peptide_ids: List[str] = field(default_factory=list, repr=False)
-    __dummy_peptide_ids: List[str] = field(default_factory=list, repr=False)
+    _dummy_peptide_ids: List[str] = field(default_factory=list, repr=False)
+    peptide_sequences: List[str] = field(default_factory=list, repr=False)
+    _dummy_peptide_sequences: List[str] = field(default_factory=list, repr=False)
 
     @property
     def num_peptides(self):
@@ -46,7 +48,7 @@ class ELIspot:
 
     @property
     def num_dummy_peptides(self):
-        return len(self.__dummy_peptide_ids)
+        return len(self._dummy_peptide_ids)
 
     def __post_init__(self):
         # Step 1. Make sure the number of peptides is bigger than the number of peptides per pool.
@@ -60,14 +62,21 @@ class ELIspot:
             # Get new number of peptides (increased to a divisible number)
             num_dummy_peptides = self.num_peptides_per_pool - remainder
             dummy_peptide_id_idx = 1
+            dummy_peptide_seq = ''.join(random.choice('ACDEFGHIKLMNPQRSTVWY') for _ in range(random.randint(8, 15)))
             for _ in range(0, num_dummy_peptides):
                 while True:
                     dummy_peptide_id = 'dummy_peptide_%i' % dummy_peptide_id_idx
-                    if dummy_peptide_id not in self.__dummy_peptide_ids and dummy_peptide_id not in self.peptide_ids:
-                        self.__dummy_peptide_ids.append(dummy_peptide_id)
+                    if dummy_peptide_id not in self._dummy_peptide_ids and dummy_peptide_id not in self.peptide_ids:
+                        self._dummy_peptide_ids.append(dummy_peptide_id)
                         break
                     else:
                         dummy_peptide_id_idx += 1
+                    if dummy_peptide_seq not in self._dummy_peptide_sequences and dummy_peptide_seq not in self.peptide_sequences:
+                        self._dummy_peptide_sequences.append(dummy_peptide_seq)
+                        break
+                    else:
+                        dummy_peptide_seq = ''.join(random.choice('ACDEFGHIKLMNPQRSTVWY') for _ in range(random.randint(8, 15)))
+                        
 
     def generate_configuration(
             self,
@@ -101,7 +110,7 @@ class ELIspot:
             'bool_variable': []
         }
         # Step 3. Initialize the constraint programming model dictionary
-        peptide_ids = self.peptide_ids + self.__dummy_peptide_ids
+        peptide_ids = self.peptide_ids + self._dummy_peptide_ids
         var_dict = {}
         for curr_coverage_id in coverage_ids:
             for curr_pool_id in pool_ids:
@@ -184,7 +193,7 @@ class ELIspot:
                     solutions_data['peptide_id'].append(curr_peptide_id)
 
             df_configuration = pd.DataFrame(solutions_data)
-            df_configuration = df_configuration[df_configuration['peptide_id'].isin(self.__dummy_peptide_ids) == False]
+            df_configuration = df_configuration[df_configuration['peptide_id'].isin(self._dummy_peptide_ids) == False]
             # df_configuration = df_configuration.drop(columns=['coverage_id'])
         else:
             logger.info('Solution is not optimal.')
@@ -444,8 +453,8 @@ class ELIspot:
     ) -> bool:
         """
         Verifies whether a given ELIspot configuration satisfies the following constraints:
-        1. Each peptide is in 'num_coverage' number of different pools.
-        2. Each peptide is in exactly one unique combination of pool IDs.
+        1. Each peptide is in 'num_coverage' number of DIFFERENT pools.
+        2. Each peptide has EXACTLY ONE UNIQUE combination of pool IDs.
 
         Parameters
         ----------
@@ -461,27 +470,34 @@ class ELIspot:
         is_valid            :   True if the input configuration meets all desired constraints.
                                 False otherwise.
         """
-        # Step 1. Check if each peptide is in 'num_coverage' number of different pools.
+        # Step 1. Check if each peptide is in 'num_coverage' number of DIFFERENT pools.
+        existing_pool_ids = set()
         for peptide_id in list(df_configuration['peptide_id'].unique()):
-            pool_ids = (df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique())
+            pool_ids = sorted(tuple(df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique()))
+            # Check pool uniqueness
+            if pool_ids in existing_pool_ids:
+                logger.info('%s has the same pool combination as another peptide.' % peptide_id)
+                return False
+            # Check for length
             if len(pool_ids) != num_coverage:
                 logger.info('%s is in %i different pools (expected: %i).' % (peptide_id, len(pool_ids), num_coverage))
                 return False
+            existing_pool_ids.add(pool_ids)
 
         # Step 2. Check that each peptide belongs in exactly one unique combination of pool IDs
-        pool_id_combinations = set()
-        for peptide_id in list(df_configuration['peptide_id'].unique()):
-            pool_ids = list(df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique())
-            pool_ids = sorted(pool_ids)
-            pool_id_combinations.add(','.join(pool_ids))
-        if len(pool_id_combinations) != len(df_configuration['peptide_id'].unique()):
-            logger.info("%i unique combinations of pool IDs. "
-                        "Total number of peptides: %i. "
-                        "Each peptide is expected to be assigned a unique combination of pools." %
-                        (len(pool_id_combinations), len(df_configuration['peptide_id'].unique())))
-            return False
+        # pool_id_combinations = set()
+        # for peptide_id in list(df_configuration['peptide_id'].unique()):
+        #     pool_ids = list(df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique())
+        #     pool_ids = sorted(pool_ids)
+        #     pool_id_combinations.add(','.join(pool_ids))
+        # if len(pool_id_combinations) != len(df_configuration['peptide_id'].unique()):
+        #     logger.info("%i unique combinations of pool IDs. "
+        #                 "Total number of peptides: %i. "
+        #                 "Each peptide is expected to be assigned a unique combination of pools." %
+        #                 (len(pool_id_combinations), len(df_configuration['peptide_id'].unique())))
+        #     return False
 
-        # Step 3. Configuration neets all constraints
+        # Step 3. Configuration meets all constraints
         logger.info("Configuration meets all ACE constraints.")
         return True
 

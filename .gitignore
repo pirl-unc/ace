@@ -4,6 +4,7 @@ build/
 __pycache__/
 src/ace.egg-info/
 data/
+notebooks/*.pt
 *.pyc
 .coverage*
 *.DS_Store
@@ -15,3 +16,5 @@ docs/_site/
 acegui/views/res/ace_video_placeholder.mp4
 ACE.egg-info/
 notebooks/.ipynb_checkpoints/sequence_properties-checkpoint.ipynb
+notebooks/ace_files/
+notebooks/val_refs/
