@@ -6,14 +6,14 @@ from src.acelib.aid_plate_reader import AIDPlateReader
 
 
 def test_identify_small_configuration(small_elispot_configuration):
-    hit_pool_ids = ['pool_4', 'pool_5', 'pool_6', 'pool_7', 'pool_11', 'pool_14']
+    ground_truth_hit_peptide_ids = ['peptide_1','peptide_10']
+    hit_pool_ids = list(small_elispot_configuration.loc[small_elispot_configuration['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
     df_hits_max = run_ace_identify(
         hit_pool_ids=hit_pool_ids,
         df_configuration=small_elispot_configuration
     )
-    expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
     hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
-    assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'
+    assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 def test_identify_small_configuration_aid_version():
     configuration_file = get_data_path(name='25peptides_5perpool_3x.csv')

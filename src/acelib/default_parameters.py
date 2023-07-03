@@ -19,4 +19,6 @@ The purpose of this python3 script is to define ACE default parameters.
 """generate"""
 # Number of processes.
 GENERATE_NUM_PROCESSES = 4
-
+GENERATE_GOLFY_MAX_ITERS = 1000
+GENERATE_RANDOM_SEED = 1
+GENERATE_NUM_PEPTIDES_PER_BATCH = 100

@@ -17,7 +17,6 @@ requires = [
     "pandas>=1.5.2",
     "numpy>=1.23.1",
     "ortools>=9.3.10497",
-    "openpyxl",
     "torch",
     "transformers",
     "openpyxl"
@@ -25,7 +24,7 @@ requires = [
 
 [project]
 name = "ace"
-version = "0.0.6.1"
+version = "0.0.7.0"
 requires-python = ">=3.7"
 keywords = [
     "elispot assay",

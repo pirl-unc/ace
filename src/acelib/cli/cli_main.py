@@ -36,7 +36,7 @@ def init_arg_parser():
     An instance of argparse.ArgumentParser subparsers
     """
     arg_parser = argparse.ArgumentParser(
-        description="ACE: Assay Configurator for ELIspot."
+        description="ACE: Assay Configurator for ELISpot."
     )
     arg_parser.add_argument(
         '--version', '-v',

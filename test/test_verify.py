@@ -8,8 +8,7 @@ def test_verify():
     df_configuration = pd.read_csv(configuration_file)
     is_valid = run_ace_verify(
         df_configuration=df_configuration,
+        num_peptides_per_pool=5,
         num_coverage=3
     )
-
-    assert is_valid, \
-        "'25peptides_5perpool_3x.csv' is a valid ELIspot configuration."
+    assert is_valid, "'25peptides_5perpool_3x.csv' is a valid ELISpot configuration."

@@ -50,11 +50,6 @@ _AMINO_ACID_PROPERTIES = pd.DataFrame(
 ROSTLAB_PROT_BERT = "Rostlab/prot_bert"
 
 
-class GenerateModes:
-    DE_NOVO = 'de_novo'
-    FAST = 'fast'
-
-
 class PlateTypes:
     PLATE_96_WELLS = '96-well_plate'
     ALL = [
@@ -74,3 +69,9 @@ class ReadOutFileTypes:
 class DeconvolutionResults:
     HIT = 'hit'
     CANDIDATE_HIT = 'candidate_hit'
+
+
+class OptimizationLevel:
+    OPTIMAL = 'optimal'
+    SUB_OPTIMAL = 'sub-optimal'
+
