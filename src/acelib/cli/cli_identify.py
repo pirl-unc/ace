@@ -45,7 +45,7 @@ def add_ace_identify_arg_parser(sub_parsers):
     """
     parser = sub_parsers.add_parser(
         'identify',
-        help='Identify hit peptide IDs given read-outs from an ELIspot experiment.'
+        help='Identify hit peptide IDs given read-outs from an ELISpot experiment.'
     )
     parser._action_groups.pop()
 
@@ -56,7 +56,7 @@ def add_ace_identify_arg_parser(sub_parsers):
         dest="readout_file_type",
         type=str,
         required=True,
-        help="ELIspot read-out file type (allowed options: %s)." %
+        help="ELISpot read-out file type (allowed options: %s)." %
              (', '.join(ReadOutFileTypes.ALL))
     )
     parser_required.add_argument(
@@ -65,7 +65,7 @@ def add_ace_identify_arg_parser(sub_parsers):
         type=str,
         action='append',
         required=True,
-        help="ELIspot read-out file(s)."
+        help="ELISpot read-out file(s)."
              "If the readout-file-type is 'pool_id', then the expected columns of the CSV file are: 'pool_id', 'spot_count'. "
              "If the readout-file-type is 'aid_plate_reader', then the readout-files are the Excel files from the AID plate reader machine. "
              "If the readout-file type is 'aid_plate_reader' and there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc."
@@ -75,7 +75,7 @@ def add_ace_identify_arg_parser(sub_parsers):
         dest="configuration_csv_file",
         type=str,
         required=True,
-        help="ELIspot configuration CSV file. "
+        help="ELISpot configuration CSV file. "
              "Expected columns: 'pool_id', 'peptide_id', 'plate_id', 'well_id'."
     )
     parser_required.add_argument(

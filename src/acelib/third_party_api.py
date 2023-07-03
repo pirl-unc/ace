@@ -17,6 +17,7 @@ interfacing with third-party APIs.
 """
 
 
+import pandas as pd
 from transformers import BertModel, BertTokenizer
 
 
@@ -35,4 +36,5 @@ def get_bert_model(model: str):
     bert_tokenizer = BertTokenizer.from_pretrained(model, do_lower_case=False )
     bert_model = BertModel.from_pretrained(model)
     return bert_tokenizer, bert_model
+
 

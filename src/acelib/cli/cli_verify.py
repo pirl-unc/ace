@@ -39,7 +39,7 @@ def add_ace_verify_arg_parser(sub_parsers):
     """
     parser = sub_parsers.add_parser(
         'verify',
-        help='Verifies whether an ELIspot configuration satisfies all ACE constraints.'
+        help='Verifies whether an ELISpot configuration satisfies all ACE constraints.'
     )
     parser._action_groups.pop()
 
@@ -50,8 +50,15 @@ def add_ace_verify_arg_parser(sub_parsers):
         dest="configuration_csv_file",
         type=str,
         required=True,
-        help="ELIspot configuration CSV file. "
+        help="ELISpot configuration CSV file. "
              "Expected columns: 'coverage_id', 'pool_id', 'peptide_id'."
+    )
+    parser_required.add_argument(
+        "--num-peptides-per-pool",
+        dest="num_peptides_per_pool",
+        type=int,
+        required=True,
+        help="Number of peptides per pool."
     )
     parser_required.add_argument(
         "--num-coverage",
@@ -72,15 +79,17 @@ def run_ace_verify_from_parsed_args(args):
     ----------
     args    :   argparse.ArgumentParser with the following variables:
                 configuration_csv_file
+                num_peptides_per_pool
                 num_coverage
     """
     df_configuration = pd.read_csv(args.configuration_csv_file)
     is_valid = run_ace_verify(
         df_configuration=df_configuration,
+        num_peptides_per_pool=args.num_peptides_per_pool,
         num_coverage=args.num_coverage
     )
     if is_valid:
-        logger.info("ELIspot configuration meets all ACE constraints and is valid.")
+        logger.info("ELISpot configuration meets all ACE constraints and is valid.")
     else:
-        logger.info("ELIspot configuration does not meet all ACE constraints and is not valid.")
+        logger.info("ELISpot configuration does not meet all ACE constraints and is not valid.")
 
