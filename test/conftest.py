@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from .data import get_data_path
 from acelib.main import run_ace_generate
-from golfy import random_init, is_valid, optimize
+from golfy import init, is_valid, optimize
 from acelib.utilities import convert_golfy_results
 
 
@@ -28,7 +28,7 @@ def small_elispot_configuration():
 
 @pytest.fixture
 def large_elispot_configuration():
-    golfy_solution = random_init(
+    golfy_solution = init(
         num_peptides=120,
         peptides_per_pool=12,
         num_replicates=3

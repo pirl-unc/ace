@@ -20,7 +20,6 @@ and run ACE 'generate' command.
 import math
 import pandas as pd
 import random
-from golfy import random_init, is_valid, optimize
 from ortools.sat.python import cp_model
 from ..constants import PlateTypes
 from ..default_parameters import *
@@ -97,7 +96,7 @@ def add_ace_generate_arg_parser(sub_parsers):
         type=int,
         required=False,
         default=GENERATE_GOLFY_MAX_ITERS,
-        help="Number of maximum iterations for golfy."
+        help="Number of maximum iterations for golfy (default: %i)." % GENERATE_GOLFY_MAX_ITERS
     )
     parser_optional.add_argument(
         "--peptides-csv-file",
@@ -132,6 +131,14 @@ def add_ace_generate_arg_parser(sub_parsers):
         required=False,
         help="Random seed (default: %i)." % GENERATE_RANDOM_SEED
     )
+    parser_optional.add_argument(
+        "--num-peptides-per-batch",
+        dest="num_peptides_per_batch",
+        type=int,
+        default=GENERATE_NUM_PEPTIDES_PER_BATCH,
+        required=False,
+        help="Number of peptides per batch (default: %i)." % GENERATE_NUM_PEPTIDES_PER_BATCH
+    )
     parser.set_defaults(which='generate')
     return sub_parsers
 
@@ -152,7 +159,8 @@ def run_ace_generate_from_parsed_args(args):
                 peptides_csv_file
                 assign_well_ids
                 plate_type
-                seed
+                random_seed
+                num_peptides_per_batch
     """
     # Step 1. Load peptide data
     if args.peptides_csv_file is not None:
@@ -167,75 +175,25 @@ def run_ace_generate_from_parsed_args(args):
             data['peptide_sequence'].append('')
         df_peptides = pd.DataFrame(data)
 
-    # Step 2. Set random seed
-    random.seed(args.seed)
-
-    # Step 3. Identify disallowed / enforced peptide pairs
+    # Step 2. Identify disallowed / enforced peptide pairs
     # disallowed_peptide_pairs = dissimilarity_inference_func(df_peptides)
     # enforced_peptide_pairs = func()
     disallowed_peptide_pairs = []
     enforced_peptide_pairs = []
 
-    # Step 4. Generate an ELISpot configuration
-    if args.num_peptides_per_pool > 10:
-        logger.info('Running golfy package because the requested number of '
-                    'peptides per pool is greater than 10.')
-        golfy_solution = random_init(
-            num_peptides=len(df_peptides['peptide_id'].unique()),
-            peptides_per_pool=args.num_peptides_per_pool,
-            num_replicates=args.num_coverage
-        )
-        is_golfy_succcessful = optimize(golfy_solution, max_iters=args.golfy_max_iters)
-        df_configuration = convert_golfy_results(golfy_assignment=golfy_solution.assignments)
-        if is_golfy_succcessful:
-            logger.info('An optimal configuration has been generated.')
-        else:
-            n_pools = math.ceil(len(df_peptides['peptide_id'].unique()) / args.num_peptides_per_pool) * args.num_coverage
-            n_additional_pools = len(df_configuration['pool_id'].unique()) - n_pools
-            logger.info("Please note that the output configuration is not an optimal configuration; "
-                        "%i more pools have been added to accommodate the requested assay configuration. "
-                        "ACE 'identify' (i.e. deconvolution) will still work on this configuration." % n_additional_pools)
-    else:
-        logger.info('Running ace package because the requested number of '
-                    'peptides per pool is less than or equal to 10.')
-        if len(list(df_peptides['peptide_id'].unique())) > 100:
-            # Split peptides into batches
-            list_df = split_peptides(
-                df_peptides=df_peptides,
-                enforced_peptide_pairs=enforced_peptide_pairs,
-                num_peptides_per_batch=100
-            )
-            df_configuration = pd.DataFrame()
-            for df_peptides_ in list_df:
-                status, df_configuration_ = run_ace_generate(
-                    df_peptides=df_peptides_,
-                    num_peptides_per_pool=args.num_peptides_per_pool,
-                    num_coverage=args.num_coverage,
-                    num_processes=args.num_processes,
-                    random_seed=args.random_seed,
-                    assign_well_ids=args.assign_well_ids,
-                    disallowed_peptide_pairs=disallowed_peptide_pairs,
-                    enforced_peptide_pairs=enforced_peptide_pairs,
-                    plate_type=args.plate_type
-                )
-                if status == cp_model.OPTIMAL:
-                    df_configuration = pd.concat([df_configuration, df_configuration_])
-                else:
-                    logger.error('Exiting program. Please review your configuration parameters before running ACE again.')
-                    exit(1)
-        else:
-            status, df_configuration = run_ace_generate(
-                df_peptides=df_peptides,
-                num_peptides_per_pool=args.num_peptides_per_pool,
-                num_coverage=args.num_coverage,
-                num_processes=args.num_processes,
-                random_seed=args.random_seed,
-                assign_well_ids=args.assign_well_ids,
-                disallowed_peptide_pairs=disallowed_peptide_pairs,
-                enforced_peptide_pairs=enforced_peptide_pairs,
-                plate_type=args.plate_type
-            )
-            if status != cp_model.OPTIMAL:
-                logger.error('Exiting program. Please review your configuration parameters before running ACE again.')
-                exit(1)
+    # Step 3. Generate an ELISpot configuration
+    status, df_configuration = run_ace_generate(
+        df_peptides=df_peptides,
+        num_peptides_per_pool=args.num_peptides_per_pool,
+        num_coverage=args.num_coverage,
+        num_processes=args.num_processes,
+        random_seed=args.random_seed,
+        disallowed_peptide_pairs=disallowed_peptide_pairs,
+        enforced_peptide_pairs=enforced_peptide_pairs,
+        assign_well_ids=args.assign_well_ids,
+        plate_type=args.plate_type,
+        num_peptides_per_batch=args.num_peptides_per_batch,
+        golfy_max_iters=args.golfy_max_iters
+    )
     df_configuration.to_csv(args.output_csv_file, index=False)
+

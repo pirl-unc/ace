@@ -19,8 +19,7 @@ requires = [
     "ortools>=9.3.10497",
     "torch",
     "transformers",
-    "openpyxl",
-    "golfy"
+    "openpyxl"
 ]
 
 [project]

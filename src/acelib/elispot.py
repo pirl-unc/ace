@@ -422,7 +422,7 @@ class ELISpot:
         # Step 3. Check that there is an optimal number of pools
         num_pools = math.ceil(len(df_configuration['peptide_id'].unique()) / num_peptides_per_pool) * num_coverage
         if len(df_configuration['pool_id'].unique()) != num_pools:
-            num_extra_pools = num_pools - len(df_configuration['pool_id'].unique())
+            num_extra_pools = len(df_configuration['pool_id'].unique()) - num_pools
             logger.info('Configuration does not meet constraint #3: there are %i extra pools than the minimum possible number of pools (%i).' % (num_extra_pools, num_pools))
             return False
         logger.info('Configuration meets constraint #3: there is an optimal (minimal) number of pools (%i).' % num_pools)
