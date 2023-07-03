@@ -131,7 +131,7 @@ class ELISpot:
         }
 
         # Step 4. Initialize the constraint programming model dictionary
-        peptide_ids = self.peptide_ids + self.__dummy_peptide_ids
+        peptide_ids = self.peptide_ids + self._dummy_peptide_ids
         var_dict = {}
         for curr_coverage_id in coverage_ids:
             for curr_pool_id in pool_ids:
@@ -236,7 +236,7 @@ class ELISpot:
                 solutions_data['peptide_id'].append(curr_peptide_id)
 
         df_configuration = pd.DataFrame(solutions_data)
-        df_configuration = df_configuration[df_configuration['peptide_id'].isin(self.__dummy_peptide_ids) == False]
+        df_configuration = df_configuration[df_configuration['peptide_id'].isin(self._dummy_peptide_ids) == False]
 
         return status, df_configuration
 
