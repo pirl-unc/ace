@@ -2,7 +2,7 @@
 title: "identify"
 ---
 
-This command identifies positive hit peptides from an ELIspot experiment.
+This command identifies (deconvolves) hit peptides from an ELISpot experiment.
 
 ```bash
 usage: ace identify [-h] 
@@ -15,8 +15,8 @@ usage: ace identify [-h]
 
 | Required Parameter          | Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------ |
-| `--readout-file-type`       | ELIspot read-out file type (allowed options: pool_id, aid_plate_reader). |
-| `--readout-files`           | ELIspot read-out file(s).<br/><br/>If the readout-file-type is 'pool_id', then the expected columns of the CSV file are: 'pool_id', 'spot_count'.<br/><br/>If the readout-file-type is 'aid_plate_reader', then the readout-files are the Excel files from the AID plate reader machine. If there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc. |
-| `--configuration-csv-file`  | ELIspot configuration CSV file. Expected columns: 'pool_id', 'peptide_id', 'plate_id', 'well_id'. |
+| `--readout-file-type`       | ELISpot read-out file type (allowed options: pool_id, aid_plate_reader). |
+| `--readout-files`           | ELISpot read-out file(s).<br/><br/>If the readout-file-type is `pool_id`, then the expected columns of the CSV file are: `pool_id`, `spot_count`.<br/><br/>If the readout-file-type is `aid_plate_reader`, then the readout-files are the Excel files from the AID plate reader machine. If there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc. |
+| `--configuration-csv-file`  | ELISpot configuration CSV file. Expected columns: `pool_id`, `peptide_id`, `plate_id`, `well_id`. |
 | `--min-positive-spot-count` | Number of spots for a pool to be considered a positive hit.              |
 | `--output-csv-file`         | Output CSV file.                                                         |

@@ -2,21 +2,25 @@
 title: "verify"
 ---
 
-This command checks whether a given ELIspot configuration meets all of the following criteria:
+This command checks whether a given ELISpot configuration is optimal. An optimal ELISpot configuration is one that satisfies all of the following criteria:
 
-1. Each peptide is represented in `--num-coverage` number of different pools.
-2. Each peptide belongs to exactly one unique combination of pool IDs.
+1. The configuration has the minimum number of necessary pools: $$ n_{pools} = \frac{n_{peptides}}{n_{peptides\;per\;pool}} \cdot n_{coverage} $$
 
-If an ELIspot configuration meets the above criteria, then we know exactly which peptide is a positive hit peptide when 
-`--num-coverage` number of pools have positive spot counts.
+2. Each peptide belongs to a unique combination of pool (well) IDs.
+
+3. Each peptide belongs to $n_{coverage}$ different pool (well) IDs.
+
+4. All peptide pairs that are similar (above a certain threshold based on a sequence similarity criterion) are pooled together in exactly one pool.
 
 ```bash
 usage: ace verify [-h] 
     --configuration-csv-file CONFIGURATION_CSV_FILE 
+    --num-peptides-per-pool NUM_PEPTIDES_PER_POOL 
     --num-coverage NUM_COVERAGE
 ```
 
 | Required Parameter          | Description                                                                               |
 | --------------------------- | ----------------------------------------------------------------------------------------- |
-| `--configuration-csv-file`  | ELIspot configuration CSV file. Expected columns: 'coverage_id', 'pool_id', 'peptide_id'. |
+| `--configuration-csv-file`  | ELISpot configuration CSV file. Expected columns: `coverage_id`, `pool_id`, `peptide_id`. |
+| `--num-peptides-per-pool`   | Number of peptides per pool.                                                              |
 | `--num-coverage`            | Total coverage (i.e. number of peptide replicates).                                       |
