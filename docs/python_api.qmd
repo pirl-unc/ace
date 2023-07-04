@@ -7,7 +7,7 @@ Here is a list of `ACE` classes and methods:
 | Class                                   | Description                                                                     |
 | --------------------------------------- | ------------------------------------------------------------------------------- |
 | [AIDPlateReader](#aidplatereader)       | AID plate reader.                                                               |
-| [ELIspot](#elispot)                     | An ELIspot.                                                                     |
+| [ELISpot](#elispot)                     | An ELISpot.                                                                     |
 
 <br/>
 
@@ -19,7 +19,10 @@ Loads an AID plate reader readout file.
 
 ```python
 @staticmethod
-load_readout_file(excel_file: str, plate_id: int) -> pd.DataFrame
+load_readout_file(
+    excel_file: str,
+    plate_id: int
+) -> pd.DataFrame
 ```
 
 | Input                          | Description                                                                              |
@@ -33,15 +36,18 @@ load_readout_file(excel_file: str, plate_id: int) -> pd.DataFrame
 
 <br/>
 
-## ELIspot
+## ELISpot
 
 ### assign_well_ids
 
-Assign well IDs to an ELIspot experiment configuration.
+Assign well IDs to an ELISpot experiment configuration.
 
 ```python
 @staticmethod
-assign_well_ids(df_configuration: pd.DataFrame, plate_type: str) -> pd.DataFrame
+assign_well_ids(
+    df_configuration: pd.DataFrame,
+    plate_type: str
+) -> pd.DataFrame
 ```
 
 | Input                          | Description                                                                              |
@@ -55,19 +61,26 @@ assign_well_ids(df_configuration: pd.DataFrame, plate_type: str) -> pd.DataFrame
 
 ### generate_configuration
 
-Generate an ELIspot experiment configuration.
+Generate an ELISpot experiment configuration.
 
 ```python
-generate_configuration(self, disallowed_peptide_pairs: List[Tuple[str,str]]) -> pd.DataFrame
+generate_configuration(
+    self, random_seed: int,
+    disallowed_peptide_pairs: List[Tuple[str,str]] = [],
+    enforced_peptide_pairs: List[Tuple[str,str]] = []
+) -> pd.DataFrame
 ```
 
 | Input                          | Description                                                                              |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `random_seed`                  | Random seed.                                                                             |
 | `disallowed_peptide_pairs`     | List of tuples (peptide ID, peptide ID).                                                 |
+| `enforced_peptide_pairs`       | List of tuples (peptide ID, peptide ID).                                                 |
 
-| Output                         | Description                                                                              |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+| Output                         | Description                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `status`                       | Status (`cp_model.OPTIMAL`, `cp_model.FEASIBLE`, `cp_model.INFEASIBLE`, `cp_model.MODEL_INVALID` or `cp_model.UNKNOWN`). |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                                                           |
 
 ### identify_hit_peptides
 
@@ -75,17 +88,20 @@ Identify hit peptides.
 
 ```python
 @staticmethod
-identify_hit_peptides(hit_pool_ids: List[str], df_configuration: pd.DataFrame) -> pd.DataFrame:
+identify_hit_peptides(
+    hit_pool_ids: List[str], 
+    df_configuration: pd.DataFrame
+) -> pd.DataFrame:
 ```
 
-| Input                          | Description                                                                              |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `hit_pool_ids`                 | List of hit pool IDs.                                                                    |
-| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+| Input                          | Description                                                                                              |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `hit_pool_ids`                 | List of hit pool IDs.                                                                                    |
+| `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                                           |
 
-| Output                         | Description                                                                              |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `df_hits`                      | DataFrame with the following columns: 'peptide_id', 'pool_ids', 'num_coverage'           |
+| Output                         | Description                                                                                              |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `df_hits`                      | DataFrame with the following columns: 'peptide_id', 'pool_ids', 'num_coverage', 'deconvolution_result'   |
 
 ### verify_configuration
 
@@ -93,14 +109,19 @@ Verify an ELIspot configuration.
 
 ```python
 @staticmethod
-verify_configuration(df_configuration: pd.DataFrame, num_coverage: int) -> bool:
+verify_configuration(
+    df_configuration: pd.DataFrame,
+    num_peptides_per_pool: int,
+    num_coverage: int
+) -> bool:
 ```
 
 | Input                          | Description                                                                              |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
 | `df_configuration`             | DataFrame with the following columns: 'pool_id', 'peptide_id'.                           |
+| `num_peptides_per_pool`        | Number of peptides per pool.                                                             |
 | `num_coverage`                 | Coverage.                                                                                |
 
 | Output                         | Description                                                                              |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `is_valid`                     | True if the ELIspot configuration meets the following criteria:<br/>(1) Each peptide is in 'num_coverage' number of different pools.<br/>(2) Each peptide is in exactly one unique combination of pool IDs.<br/>False otherwise. |
+| `is_optimal`                   | True if the ELIspot configuration meets the following criteria:<br/>(1) Each peptide is in 'num_coverage' number of different pools.<br/>(2) Each peptide is in exactly one unique combination of pool IDs.<br/>(3) There is an optimal (minimal) number of pools.<br/><br/>False otherwise. |

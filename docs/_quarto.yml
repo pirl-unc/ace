@@ -17,9 +17,6 @@ website:
       - section: "API"
         contents:
           - python_api.qmd
-      - section: "Support"
-        contents:
-          - faq.qmd
 
 format:
   html:

@@ -7,12 +7,14 @@ pip install . --verbose
 
 ## 02. Dependencies
 
+- [golfy](https://github.com/pirl-unc/golfy)
+
 ## 03. Usage
 
 ```
 usage: ace [-h] [--version] {generate,identify,verify} ...
 
-ACE: Assay Configurator for ELIspot.
+ACE Configurator for ELISpot.
 
 positional arguments:
   {generate,identify,verify}
@@ -24,9 +26,4 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --version, -v         show program's version number and exit
-```
-
-## 04. Packaging
-```
-python -m build
 ```

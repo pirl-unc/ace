@@ -2,7 +2,7 @@
 title: "generate"
 ---
 
-This command generates an ELIspot experiment configuration.
+This command generates an ELISpot experiment configuration.
 
 ```bash
 usage: ace generate [-h] 
@@ -29,34 +29,20 @@ usage: ace generate [-h]
 | Optional Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
 | `--golfy-max-iters`        | Number of maximum iterations for golfy (default: 1000).                |           
-| `--peptides-csv-file`      | CSV file with the following columns: 'peptide_id', 'peptide_sequence'. If you specify a file, then the value supplied for `--num-peptides` will be ignored (but must still be supplied). |
+| `--peptides-csv-file`      | CSV file with the following columns: `peptide_id`, `peptide_sequence`. If you specify a file, then the value supplied for `--num-peptides` will be ignored (but must still be supplied). |
 | `--assign-well-ids`        | If true, assigns plate and well IDs for each pool ID (default: true).  |
-| `--plate-type`             | Plate type. Allowed values: 96-well plate (default: 96-well_plate).    |
+| `--plate-type`             | Plate type. Allowed values: `96-well plate` (default: `96-well_plate`).|
 | `--random-seed`            | Random seed (default: 1).                                              |
 
+### How does `ACE` generate an ELISpot configuration? 
 
-### What is an optimal ELISpot configuration?
-
-An optimal ELISpot configuration is one that satisfies all of the following criteria:
-
-1. The configuration has the minimum number of necessary pools: $$ n_{pools} = \frac{n_{peptides}}{n_{peptides\;per\;pool}} \cdot n_{coverage} $$
-
-2. Each peptide belongs to a unique combination of pool (well) IDs.
-
-3. Each peptide belongs to $n_{coverage}$ different pool (well) IDs.
-
-4. All peptide pairs that are similar (above a certain threshold based on a sequence similarity criterion) are pooled together in exactly one pool.
-
-### How does `ACE` configuration generation work? 
-*Notes on configuration generation heuristic*
-
-Owing to the inherent computational complexity of searching for a configuration that assigns a unique combination of pool IDs to each peptide, there is a practical upper limit to systematically exploring the search space. For usability purposes, our method employs a two-tiered approach where we perform a systematic search (`ace` approach; SAT solver) up to certain limits and switch to performing a random search with local optimization (`golfy` approach) beyond these limits. The following figure shows which approach is used depending on the input parameters. Please note that the following table was determined based on internal testing:
+Owing to the inherent computational complexity of searching for a configuration that assigns a unique combination of pool IDs to each peptide, there is a practical upper limit to systematically exploring the search space. For usability purposes, our method employs a two-tiered approach where we first perform a random search with local optimization (`golfy`). If this approach does not lead to an optimal configuration and if the input parameters are within pratical limits (see below), we perform a systematic search (`SAT solver`). Based on internal testing, the following table shows which approach is used depending on the input parameters:
 
 ![](resources/ace_parameter_heuristic.png)
 
-#### ace
+#### SAT solver
 
-If `--num-peptides-per-pool` is equal to or less than 10 and if `--num-coverage` is equal to or less than 3, we run a SAT solver to systematically search for an optimal configuration (i.e. minimum number of necessary pools). If `--num-peptides` or the number of unique peptides in `--peptides-csv-file` exceeds 100, the `ace` approach divides the peptides list into groups of 100 to linearly scale the computation time of configuration generation to the number of peptides.
+If `--num-peptides-per-pool` is equal to or less than 10 and if `--num-coverage` is equal to or less than 3, we run a SAT solver to systematically search for an optimal configuration (i.e. minimum number of necessary pools). If `--num-peptides` or the number of unique peptides in `--peptides-csv-file` exceeds 100, the `SAT solver` approach divides the peptides list into groups of 100 to linearly scale the computation time of configuration generation to the number of peptides.
 
 #### golfy
 

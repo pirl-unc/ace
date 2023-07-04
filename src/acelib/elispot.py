@@ -395,6 +395,7 @@ class ELISpot:
         Verifies whether a given ELISpot configuration satisfies the following constraints:
         1. Each peptide is in 'num_coverage' number of different pools.
         2. Each peptide is in exactly one unique combination of pool IDs.
+        3. There is an optimal (minimal) number of pools.
 
         Parameters
         ----------
@@ -407,7 +408,7 @@ class ELISpot:
 
         Returns
         -------
-        is_valid            :   True if the input configuration meets all desired constraints.
+        is_optimal          :   True if the input configuration meets all desired criteria.
                                 False otherwise.
         """
         # Step 1. Check if each peptide is in 'num_coverage' number of DIFFERENT pools.

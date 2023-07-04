@@ -2,7 +2,7 @@
 title: "Getting Started"
 ---
 
-# **ACE: Assasy Configurator for ELISpot**
+# **ACE Configurator for ELISpot**
 
 **Source code**: [link](https://github.com/pirl-unc/ace)
 
@@ -10,20 +10,18 @@ title: "Getting Started"
 
 **Latest Stable Version**: `0.0.7.0`
 
-**Updated date**: June 12, 2023
+**Updated date**: July 3, 2023
 
 `ACE` is a python library and command-line software for: 
 
 1. Generating an optimized configuration for ELISpot assays.
-2. Identifying (deconvoluting) hit wells (pools) from ELISpot assays.
-3. Verifying whether a given ELISpot configuration is conducive to identification of unique peptide hits.
-
-If you wish to use the **Graphical User Interface (GUI)** version of ACE, please visit [here](https://github.com/pirl-unc/ace-gui).
+2. Identifying (deconvolving) hit peptides from ELISpot assay results.
+3. Verifying whether a given ELISpot configuration is optimal.
 
 ## **Installation**
 
 ```bash
-conda install ace
+pip install ace-<version>.tar.gz
 ```
 
 ## **Command Line Interface**
@@ -31,7 +29,7 @@ conda install ace
 ```markdown
 usage: ace [-h] [--version] {generate,identify,verify} ...
 
-ACE: Assay Configurator for ELISpot.
+ACE Configurator for ELISpot.
 
 positional arguments:
   {generate,identify,verify}
@@ -47,9 +45,9 @@ optional arguments:
 
 **ACE includes the following commands:** 
 
-* [generate](generate.qmd) (generate an ELISpot assay configuration)
-* [identify](identify.qmd) (identify hit peptides from ELISpot assay results)
-* [verify](verify.qmd) (verify an ELISpot experiment configuration)
+* [generate](generate.qmd) (generate an ELISpot configuration)
+* [identify](identify.qmd) (identify/deconvolve hit peptides from ELISpot results)
+* [verify](verify.qmd) (verify if an ELISpot configuration is optimal)
 
 ## **Citation**
 
