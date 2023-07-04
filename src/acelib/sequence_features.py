@@ -42,11 +42,11 @@ class AceNeuralEngine(nn.Module):
     Representation implementations are based on the HuggingFace Transformers library
     and code from this Kaggle Notebook: https://www.kaggle.com/code/rhtsingh/utilizing-transformer-representations-efficiently
     """
-    def __init__(self, base_model, tokenizer, device, representation='last_hidden_state'):
+    def __init__(self, base_model, tokenizer, device=None, representation='last_hidden_state'):
         super(AceNeuralEngine, self).__init__()
         self.model = base_model
         self.tokenizer = tokenizer
-        self.device = device
+        self.device = device if device is not None else torch.device('cpu')
         self.representation = representation
         self.model.to(self.device)
 
@@ -118,7 +118,7 @@ class AceNeuralEngine(nn.Module):
 
     def load_weights(self, weights_path):
         """Load weights from a file"""
-        self.model.load_state_dict(torch.load(weights_path), map_location=self.device)
+        self.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def save_weights(self, weights_path):
         """Save weights to a file"""
