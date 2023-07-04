@@ -42,15 +42,14 @@ class AceNeuralEngine(nn.Module):
     Representation implementations are based on the HuggingFace Transformers library
     and code from this Kaggle Notebook: https://www.kaggle.com/code/rhtsingh/utilizing-transformer-representations-efficiently
     """
-    def __init__(self, base_model, tokenizer, device=None, representation='last_hidden_state'):
+    def __init__(self, base_model, tokenizer, device=None):
         super(AceNeuralEngine, self).__init__()
         self.model = base_model
         self.tokenizer = tokenizer
         self.device = device if device is not None else torch.device('cpu')
-        self.representation = representation
         self.model.to(self.device)
 
-    def forward(self, inputs):
+    def forward(self, inputs, representation='last_hidden_state'):
         """
         Implements the forward function of the nerural engine to get the output of the model
         before grabbing the embedding as the speccified representation.
@@ -65,21 +64,21 @@ class AceNeuralEngine(nn.Module):
         model_outputs = self.model(**inputs)
 
         # 2. Get the correct transformer representation
-        if self.representation == 'last_hidden_state':    
+        if representation == 'last_hidden_state':    
             representation = model_outputs.hidden_states[-1]
         
-        elif self.representation == 'pooler_output':
+        elif representation == 'pooler_output':
             if hasattr(model_outputs, 'pooler_output'):
                 # repesentation: [batch_size, pooler_dim]
                 representation = model_outputs.pooler_output
             else:
                 raise ValueError("Base model does not have a pooler_output")
         
-        elif self.representation == 'cls_embedding':
+        elif representation == 'cls_embedding':
             # repesentation: [batch_size, hidden_size]
             representation = model_outputs.hidden_states[-1][:, 0, :]
     
-        elif self.representation=='mean_pooling':
+        elif representation=='mean_pooling':
             # repesentation: [batch_size, hidden_size]
             input_mask_expanded = attention_mask.unsqueeze(-1).expand(model_outputs.hidden_states[-1].size()).float()
             sum_embeddings = torch.sum(model_outputs.hidden_states[-1] * input_mask_expanded, 1)
@@ -88,10 +87,10 @@ class AceNeuralEngine(nn.Module):
             mean_embeddings = sum_embeddings / sum_mask
             representation = model_outputs.hidden_states[-1].mean(dim=1)
 
-        elif self.representation=='max_pooling':
+        elif representation=='max_pooling':
             representation = torch.max(model_outputs.hidden_states[-1], 1)[0]
                 
-        elif self.representation == 'mean_max_pooling':
+        elif representation == 'mean_max_pooling':
             # repesentation: [batch_size, 2*hidden_size]
             input_mask_expanded = attention_mask.unsqueeze(-1).expand(model_outputs.hidden_states[-1].size()).float()
             sum_embeddings = torch.sum(model_outputs.hidden_states[-1] * input_mask_expanded, 1)
@@ -101,7 +100,7 @@ class AceNeuralEngine(nn.Module):
             max_embeddings = torch.max(model_outputs.hidden_states[-1], 1)[0]
             representation = torch.cat((mean_embeddings, max_embeddings), 1)
         
-        elif self.representation == 'concatenate_pooling':
+        elif representation == 'concatenate_pooling':
             # Strategy: concatenate the last four layers and then pool
             # Alternative strategies: concatenate the last two layers and then pool, 
             # intercalate different layers and pool, etc.
@@ -161,8 +160,8 @@ class AceNeuralEngine(nn.Module):
         assert len(embeddings) == len(sequences)
         return embeddings
 
-    def find_paired_peptides(self, peptide_ids, peptide_sequences, sim_fxn='euclidean', threshold=0.46):
-        embeddings = self.embed_sequences(peptide_sequences, representation=self.representation)
+    def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.46):
+        embeddings = self.embed_sequences(peptide_sequences, representation=representation)
         paired_peptide_ids = []
         for i in range(len(peptide_ids)):
             for j in range(len(peptide_ids)):
