@@ -389,9 +389,6 @@ class ELISpot:
             num_coverage: int
     ) -> bool:
         """
-        Verifies whether a given ELIspot configuration satisfies the following constraints:
-        1. Each peptide is in 'num_coverage' number of DIFFERENT pools.
-        2. Each peptide has EXACTLY ONE UNIQUE combination of pool IDs.
         Verifies whether a given ELISpot configuration satisfies the following constraints:
         1. Each peptide is in 'num_coverage' number of different pools.
         2. Each peptide is in exactly one unique combination of pool IDs.
@@ -411,15 +408,9 @@ class ELISpot:
         is_optimal          :   True if the input configuration meets all desired criteria.
                                 False otherwise.
         """
-        # Step 1. Check if each peptide is in 'num_coverage' number of DIFFERENT pools.
-        existing_pool_ids = set()
+        # Step 1. Check if each peptide is in 'num_coverage' number of different pools.
         for peptide_id in list(df_configuration['peptide_id'].unique()):
-            pool_ids = sorted(tuple(df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique()))
-            # Check pool uniqueness
-            if pool_ids in existing_pool_ids:
-                logger.info('%s has the same pool combination as another peptide.' % peptide_id)
-                return False
-            # Check for length
+            pool_ids = (df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique())
             if len(pool_ids) != num_coverage:
                 logger.info('Configuration does not meet constraint #1: peptide %s is in %i different pools (expected: %i).' %
                             (peptide_id, len(pool_ids), num_coverage))
