@@ -1,8 +1,8 @@
 import pandas as pd
 from .data import get_data_path
-from acelib.constants import DeconvolutionResults
-from acelib.main import run_ace_identify
-from acelib.aid_plate_reader import AIDPlateReader
+from src.acelib.constants import DeconvolutionResults
+from src.acelib.main import run_ace_identify
+from src.acelib.aid_plate_reader import AIDPlateReader
 
 
 def test_identify_small_configuration(small_elispot_configuration):
