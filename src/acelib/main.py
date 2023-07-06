@@ -17,26 +17,90 @@ import random
 from golfy import init, is_valid, optimize
 from ortools.sat.python import cp_model
 from typing import Callable, List, Tuple
-from .constants import PlateTypes, OptimizationLevel
+from .constants import *
 from .default_parameters import *
 from .elispot import ELISpot
 from .logger import get_logger
+from .sequence_features import AceNeuralEngine
 from .utilities import convert_golfy_results, split_peptides
 
 
 logger = get_logger(__name__)
 
 
-def run_ace_sat_solver(
+def run_ace_golfy(
+        df_peptides: pd.DataFrame,
+        num_peptides_per_pool: int,
+        num_coverage: int,
+        random_seed:int,
+        max_iters: int,
+        init_mode: str,
+        preferred_peptide_pairs: List[Tuple[str, str]] = []
+) -> Tuple[bool, pd.DataFrame]:
+    """
+    Generate an ELISpot configuration using golfy.
+
+    Parameters
+    ----------
+    df_peptides                 :   pd.DataFrame with the following columns:
+                                    'peptide_id'
+                                    'peptide_sequence'
+    num_peptides_per_pool       :   Number of peptides per pool.
+    num_coverage                :   Number of coverage (i.e. number of peptide replicates).
+    random_seed                 :   Random seed.
+    max_iters                   :   Number of maximum iterations for golfy.
+    init_mode                   :   Init mode.
+    preferred_peptide_pairs     :   List of preferred peptide pairs.
+
+    Returns
+    -------
+    is_valid                    :   True if all peptides are put into a unique
+                                    combination of pool IDs. False otherwise.
+    df_configuration            :   pd.DataFrame with the following columns:
+                                    'coverage_id'
+                                    'pool_id'
+                                    'peptide_id'
+    """
+    logger.info('Started running golfy.')
+
+    # Step 1. Set random seed
+    random.seed(random_seed)
+
+    # Step 2. Convert peptide IDs to integer IDs
+    # key = peptide ID (e.g. 'peptide_1')
+    # value = peptide ID integer (e.g. 1)
+    peptide_ids_dict = {}
+    for peptide_id in df_peptides['peptide_id'].values.tolist():
+        peptide_ids_dict[peptide_id] = int(peptide_id.split('_')[1])
+    preferred_neighbors = []
+    for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
+        preferred_neighbors.append((peptide_ids_dict[peptide_id_1], peptide_ids_dict[peptide_id_2]))
+
+    # Step 3. Run golfy
+    golfy_solution = init(
+        num_peptides=len(df_peptides['peptide_id'].unique()),
+        peptides_per_pool=num_peptides_per_pool,
+        num_replicates=num_coverage,
+        strategy=init_mode,
+        preferred_neighbors=preferred_neighbors
+    )
+    optimize(golfy_solution, max_iters=max_iters)
+
+    # Step 4. Convert golfy assignments to a DataFrame
+    df_configuration = convert_golfy_results(golfy_assignment=golfy_solution.assignments)
+
+    logger.info('Finished running golfy.')
+    return is_valid(golfy_solution), df_configuration
+
+
+def __run_sat_solver(
         df_peptides: pd.DataFrame,
         num_peptides_per_pool: int,
         num_coverage: int,
         num_processes: int,
         random_seed: int,
         disallowed_peptide_pairs: List[Tuple[str, str]] = [],
-        enforced_peptide_pairs: List[Tuple[str, str]] = [],
-        assign_well_ids: bool = True,
-        plate_type: str = PlateTypes.PLATE_96_WELLS
+        preferred_peptide_pairs: List[Tuple[str, str]] = []
 ) -> Tuple[int, pd.DataFrame]:
     """
     Generates an ELISpot configuration by running a SAT (social golfer problem) solver.
@@ -51,9 +115,7 @@ def run_ace_sat_solver(
     num_processes                   :   Number of processes.
     random_seed                     :   Random seed.
     disallowed_peptide_pairs        :   List of tuples (peptide ID, peptide ID).
-    enforced_peptide_pairs          :   List of tuples (peptide ID, peptide ID).
-    assign_well_ids                 :   If true, assigns plate and well IDs to each pool ID.
-    plate_type                      :   Plate type (allowed values: '96-well plate').
+    preferred_peptide_pairs         :   List of tuples (peptide ID, peptide ID).
 
     Returns
     -------
@@ -80,145 +142,95 @@ def run_ace_sat_solver(
         status, df_configuration = elispot.generate_configuration(
             random_seed=random_seed,
             disallowed_peptide_pairs=disallowed_peptide_pairs,
-            enforced_peptide_pairs=enforced_peptide_pairs
+            preferred_peptide_pairs=preferred_peptide_pairs
         )
         if status == cp_model.OPTIMAL:
             logger.info('An optimal configuration has been generated.')
             break
         else:
             logger.info('An optimal configuration could not be generated.')
-            if len(disallowed_peptide_pairs) == 0 and len(enforced_peptide_pairs) == 0:
+            if len(disallowed_peptide_pairs) == 0 and len(preferred_peptide_pairs) == 0:
                 break
 
         if len(disallowed_peptide_pairs) > 0:
             logger.info('Removing the last element in the list of disallowed peptide pairs as a constraint.')
             disallowed_peptide_pairs.pop()
-        if len(enforced_peptide_pairs) > 0:
+        if len(preferred_peptide_pairs) > 0:
             logger.info('Removing the last element in the list of enforced peptide pairs as a constraint.')
-            enforced_peptide_pairs.pop()
-
-    # Step 3. Assign plate and well IDs
-    if status == cp_model.OPTIMAL:
-        if assign_well_ids:
-            df_configuration = ELISpot.assign_well_ids(
-                df_configuration=df_configuration,
-                plate_type=plate_type
-            )
+            preferred_peptide_pairs.pop()
 
     return status, df_configuration
 
 
-def run_ace_generate(
+def run_ace_sat_solver(
         df_peptides: pd.DataFrame,
         num_peptides_per_pool: int,
         num_coverage: int,
-        num_processes: int,
+        num_peptides_per_batch: int,
         random_seed: int,
-        disallowed_peptide_pairs: List[Tuple[str, str]] = [],
-        enforced_peptide_pairs: List[Tuple[str, str]] = [],
-        assign_well_ids: bool = True,
-        plate_type: str = PlateTypes.PLATE_96_WELLS,
-        num_peptides_per_batch: int = GENERATE_NUM_PEPTIDES_PER_BATCH,
-        golfy_max_iters: int = GENERATE_GOLFY_MAX_ITERS
-) -> Tuple[int, pd.DataFrame]:
+        num_processes: int,
+        preferred_peptide_pairs: List[Tuple[str, str]] = []
+) -> pd.DataFrame:
     """
-    Generate an ELISpot configuration.
+    Generate an ELISpot configuration using SAT solver.
 
     Parameters
     ----------
-    df_peptides                     :   pd.DataFrame with the following columns:
-                                        'peptide_id'
-                                        'peptide_sequence'
-    num_peptides_per_pool           :   Number of peptides per pool.
-    num_coverage                    :   Number of coverage (i.e. number of peptide replicates).
-    num_processes                   :   Number of processes.
-    random_seed                     :   Random seed.
-    disallowed_peptide_pairs        :   List of tuples (peptide ID, peptide ID).
-    enforced_peptide_pairs          :   List of tuples (peptide ID, peptide ID).
-    assign_well_ids                 :   If true, assigns plate and well IDs to each pool ID.
-    plate_type                      :   Plate type (allowed values: '96-well plate').
-    num_peptides_per_batch          :   Number of peptides per batch (default: 100).
-    golfy_max_iters                 :   Number of maximum iterations for golfy.
+    df_peptides                 :   pd.DataFrame with the following columns:
+                                    'peptide_id'
+                                    'peptide_sequence'
+    num_peptides_per_pool       :   Number of peptides per pool.
+    num_coverage                :   Number of coverage (i.e. number of peptide replicates).
+    num_peptides_per_batch      :   Number of peptides per batch.
+    random_seed                 :   Random seed.
+    num_processes               :   Number of processes.
+    preferred_peptide_pairs     :   List of preferred peptide pairs.
 
     Returns
     -------
-    status                          :   Solver status; one of the following:
-                                        OptimizationLevel.OPTIMAL
-                                        OptimizationLevel.SUB_OPTIMAL
-    df_configuration                :   pd.DataFrame with the following columns:
-                                        'pool_id',
-                                        'peptide_id'
+    df_configuration            :   pd.DataFrame with the following columns:
+                                    'coverage_id'
+                                    'pool_id'
+                                    'peptide_id'
     """
-    # Step 1. Set random seed
-    random.seed(random_seed)
+    logger.info('Started running SAT solver.')
 
-    # Step 2. Run golfy
-    logger.info('Running golfy.')
-    golfy_solution = init(
-        num_peptides=len(df_peptides['peptide_id'].unique()),
-        peptides_per_pool=num_peptides_per_pool,
-        num_replicates=num_coverage
-    )
-    is_golfy_succcessful = optimize(golfy_solution, max_iters=golfy_max_iters)
-    df_configuration = convert_golfy_results(golfy_assignment=golfy_solution.assignments)
-
-    # Step 3. Run SAT solver if necessary
-    if is_golfy_succcessful:
-        logger.info('An optimal configuration has been generated.')
-        status = OptimizationLevel.OPTIMAL
+    if len(list(df_peptides['peptide_id'].unique())) > num_peptides_per_batch:
+        # Split peptides into batches
+        list_df = split_peptides(
+            df_peptides=df_peptides,
+            preferred_peptide_pairs=preferred_peptide_pairs,
+            num_peptides_per_batch=num_peptides_per_batch
+        )
+        df_configuration = pd.DataFrame()
+        for df_peptides_ in list_df:
+            status, df_configuration_ = __run_sat_solver(
+                df_peptides=df_peptides_,
+                num_peptides_per_pool=num_peptides_per_pool,
+                num_coverage=num_coverage,
+                num_processes=num_processes,
+                random_seed=random_seed,
+                preferred_peptide_pairs=preferred_peptide_pairs
+            )
+            if status != cp_model.OPTIMAL:
+                logger.error('Exiting program. Please review your configuration parameters before running SAT-solver again.')
+                exit(1)
+            df_configuration = pd.concat([df_configuration, df_configuration_])
     else:
-        if num_peptides_per_pool > 10 or num_coverage > 3:
-            num_pools = math.ceil(len(df_peptides['peptide_id'].unique()) / num_peptides_per_pool) * num_coverage
-            num_additional_pools = len(df_configuration['pool_id'].unique()) - num_pools
-            logger.info("A sub-optimal configuration has been generated; "
-                        "%i more pools have been added to accommodate the requested assay configuration. "
-                        % num_additional_pools)
-            status = OptimizationLevel.SUB_OPTIMAL
-        else:
-            logger.info('Running SAT solver.')
-            if len(list(df_peptides['peptide_id'].unique())) > num_peptides_per_batch:
-                # Split peptides into batches
-                list_df = split_peptides(
-                    df_peptides=df_peptides,
-                    enforced_peptide_pairs=enforced_peptide_pairs,
-                    num_peptides_per_batch=num_peptides_per_batch
-                )
-                df_configuration = pd.DataFrame()
-                for df_peptides_ in list_df:
-                    status, df_configuration_ = run_ace_sat_solver(
-                        df_peptides=df_peptides_,
-                        num_peptides_per_pool=num_peptides_per_pool,
-                        num_coverage=num_coverage,
-                        num_processes=num_processes,
-                        random_seed=random_seed,
-                        assign_well_ids=assign_well_ids,
-                        disallowed_peptide_pairs=disallowed_peptide_pairs,
-                        enforced_peptide_pairs=enforced_peptide_pairs,
-                        plate_type=plate_type
-                    )
-                    if status != cp_model.OPTIMAL:
-                        logger.error('Exiting program. Please review your configuration parameters before running ACE again.')
-                        exit(1)
-                    df_configuration = pd.concat([df_configuration, df_configuration_])
-                status = OptimizationLevel.OPTIMAL
-            else:
-                status, df_configuration = run_ace_sat_solver(
-                    df_peptides=df_peptides,
-                    num_peptides_per_pool=num_peptides_per_pool,
-                    num_coverage=num_coverage,
-                    num_processes=num_processes,
-                    random_seed=random_seed,
-                    assign_well_ids=assign_well_ids,
-                    disallowed_peptide_pairs=disallowed_peptide_pairs,
-                    enforced_peptide_pairs=enforced_peptide_pairs,
-                    plate_type=plate_type
-                )
-                if status != cp_model.OPTIMAL:
-                    logger.error('Exiting program. Please review your configuration parameters before running ACE again.')
-                    exit(1)
-                else:
-                    status = OptimizationLevel.OPTIMAL
-    return status, df_configuration
+        status, df_configuration = __run_sat_solver(
+            df_peptides=df_peptides,
+            num_peptides_per_pool=num_peptides_per_pool,
+            num_coverage=num_coverage,
+            num_processes=num_processes,
+            random_seed=random_seed,
+            preferred_peptide_pairs=preferred_peptide_pairs
+        )
+        if status != cp_model.OPTIMAL:
+            logger.error('Exiting program. Please review your configuration parameters before running SAT-solver again.')
+            exit(1)
+
+    logger.info('Finished running SAT solver.')
+    return df_configuration
 
 
 def run_ace_identify(

@@ -82,7 +82,7 @@ class ELISpot:
             self,
             random_seed: int,
             disallowed_peptide_pairs: List[Tuple[str,str]] = [],
-            enforced_peptide_pairs: List[Tuple[str,str]] = []
+            preferred_peptide_pairs: List[Tuple[str,str]] = []
     ) -> Tuple[int, pd.DataFrame]:
         """
         Generates an ELISpot assay configuration.
@@ -91,7 +91,7 @@ class ELISpot:
         ----------
         random_seed                 :   Random seed.
         disallowed_peptide_pairs    :   List of tuples (peptide ID, peptide ID).
-        enforced_peptide_pairs      :   List of tuples (peptide ID, peptide ID).
+        preferred_peptide_pairs     :   List of tuples (peptide ID, peptide ID).
 
         Returns
         -------
@@ -103,13 +103,13 @@ class ELISpot:
         # Step 1. Check whether any peptide-pair appears in both the list
         # of disallowed and the list of enforced peptide pairs.
         for peptide_id_1, peptide_id_2 in disallowed_peptide_pairs:
-            if (peptide_id_1, peptide_id_2) in enforced_peptide_pairs:
+            if (peptide_id_1, peptide_id_2) in preferred_peptide_pairs:
                 logger.error('Peptides %s and %s appear in the list of disallowed '
                              'pairs and the list of enforced pairs. '
                              'No configuration will be able to satisfy both constraints at the same time.' %
                              (peptide_id_1, peptide_id_2))
                 exit(1)
-            if (peptide_id_2, peptide_id_1) in enforced_peptide_pairs:
+            if (peptide_id_2, peptide_id_1) in preferred_peptide_pairs:
                 logger.error('Peptides %s and %s appear in the list of disallowed '
                              'pairs and the list of enforced pairs. '
                              'No configuration will be able to satisfy both constraints at the same time.' %
@@ -161,35 +161,59 @@ class ELISpot:
         # Constraint 3. No two peptides are in the same pool more than once
         # At the same time, apply constraints for disallowed peptide pairs
         # and enforced peptide pairs
-        for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
-            peptide_pair_bool_variables = []
-            for curr_coverage_id in coverage_ids:
-                for curr_pool_id in pool_ids:
-                    pair_bool_variable = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, peptide_id_1, peptide_id_2))
-                    peptide_1_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_1)]
-                    peptide_2_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_2)]
+        if len(preferred_peptide_pairs) == 0:
+            for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
+                peptide_pair_bool_variables = []
+                for curr_coverage_id in coverage_ids:
+                    for curr_pool_id in pool_ids:
+                        pair_bool_variable = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, peptide_id_1, peptide_id_2))
+                        peptide_1_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_1)]
+                        peptide_2_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_2)]
 
-                    # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
-                    model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
-                    peptide_pair_bool_variables.append(pair_bool_variable)
+                        # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
+                        model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
+                        peptide_pair_bool_variables.append(pair_bool_variable)
 
-            # Include boolean variable to apply disallowed peptide pairs
-            if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or \
-                    (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
-                # Pairs cannot appear together in the same pool
-                model.Add(sum(peptide_pair_bool_variables) == 0)
-            else:
-                # All pairs can appear together in the same pool at most once
-                model.Add(sum(peptide_pair_bool_variables) <= 1)
+                # Include boolean variable to apply disallowed peptide pairs or enforced peptide pairs
+                if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or \
+                        (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
+                    # Pairs cannot appear together in the same pool
+                    model.Add(sum(peptide_pair_bool_variables) == 0)
+                else:
+                    # All pairs can appear together in the same pool at most once
+                    model.Add(sum(peptide_pair_bool_variables) <= 1)
+        else:
+            for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
+                peptide_pair_bool_variables = []
+                for curr_coverage_id in coverage_ids:
+                    for curr_pool_id in pool_ids:
+                        if (((peptide_id_1, peptide_id_2) in preferred_peptide_pairs) or \
+                            ((peptide_id_2, peptide_id_1) in preferred_peptide_pairs)) and \
+                            (curr_coverage_id == 'coverage_1'):
+                            pair_bool_variable = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, peptide_id_1, peptide_id_2))
+                            peptide_1_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_1)]
+                            peptide_2_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_2)]
 
-            # Include boolean variable to apply enforced peptide pairs
-            if (peptide_id_1, peptide_id_2) in enforced_peptide_pairs or \
-                    (peptide_id_2, peptide_id_1) in enforced_peptide_pairs:
-                # Pairs must appear together in the same pool
-                model.Add(sum(peptide_pair_bool_variables) == 1)
-            else:
-                # All pairs can appear together in the same pool at most once
-                model.Add(sum(peptide_pair_bool_variables) <= 1)
+                            # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
+                            model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) == 1)
+                            peptide_pair_bool_variables.append(pair_bool_variable)
+                        else:
+                            pair_bool_variable = model.NewBoolVar("%s/%s/%s" % (curr_coverage_id, peptide_id_1, peptide_id_2))
+                            peptide_1_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_1)]
+                            peptide_2_bool_variable = var_dict[(curr_coverage_id, curr_pool_id, peptide_id_2)]
+
+                            # pair_bool_variable has to be 1 if peptide 1 and peptide 2 are paired together
+                            model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
+                            peptide_pair_bool_variables.append(pair_bool_variable)
+
+                # Include boolean variable to apply disallowed peptide pairs or enforced peptide pairs
+                if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or \
+                        (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
+                    # Pairs cannot appear together in the same pool
+                    model.Add(sum(peptide_pair_bool_variables) == 0)
+                else:
+                    # All pairs can appear together in the same pool at most once
+                    model.Add(sum(peptide_pair_bool_variables) <= 1)
 
         # Step 5. Solve
         logger.info('CP solver started.')

@@ -37,6 +37,7 @@ install:
   - mamba install openpyxl
   - conda install pytorch torchvision -c pytorch
   - conda install -c conda-forge transformers
+  - pip install resources/golfy/golfy-main.zip --verbose
   - pip install . --verbose
 before_script:
   - bash lint.sh

@@ -2,7 +2,7 @@
 title: "identify"
 ---
 
-This command identifies (deconvolves) hit peptides from an ELISpot experiment.
+This command identifies (deconvolves) hit peptides from ELISpot results.
 
 ```bash
 usage: ace identify [-h] 
@@ -20,3 +20,72 @@ usage: ace identify [-h]
 | `--configuration-csv-file`  | ELISpot configuration CSV file. Expected columns: `pool_id`, `peptide_id`, `plate_id`, `well_id`. |
 | `--min-positive-spot-count` | Number of spots for a pool to be considered a positive hit.              |
 | `--output-csv-file`         | Output CSV file.                                                         |
+
+### Example
+
+Let's say you used the [generate](generate.qmd) command in `ACE` to generate an ELISpot configuration for pooling 10 
+peptides per pool for a total of 100 unique peptides. The configuration also repeated each peptide 3 times 
+(i.e. 3x coverage); you created `100peptides_10perpool_3x.csv`. You took this configuration and 
+successfully ran an ELISpot experiment. Now you want to identify (deconvolve) hit peptides. 
+Here we describe how you can achieve this using `ACE`.
+
+#### AID Plate Reader
+
+If you used a plate reader from AID, we are able to automatically parse the `xlsx` file from 
+the machine.
+
+`elispot_results.xlsx`:
+
+![](resources/aid_plate_reader_xlsx_example.png)
+
+Identify (deconvolve) hit peptides from your ELISpot experiment:
+
+```bash
+ace identify \
+  --readout-file-type aid_plate_reader \
+  --readout-files /path/elispot_results.xlsx \
+  --configuration-csv-file /path/100peptides_10perpool_3x.csv \
+  --min-positive-spot-count 300 \
+  --output-csv-file ace_deconvolution_results.csv
+```
+
+#### Any Reader
+
+You can alternatively supply a generic ELISpot results `csv` file to `ACE`:
+
+`elispot_results.csv`:
+
+| pool_id | spot_count |
+| ------- | ---------- |
+| pool_1 | 300 |
+| ... | ... |
+| pool_30 | 0 |
+
+Identify (deconvolve) hit peptides from your ELISpot experiment:
+
+```bash
+ace identify \
+  --readout-file-type pool_id \
+  --readout-files /path/elispot_results.csv \
+  --configuration-csv-file /path/100peptides_10perpool_3x.csv \
+  --min-positive-spot-count 300 \
+  --output-csv-file ace_deconvolution_results.csv
+```
+
+### Deconvolution results
+
+Here is what `ACE` deconvolution results look like:
+
+| peptide_id | pool_ids | num_coverage | deconvolution_result |
+|------------| -------- |-------------|----------------------|
+ peptide_7  | pool_5;pool_9;pool_13 | 3 | hit                  |
+| ...        | ... | ...         | ...                  |
+| peptide_9  | pool_1;pool_9;pool_14 | 3           | candidate_hit        |
+
+`ACE` deconvolution identifies two classes of peptides: `candidate_hit` and `hit`. 
+Peptides that have the label `hit` are confident hits (assuming no false positives) 
+because they were present in `num_coverage` (i.e. 3 in the above configuration) 
+number of different pools with at least one unique assignment of hit peptide-pool. 
+On the other hand, peptides that have the label `candidate_hit` need further 
+validation (i.e. a second round of ELISpot) to determine whether it is indeed a 
+hit peptide.
