@@ -15,8 +15,7 @@
 Purpose of this Code is to Handle the Sequence Similarity Elements of the ACE CP-SAT
 """
 import numpy as np
-import re
-import difflib
+import pandas as pd
 import torch.nn as nn
 import torch
 from transformers import BertModel, BertTokenizer
@@ -160,7 +159,7 @@ class AceNeuralEngine(nn.Module):
         assert len(embeddings) == len(sequences)
         return embeddings
 
-    def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.46):
+    def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.65):
         embeddings = self.embed_sequences(peptide_sequences, representation=representation)
         paired_peptide_ids = []
         for i in range(len(peptide_ids)):
@@ -168,11 +167,17 @@ class AceNeuralEngine(nn.Module):
                 if i == j:
                     continue
                 if sim_fxn == 'euclidean':
-                    if self.euclidean_similarity(embeddings[i], embeddings[j]) >= threshold:
-                        paired_peptide_ids.append((peptide_ids[i], peptide_ids[j]))
+                    metric =self.euclidean_similarity(embeddings[i], embeddings[j])
+                    if metric >= threshold:
+                        paired_peptide_ids.append((peptide_ids[i], peptide_ids[j], metric))
                 elif sim_fxn == 'cosine':
-                    if self.cosine_similarity(embeddings[i], embeddings[j]) >= threshold:
-                        paired_peptide_ids.append((peptide_ids[i], peptide_ids[j]))
+                    metric = self.cosine_similarity(embeddings[i], embeddings[j])
+                    if metric >= threshold:
+                        paired_peptide_ids.append((peptide_ids[i], peptide_ids[j], metric))
                 else:
                     raise ValueError("Similarity function must be 'euclidean' or 'cosine'")
         return paired_peptide_ids
+    @staticmethod
+    def to_paired_peptide_df(paired_peptide_triples):
+        """Convert a list of paired peptides to a dataframe"""
+        return pd.DataFrame(paired_peptide_triples, columns=['peptide_id_1', 'peptide_id_2', 'similarity'])
