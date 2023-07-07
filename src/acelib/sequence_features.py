@@ -161,7 +161,7 @@ class AceNeuralEngine(nn.Module):
 
     def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.65):
         embeddings = self.embed_sequences(peptide_sequences, representation=representation)
-        paired_peptide_ids = set()
+        paired_peptide_ids = []
         for i in range(len(peptide_ids)):
             for j in range(len(peptide_ids)):
                 if i == j:
@@ -169,11 +169,17 @@ class AceNeuralEngine(nn.Module):
                 if sim_fxn == 'euclidean':
                     metric =self.euclidean_similarity(embeddings[i], embeddings[j])
                     if metric >= threshold:
-                        paired_peptide_ids.add((peptide_ids[i], peptide_ids[j], metric))
+                        if (peptide_ids[j], peptide_ids[i], metric) in paired_peptide_ids:
+                            continue
+                        else:
+                            paired_peptide_ids.append((peptide_ids[i], peptide_ids[j], metric))
                 elif sim_fxn == 'cosine':
                     metric = self.cosine_similarity(embeddings[i], embeddings[j])
                     if metric >= threshold:
-                        paired_peptide_ids.add((peptide_ids[i], peptide_ids[j], metric))
+                        if (peptide_ids[j], peptide_ids[i], metric) in paired_peptide_ids:
+                            continue
+                        else:
+                            paired_peptide_ids.append((peptide_ids[i], peptide_ids[j], metric))
                 else:
                     raise ValueError("Similarity function must be 'euclidean' or 'cosine'")
         return list(paired_peptide_ids)
