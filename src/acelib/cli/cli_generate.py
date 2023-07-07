@@ -272,6 +272,7 @@ def run_ace_generate_from_parsed_args(args):
             logger.info(peptide_cluster)
     else:
         peptide_clusters = []
+        preferred_peptide_pairs_deduped = []
 
     # Step 3. Generate an ELISpot configuration
     if (args.num_peptides_per_pool > 10 or args.num_coverage > 3) and \
@@ -299,6 +300,8 @@ def run_ace_generate_from_parsed_args(args):
                         'Try running ACE again but with a higher number of '
                         '--golfy-max-iters')
     elif args.mode == GenerateModes.SAT_SOLVER:
+        # Create the first coverage peptide-pool assignments while respecting
+        # the preferred peptide pairs or clusters
         if len(peptide_clusters) > 0:
             df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
                 df_peptides=df_peptides,

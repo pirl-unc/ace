@@ -4,11 +4,13 @@
 from ELISpot results.
 
 Described below is a quick tutorial on `ACE`. For detailed documentation, 
-please refer to our [official documentation](). 
+please refer to our [official documentation](https://pirl-unc.github.io/ace/). 
 
 ## 01. Installation
+
+Download the latest stable release version from [here](https://github.com/pirl-unc/ace/releases)
 ```
-pip install . --verbose
+pip install ace-<version>.tar.gz
 ```
 
 ## 02. Dependencies
