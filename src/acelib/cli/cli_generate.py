@@ -131,7 +131,24 @@ def add_ace_generate_arg_parser(sub_parsers):
         required=False,
         help="Sequence similarity trained model (default: %s)" % TrainedModels.MODEL_3
     )
-
+    parser_optional.add_argument(
+        "--sequence-similarity-threshold",
+        dest="sequence_similarity_threshold",
+        type=float,
+        default=GENERATE_SEQUENCE_SIMILARITY_THRESHOLD,
+        required=False,
+        help="Sequence similarity threshold (default: %f). "
+             "A higher threshold leads to more stringent peptide pairing." % GENERATE_SEQUENCE_SIMILARITY_THRESHOLD
+    )
+    parser_optional.add_argument(
+        "--sequence-similarity-function",
+        dest="sequence_similarity_function",
+        type=str,
+        default=GENERATE_SEQUENCE_SIMILARITY_FUNCTION,
+        required=False,
+        choices=SequenceSimilarityFunctions.ALL,
+        help="Sequence similarity function (default: %s)." % GENERATE_SEQUENCE_SIMILARITY_FUNCTION
+    )
     parser_optional.add_argument(
         "--random-seed",
         dest="random_seed",
@@ -202,6 +219,8 @@ def run_ace_generate_from_parsed_args(args):
                 assign_well_ids
                 plate_type
                 trained_model
+                sequence_similarity_function
+                sequence_similarity_threshold
                 random_seed
                 golfy_max_iters
                 golfy_init_mode
@@ -235,23 +254,24 @@ def run_ace_generate_from_parsed_args(args):
         preferred_peptide_pairs = ace_eng.find_paired_peptides(
             peptide_ids=df_peptides['peptide_id'].values.tolist(),
             peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
-            sim_fxn='euclidean',
-            threshold=0.6
+            sim_fxn=args.sequence_similarity_function,
+            threshold=args.sequence_similarity_threshold
         )
+        peptide_clusters = [] # todo: compute peptide clusters
 
-        # Dedupliate
+        # Deduplicate
         preferred_peptide_pairs_deduped = []
         for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
             if ((peptide_id_1, peptide_id_2) not in preferred_peptide_pairs_deduped) and \
                 ((peptide_id_2, peptide_id_1) not in preferred_peptide_pairs_deduped):
                 preferred_peptide_pairs_deduped.append((peptide_id_1, peptide_id_2))
         logger.info('Based on our sequence similarity neural engine, here are '
-                    'the peptide pairs that will try to be pooled together '
-                    '(%i unique pairs):' % len(preferred_peptide_pairs_deduped))
-        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs_deduped:
-            logger.info('%s and %s' % (peptide_id_1, peptide_id_2))
+                    'the peptide clusters that we will try to pool together '
+                    '(%i clusters):' % len(peptide_clusters))
+        for peptide_cluster in peptide_clusters:
+            logger.info(peptide_cluster)
     else:
-        preferred_peptide_pairs = []
+        peptide_clusters = []
 
     # Step 3. Generate an ELISpot configuration
     if (args.num_peptides_per_pool > 10 or args.num_coverage > 3) and \
@@ -279,15 +299,28 @@ def run_ace_generate_from_parsed_args(args):
                         'Try running ACE again but with a higher number of '
                         '--golfy-max-iters')
     elif args.mode == GenerateModes.SAT_SOLVER:
+        if len(peptide_clusters) > 0:
+            df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
+                df_peptides=df_peptides,
+                peptide_clusters=peptide_clusters,
+                num_peptides_per_pool=args.num_peptides_per_pool
+            )
+            disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
+                df_configuration=df_configuration_first_coverage
+            )
+        else:
+            df_configuration_first_coverage = pd.DataFrame()
+            disallowed_peptide_pairs = []
         df_configuration = run_ace_sat_solver(
             df_peptides=df_peptides,
             num_peptides_per_pool=args.num_peptides_per_pool,
-            num_coverage=args.num_coverage,
+            num_coverage=args.num_coverage - 1,
             num_peptides_per_batch=args.num_peptides_per_batch,
             random_seed=args.random_seed,
             num_processes=args.num_processes,
-            preferred_peptide_pairs=preferred_peptide_pairs_deduped
+            disallowed_peptide_pairs=disallowed_peptide_pairs
         )
+        df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])
     else:
         logger.error('Unknown mode: %s' % args.mode)
         exit(1)

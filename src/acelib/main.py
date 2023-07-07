@@ -99,8 +99,8 @@ def __run_sat_solver(
         num_coverage: int,
         num_processes: int,
         random_seed: int,
-        disallowed_peptide_pairs: List[Tuple[str, str]] = [],
-        preferred_peptide_pairs: List[Tuple[str, str]] = []
+        is_first_coverage: bool,
+        disallowed_peptide_pairs: List[Tuple[str, str]] = []
 ) -> Tuple[int, pd.DataFrame]:
     """
     Generates an ELISpot configuration by running a SAT (social golfer problem) solver.
@@ -114,8 +114,8 @@ def __run_sat_solver(
     num_coverage                    :   Number of coverage (i.e. number of peptide replicates).
     num_processes                   :   Number of processes.
     random_seed                     :   Random seed.
+    is_first_coverage               :   True if first coverage. False otherwise.
     disallowed_peptide_pairs        :   List of tuples (peptide ID, peptide ID).
-    preferred_peptide_pairs         :   List of tuples (peptide ID, peptide ID).
 
     Returns
     -------
@@ -138,27 +138,11 @@ def __run_sat_solver(
     )
 
     # Step 2. Generate an ELISpot experiment configuration
-    while True:
-        status, df_configuration = elispot.generate_configuration(
-            random_seed=random_seed,
-            disallowed_peptide_pairs=disallowed_peptide_pairs,
-            preferred_peptide_pairs=preferred_peptide_pairs
-        )
-        if status == cp_model.OPTIMAL:
-            logger.info('An optimal configuration has been generated.')
-            break
-        else:
-            logger.info('An optimal configuration could not be generated.')
-            if len(disallowed_peptide_pairs) == 0 and len(preferred_peptide_pairs) == 0:
-                break
-
-        if len(disallowed_peptide_pairs) > 0:
-            logger.info('Removing the last element in the list of disallowed peptide pairs as a constraint.')
-            disallowed_peptide_pairs.pop()
-        if len(preferred_peptide_pairs) > 0:
-            logger.info('Removing the last element in the list of enforced peptide pairs as a constraint.')
-            preferred_peptide_pairs.pop()
-
+    status, df_configuration = elispot.generate_configuration(
+        random_seed=random_seed,
+        is_first_coverage=is_first_coverage,
+        disallowed_peptide_pairs=disallowed_peptide_pairs
+    )
     return status, df_configuration
 
 
@@ -169,7 +153,8 @@ def run_ace_sat_solver(
         num_peptides_per_batch: int,
         random_seed: int,
         num_processes: int,
-        preferred_peptide_pairs: List[Tuple[str, str]] = []
+        is_first_coverage: bool,
+        disallowed_peptide_pairs: List[Tuple[str, str]] = []
 ) -> pd.DataFrame:
     """
     Generate an ELISpot configuration using SAT solver.
@@ -184,7 +169,8 @@ def run_ace_sat_solver(
     num_peptides_per_batch      :   Number of peptides per batch.
     random_seed                 :   Random seed.
     num_processes               :   Number of processes.
-    preferred_peptide_pairs     :   List of preferred peptide pairs.
+    is_first_coverage           :   True if first coverage. False otherwise.
+    disallowed_peptide_pairs    :   List of disallowed peptide pairs.
 
     Returns
     -------
@@ -199,7 +185,6 @@ def run_ace_sat_solver(
         # Split peptides into batches
         list_df = split_peptides(
             df_peptides=df_peptides,
-            preferred_peptide_pairs=preferred_peptide_pairs,
             num_peptides_per_batch=num_peptides_per_batch
         )
         df_configuration = pd.DataFrame()
@@ -210,7 +195,8 @@ def run_ace_sat_solver(
                 num_coverage=num_coverage,
                 num_processes=num_processes,
                 random_seed=random_seed,
-                preferred_peptide_pairs=preferred_peptide_pairs
+                is_first_coverage=is_first_coverage,
+                disallowed_peptide_pairs=disallowed_peptide_pairs
             )
             if status != cp_model.OPTIMAL:
                 logger.error('Exiting program. Please review your configuration parameters before running SAT-solver again.')
@@ -223,7 +209,8 @@ def run_ace_sat_solver(
             num_coverage=num_coverage,
             num_processes=num_processes,
             random_seed=random_seed,
-            preferred_peptide_pairs=preferred_peptide_pairs
+            is_first_coverage=is_first_coverage,
+            disallowed_peptide_pairs=disallowed_peptide_pairs
         )
         if status != cp_model.OPTIMAL:
             logger.error('Exiting program. Please review your configuration parameters before running SAT-solver again.')

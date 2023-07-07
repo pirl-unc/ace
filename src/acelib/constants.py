@@ -98,3 +98,12 @@ class TrainedModels:
         MODEL_2,
         MODEL_3
     ]
+
+
+class SequenceSimilarityFunctions:
+    EUCLIDEAN = 'euclidean'
+    COSINE = 'cosine'
+    ALL = [
+        EUCLIDEAN,
+        COSINE
+    ]
