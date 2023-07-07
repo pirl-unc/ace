@@ -10,8 +10,6 @@ notebooks/*.pt
 *.DS_Store
 .pytest_cache/
 **/.DS_Store
-docs/.quarto/
-docs/_site/
 .coverage
 acegui/views/res/ace_video_placeholder.mp4
 ACE.egg-info/
