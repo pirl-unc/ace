@@ -308,9 +308,11 @@ def run_ace_generate_from_parsed_args(args):
             disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
                 df_configuration=df_configuration_first_coverage
             )
+            is_first_coverage = False
         else:
             df_configuration_first_coverage = pd.DataFrame()
             disallowed_peptide_pairs = []
+            is_first_coverage = True
         df_configuration = run_ace_sat_solver(
             df_peptides=df_peptides,
             num_peptides_per_pool=args.num_peptides_per_pool,
@@ -318,6 +320,7 @@ def run_ace_generate_from_parsed_args(args):
             num_peptides_per_batch=args.num_peptides_per_batch,
             random_seed=args.random_seed,
             num_processes=args.num_processes,
+            is_first_coverage=is_first_coverage,
             disallowed_peptide_pairs=disallowed_peptide_pairs
         )
         df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])
