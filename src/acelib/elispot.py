@@ -37,18 +37,24 @@ class ELISpot:
     num_peptides_per_pool: int
     num_coverage: int
     num_processes: int
-    peptide_ids: List[str] = field(default_factory=list, repr=False)
-    _dummy_peptide_ids: List[str] = field(default_factory=list, repr=False)
-    peptide_sequences: List[str] = field(default_factory=list, repr=False)
-    _dummy_peptide_sequences: List[str] = field(default_factory=list, repr=False)
+    df_peptides: pd.DataFrame
+    __dummy_peptide_ids: List[str] = field(default_factory=list, repr=False)
 
     @property
     def num_peptides(self):
         return len(self.peptide_ids)
 
     @property
+    def peptide_ids(self):
+        return list(self.df_peptides['peptide_id'].values.tolist())
+
+    @property
+    def peptide_sequences(self):
+        return list(self.df_peptides['peptide_sequence'].values.tolist())
+
+    @property
     def num_dummy_peptides(self):
-        return len(self._dummy_peptide_ids)
+        return len(self.__dummy_peptide_ids)
 
     def __post_init__(self):
         # Step 1. Make sure the number of peptides is bigger than the number of peptides per pool.
@@ -62,27 +68,23 @@ class ELISpot:
             # Get new number of peptides (increased to a divisible number)
             num_dummy_peptides = self.num_peptides_per_pool - remainder
             dummy_peptide_id_idx = 1
-            dummy_peptide_seq = ''.join(random.choice('ACDEFGHIKLMNPQRSTVWY') for _ in range(random.randint(8, 15)))
             for _ in range(0, num_dummy_peptides):
                 while True:
                     dummy_peptide_id = 'dummy_peptide_%i' % dummy_peptide_id_idx
-                    if dummy_peptide_id not in self._dummy_peptide_ids and dummy_peptide_id not in self.peptide_ids:
+                    if dummy_peptide_id not in self.peptide_ids:
                         self._dummy_peptide_ids.append(dummy_peptide_id)
                         break
                     else:
                         dummy_peptide_id_idx += 1
-                    if dummy_peptide_seq not in self._dummy_peptide_sequences and dummy_peptide_seq not in self.peptide_sequences:
-                        self._dummy_peptide_sequences.append(dummy_peptide_seq)
-                        break
-                    else:
-                        dummy_peptide_seq = ''.join(random.choice('ACDEFGHIKLMNPQRSTVWY') for _ in range(random.randint(8, 15)))
-                        
+
+    def get_peptide_sequence(self, peptide_id: str) -> str:
+        return self.df_peptides.loc[self.df_peptides['peptide_id'] == peptide_id,'peptide_sequence'].values[0]
 
     def generate_configuration(
             self,
             random_seed: int,
-            disallowed_peptide_pairs: List[Tuple[str,str]] = [],
-            enforced_peptide_pairs: List[Tuple[str,str]] = []
+            is_first_coverage: bool,
+            disallowed_peptide_pairs: List[Tuple[str, str]] = []
     ) -> Tuple[int, pd.DataFrame]:
         """
         Generates an ELISpot assay configuration.
@@ -90,8 +92,8 @@ class ELISpot:
         Parameters
         ----------
         random_seed                 :   Random seed.
+        is_first_coverage           :   True if first coverage. False otherwise.
         disallowed_peptide_pairs    :   List of tuples (peptide ID, peptide ID).
-        enforced_peptide_pairs      :   List of tuples (peptide ID, peptide ID).
 
         Returns
         -------
@@ -100,28 +102,12 @@ class ELISpot:
                                         'pool_id'
                                         'peptide_id'
         """
-        # Step 1. Check whether any peptide-pair appears in both the list
-        # of disallowed and the list of enforced peptide pairs.
-        for peptide_id_1, peptide_id_2 in disallowed_peptide_pairs:
-            if (peptide_id_1, peptide_id_2) in enforced_peptide_pairs:
-                logger.error('Peptides %s and %s appear in the list of disallowed '
-                             'pairs and the list of enforced pairs. '
-                             'No configuration will be able to satisfy both constraints at the same time.' %
-                             (peptide_id_1, peptide_id_2))
-                exit(1)
-            if (peptide_id_2, peptide_id_1) in enforced_peptide_pairs:
-                logger.error('Peptides %s and %s appear in the list of disallowed '
-                             'pairs and the list of enforced pairs. '
-                             'No configuration will be able to satisfy both constraints at the same time.' %
-                             (peptide_id_1, peptide_id_2))
-                exit(1)
-
-        # Step 2. Calculate the number of pools per coverage
+        # Step 1. Calculate the number of pools per coverage
         num_pools_per_coverage = int((self.num_peptides + self.num_dummy_peptides) / self.num_peptides_per_pool)
         pool_ids = ['pool_' + str(i) for i in range(1, num_pools_per_coverage + 1)]
         coverage_ids = ['coverage_' + str(i) for i in range(1, self.num_coverage + 1)]
 
-        # Step 3. Construct a constraint programming model
+        # Step 2. Construct a constraint programming model
         model = cp_model.CpModel()
         data_dict = {
             'coverage_id': [],
@@ -130,8 +116,8 @@ class ELISpot:
             'bool_variable': []
         }
 
-        # Step 4. Initialize the constraint programming model dictionary
-        peptide_ids = self.peptide_ids + self._dummy_peptide_ids
+        # Step 3. Initialize the constraint programming model dictionary
+        peptide_ids = self.peptide_ids + self.__dummy_peptide_ids
         var_dict = {}
         for curr_coverage_id in coverage_ids:
             for curr_pool_id in pool_ids:
@@ -160,7 +146,6 @@ class ELISpot:
 
         # Constraint 3. No two peptides are in the same pool more than once
         # At the same time, apply constraints for disallowed peptide pairs
-        # and enforced peptide pairs
         for peptide_id_1, peptide_id_2 in combinations(peptide_ids, r=2):
             peptide_pair_bool_variables = []
             for curr_coverage_id in coverage_ids:
@@ -173,32 +158,20 @@ class ELISpot:
                     model.Add((peptide_1_bool_variable + peptide_2_bool_variable - pair_bool_variable) <= 1)
                     peptide_pair_bool_variables.append(pair_bool_variable)
 
-            # Include boolean variable to apply disallowed peptide pairs
-            if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or \
-                    (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
+            # Include boolean variable to apply disallowed peptide pairs or enforced peptide pairs
+            if (peptide_id_1, peptide_id_2) in disallowed_peptide_pairs or (peptide_id_2, peptide_id_1) in disallowed_peptide_pairs:
                 # Pairs cannot appear together in the same pool
                 model.Add(sum(peptide_pair_bool_variables) == 0)
             else:
                 # All pairs can appear together in the same pool at most once
                 model.Add(sum(peptide_pair_bool_variables) <= 1)
 
-            # Include boolean variable to apply enforced peptide pairs
-            if (peptide_id_1, peptide_id_2) in enforced_peptide_pairs or \
-                    (peptide_id_2, peptide_id_1) in enforced_peptide_pairs:
-                # Pairs must appear together in the same pool
-                model.Add(sum(peptide_pair_bool_variables) == 1)
-            else:
-                # All pairs can appear together in the same pool at most once
-                model.Add(sum(peptide_pair_bool_variables) <= 1)
-
-        # Step 5. Solve
-        logger.info('CP solver started.')
+        # Step 4. Solve
         solver = cp_model.CpSolver()
         solver.parameters.num_search_workers = self.num_processes
         solver.enumerate_all_solutions = False
         solver.parameters.random_seed = random_seed
         status = solver.Solve(model)
-        logger.info('CP solver finished.')
 
         if status == cp_model.OPTIMAL:
             logger.info('An optimal feasible solution was found.')
@@ -212,11 +185,12 @@ class ELISpot:
             logger.info('The status of the model is unknown because no solution was '
                         'found before something caused the solver to stop, such as a time limit or a memory limit.')
 
-        # Step 6. Parse solution
+        # Step 5. Parse solution
         solutions_data = {
             'coverage_id': [],
             'pool_id': [],
-            'peptide_id': []
+            'peptide_id': [],
+            'peptide_sequence': []
         }
         for curr_bool_variable in df['bool_variable'].values.tolist():
             if solver.Value(curr_bool_variable) == 1:
@@ -226,17 +200,28 @@ class ELISpot:
                 curr_peptide_id = curr_bool_variable_elements[2]
 
                 # Fix pool ID
-                if curr_coverage_id != "coverage_1":
+                if is_first_coverage:
+                    if curr_coverage_id != "coverage_1":
+                        curr_coverage_id_int = int(curr_coverage_id.split('_')[1])
+                        curr_pool_id = 'pool_' + str(num_pools_per_coverage * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
+                else:
+                    curr_coverage_id = 'coverage_%i' % (int(curr_coverage_id.split('_')[1]) + 1)
                     curr_coverage_id_int = int(curr_coverage_id.split('_')[1])
-                    curr_pool_id = 'pool_' + str(
-                        num_pools_per_coverage * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
+                    curr_pool_id = 'pool_' + str(num_pools_per_coverage * (curr_coverage_id_int - 1) + int(curr_pool_id.split('_')[1]))
 
-                solutions_data['coverage_id'].append(curr_coverage_id)
-                solutions_data['pool_id'].append(curr_pool_id)
-                solutions_data['peptide_id'].append(curr_peptide_id)
+                if curr_peptide_id in self.__dummy_peptide_ids:
+                    solutions_data['coverage_id'].append(curr_coverage_id)
+                    solutions_data['pool_id'].append(curr_pool_id)
+                    solutions_data['peptide_id'].append(curr_peptide_id)
+                    solutions_data['peptide_sequence'].append('')
+                else:
+                    solutions_data['coverage_id'].append(curr_coverage_id)
+                    solutions_data['pool_id'].append(curr_pool_id)
+                    solutions_data['peptide_id'].append(curr_peptide_id)
+                    solutions_data['peptide_sequence'].append(self.get_peptide_sequence(peptide_id=curr_peptide_id))
 
         df_configuration = pd.DataFrame(solutions_data)
-        df_configuration = df_configuration[df_configuration['peptide_id'].isin(self._dummy_peptide_ids) == False]
+        df_configuration = df_configuration[df_configuration['peptide_id'].isin(self.__dummy_peptide_ids) == False]
 
         return status, df_configuration
 
@@ -253,6 +238,7 @@ class ELISpot:
         df_configuration    :   DataFrame with the following columns:
                                 'pool_id',
                                 'peptide_id'
+                                'peptide_sequence'
         plate_type          :   Plate type (allowed values: '96-well plate').
 
         Returns
@@ -260,6 +246,7 @@ class ELISpot:
         df_configuration    :   DataFrame with the following columns:
                                 'pool_id',
                                 'peptide_id'
+                                'peptide_sequence'
                                 'plate_id'
                                 'well_id'
         """
@@ -290,6 +277,152 @@ class ELISpot:
             return df_configuration
 
     @staticmethod
+    def fetch_pooled_peptide_pairs(
+            df_configuration: pd.DataFrame
+    ) -> List[Tuple[str,str]]:
+        """
+        Fetches a list of all pooled peptide pairs.
+
+        Parameters
+        ----------
+        df_configuration    :   pd.DataFrame with the following columns:
+                                'coverage_id'
+                                'pool_id'
+                                'peptide_id'
+
+        Returns
+        -------
+        peptide_pairs       :   List of all peptide pairs that appear together
+                                in a given pool.
+        """
+        peptide_pairs = []
+        for name, group in df_configuration.groupby('pool_id'):
+            for peptide_id_1, peptide_id_2 in combinations(group['peptide_id'], r=2):
+                peptide_pairs.append((peptide_id_1, peptide_id_2))
+        return peptide_pairs
+
+    @staticmethod
+    def generate_first_coverage_configuration(
+            df_peptides: pd.DataFrame,
+            preferred_peptide_pairs: List[Tuple[str,str]],
+            num_peptides_per_pool: int
+    ) -> pd.DataFrame:
+        """
+        Given a list of clustered peptide IDs, generate the first coverage
+        configuration.
+
+        Parameters
+        ----------
+        df_peptides             :   pd.DataFrame with the following columns:
+                                    'peptide_id'
+                                    'peptide_sequence'
+        preferred_peptide_pairs :   List of tuples of peptide IDs.
+        num_peptides_per_pool   :   Number of peptides per pool.
+
+        Returns
+        -------
+        df_configuration        :   pd.DataFrame with the following columns:
+                                    'coverage_id'
+                                    'pool_id'
+                                    'peptide_id'
+                                    'peptide_sequence'
+        """
+        # Step 1. Initialize pools
+        pools = {}
+        num_pools = math.ceil(len(df_peptides['peptide_id'].unique()) / num_peptides_per_pool)
+        for i in range(1, num_pools + 1):
+            pools[i] = []
+
+        # Step 2. Assign pool IDs
+        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
+            # Find either peptide in the pools first
+            peptide_id_1_pool_id = -1
+            peptide_id_2_pool_id = -1
+            for key, value in pools.items():
+                if peptide_id_1 in pools[key]:
+                    peptide_id_1_pool_id = key
+                if peptide_id_2 in pools[key]:
+                    peptide_id_2_pool_id = key
+
+            # Append peptides
+            if peptide_id_1_pool_id == -1 and peptide_id_2_pool_id == -1:
+                # Neither peptide has been assigned to any pools yet
+                assigned = False
+                for curr_pool_idx in range(1, num_pools + 1):
+                    if len(pools[curr_pool_idx]) <= (num_peptides_per_pool - 2):
+                        pools[curr_pool_idx].append(peptide_id_1)
+                        pools[curr_pool_idx].append(peptide_id_2)
+                        assigned = True
+                        break
+                if not assigned:
+                    peptide_ids = [peptide_id_1, peptide_id_2]
+                    while len(peptide_ids) > 0:
+                        for curr_pool_idx in range(1, num_pools + 1):
+                            if len(pools[curr_pool_idx]) < num_peptides_per_pool:
+                                pools[curr_pool_idx].append(peptide_ids[0])
+                                peptide_ids.pop(0)
+                                break
+            elif peptide_id_1_pool_id != -1 and peptide_id_2_pool_id == -1:
+                # Peptide 1 has been assigned to a pool and peptide 2 has not been assigned yet
+                if len(pools[peptide_id_1_pool_id]) < num_peptides_per_pool:
+                    pools[peptide_id_1_pool_id].append(peptide_id_2)
+                else:
+                    for curr_pool_idx in range(1, num_pools + 1):
+                        if len(pools[curr_pool_idx]) < num_peptides_per_pool:
+                            pools[curr_pool_idx].append(peptide_id_2)
+                            break
+            elif peptide_id_1_pool_id == -1 and peptide_id_2_pool_id != -1:
+                # Peptide 1 has not been assigned to a pool and peptide 2 has been assigned yet
+                if len(pools[peptide_id_1_pool_id]) < num_peptides_per_pool:
+                    pools[peptide_id_1_pool_id].append(peptide_id_2)
+                else:
+                    for curr_pool_idx in range(1, num_pools + 1):
+                        if len(pools[curr_pool_idx]) < num_peptides_per_pool:
+                            pools[curr_pool_idx].append(peptide_id_1)
+                            break
+            else:
+                # Both peptides exist already
+                continue
+
+        # Step 4. Flatten the list
+        preferred_peptide_ids = set()
+        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
+            preferred_peptide_ids.add(peptide_id_1)
+            preferred_peptide_ids.add(peptide_id_2)
+
+        # Step 5. Add the remaining peptide IDs
+        remaining_peptide_ids = list(
+            df_peptides.loc[
+                df_peptides['peptide_id'].isin(list(preferred_peptide_ids)) == False,
+                'peptide_id'
+            ].unique()
+        )
+
+        # Step 6. Assign pool IDs for remaining peptide IDs
+        for peptide_id in remaining_peptide_ids:
+            for curr_pool_idx in range(1, num_pools + 1):
+                if len(pools[curr_pool_idx]) < num_peptides_per_pool:
+                    pools[curr_pool_idx].append(peptide_id)
+                    break
+
+        # Step 7. Assign pool IDs for all peptides
+        data = {
+            'coverage_id': [],
+            'pool_id': [],
+            'peptide_id': [],
+            'peptide_sequence': []
+        }
+        for key, val in pools.items():
+            for peptide_id in val:
+                peptide_sequence = df_peptides.loc[df_peptides['peptide_id'] == peptide_id,'peptide_sequence'].values[0]
+                data['coverage_id'].append('coverage_1')
+                data['pool_id'].append('pool_%i' % key)
+                data['peptide_id'].append(peptide_id)
+                data['peptide_sequence'].append(peptide_sequence)
+
+        return pd.DataFrame(data)
+
+    @staticmethod
     def identify_hit_peptides(
             hit_pool_ids: List[str],
             df_configuration: pd.DataFrame
@@ -304,6 +437,7 @@ class ELISpot:
                                             Expected columns:
                                             'pool_id'
                                             'peptide_id'
+                                            'peptide_sequence'
 
         Returns
         -------
@@ -347,7 +481,7 @@ class ELISpot:
             return pd.DataFrame()
 
         # Step 5. Identify hit pool IDs and the associated peptide IDs
-        hit_pool_ids_dict = defaultdict(list) # key = pool ID, value = list of peptide IDs
+        hit_pool_ids_dict = defaultdict(list)  # key = pool ID, value = list of peptide IDs
         for index, value in df_hits_max.iterrows():
             peptide_id = value['peptide_id']
             pool_ids = value['pool_ids'].split(';')
@@ -358,7 +492,7 @@ class ELISpot:
         # identify second-round assay peptides
         second_round_assay_peptide_ids = set()
         for peptide_id in df_hits_max['peptide_id'].unique():
-            pool_ids = df_configuration.loc[df_configuration['peptide_id'] == peptide_id,'pool_id'].values.tolist()
+            pool_ids = df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].values.tolist()
             unique = False
             for pool_id in pool_ids:
                 if len(hit_pool_ids_dict[pool_id]) == 1:
@@ -369,14 +503,18 @@ class ELISpot:
         # Step 7. Identify hit peptide IDs.
         data = {
             'peptide_id': [],
+            'peptide_sequence': [],
             'deconvolution_result': []
         }
         for peptide_id in df_hits_max['peptide_id'].unique():
+            peptide_sequence = df_configuration.loc[df_configuration['peptide_id'] == peptide_id,'peptide_sequence'].values[0]
             if peptide_id not in second_round_assay_peptide_ids:
                 data['peptide_id'].append(peptide_id)
+                data['peptide_sequence'].append(peptide_sequence)
                 data['deconvolution_result'].append(DeconvolutionResults.HIT)
             else:
                 data['peptide_id'].append(peptide_id)
+                data['peptide_sequence'].append(peptide_sequence)
                 data['deconvolution_result'].append(DeconvolutionResults.CANDIDATE_HIT)
         df_deconvolution = pd.DataFrame(data)
         df_hits_max = pd.merge(df_hits_max, df_deconvolution, on=['peptide_id'])
@@ -412,10 +550,12 @@ class ELISpot:
         for peptide_id in list(df_configuration['peptide_id'].unique()):
             pool_ids = (df_configuration.loc[df_configuration['peptide_id'] == peptide_id, 'pool_id'].unique())
             if len(pool_ids) != num_coverage:
-                logger.info('Configuration does not meet constraint #1: peptide %s is in %i different pools (expected: %i).' %
-                            (peptide_id, len(pool_ids), num_coverage))
+                logger.info(
+                    'Configuration does not meet constraint #1: peptide %s is in %i different pools (expected: %i).' %
+                    (peptide_id, len(pool_ids), num_coverage))
                 return False
-        logger.info('Configuration meets constraint #1: each peptide is in %i number of different pools.' % num_coverage)
+        logger.info(
+            'Configuration meets constraint #1: each peptide is in %i number of different pools.' % num_coverage)
 
         # Step 2. Check that each peptide belongs to exactly one unique combination of pool IDs
         pool_id_combinations = set()
@@ -424,18 +564,22 @@ class ELISpot:
             pool_ids = sorted(pool_ids)
             pool_id_combinations.add(','.join(pool_ids))
         if len(pool_id_combinations) != len(df_configuration['peptide_id'].unique()):
-            logger.info("Constraint does not meet constraint #2: there are %i unique combinations of pool IDs (expected: %i)." %
-                        (len(pool_id_combinations), len(df_configuration['peptide_id'].unique())))
+            logger.info(
+                "Constraint does not meet constraint #2: there are %i unique combinations of pool IDs (expected: %i)." %
+                (len(pool_id_combinations), len(df_configuration['peptide_id'].unique())))
             return False
-        logger.info('Configuration meets constraint #2: each peptide belongs to exactly one unique combination of pool IDs.')
+        logger.info(
+            'Configuration meets constraint #2: each peptide belongs to exactly one unique combination of pool IDs.')
 
         # Step 3. Check that there is an optimal number of pools
         num_pools = math.ceil(len(df_configuration['peptide_id'].unique()) / num_peptides_per_pool) * num_coverage
         if len(df_configuration['pool_id'].unique()) != num_pools:
             num_extra_pools = len(df_configuration['pool_id'].unique()) - num_pools
-            logger.info('Configuration does not meet constraint #3: there are %i extra pools than the minimum possible number of pools (%i).' % (num_extra_pools, num_pools))
+            logger.info(
+                'Configuration does not meet constraint #3: %i extra pool(s) than the minimum possible number of pools (%i).' % (
+                num_extra_pools, num_pools))
             return False
-        logger.info('Configuration meets constraint #3: there is an optimal (minimal) number of pools (%i).' % num_pools)
+        logger.info(
+            'Configuration meets constraint #3: there is an optimal (minimal) number of pools (%i).' % num_pools)
 
         return True
-

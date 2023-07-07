@@ -48,13 +48,20 @@ def get_open_port() -> int:
     return port
 
 
-def convert_golfy_results(golfy_assignment: Dict):
+def convert_golfy_results(
+        golfy_assignment: Dict,
+        df_peptides: pd.DataFrame
+) -> pd.DataFrame:
     """
     Converts golfy results into a DataFrame.
 
     Parameters
     ----------
     golfy_assignment    :   Dictionary.
+    df_peptides         :   pd.DatFrame with the following columns:
+                            'peptide_id'
+                            'peptide_index'
+                            'peptide_sequence'
 
     Returns
     -------
@@ -62,11 +69,13 @@ def convert_golfy_results(golfy_assignment: Dict):
                             'coverage_id'
                             'pool_id'
                             'peptide_id'
+                            'peptide_sequence'
     """
     data = {
         'coverage_id': [],
         'pool_id': [],
-        'peptide_id': []
+        'peptide_id': [],
+        'peptide_sequence': []
     }
     curr_pool_idx = 1
     for key, value in golfy_assignment.items():
@@ -75,15 +84,16 @@ def convert_golfy_results(golfy_assignment: Dict):
             curr_pool_id = 'pool_%i' % curr_pool_idx
             curr_pool_idx += 1
             for p in value2:
+                df_curr_peptide = df_peptides.loc[df_peptides['peptide_index'] == p,:]
                 data['coverage_id'].append(curr_coverage_id)
                 data['pool_id'].append(curr_pool_id)
-                data['peptide_id'].append('peptide_%i' % (p + 1))
+                data['peptide_id'].append(df_curr_peptide['peptide_id'].values[0])
+                data['peptide_sequence'].append(df_curr_peptide['peptide_sequence'].values[0])
     return pd.DataFrame(data)
 
 
 def split_peptides(
         df_peptides: pd.DataFrame,
-        enforced_peptide_pairs: List[Tuple[str, str]],
         num_peptides_per_batch: int
 ) -> List[pd.DataFrame]:
     """
@@ -94,7 +104,6 @@ def split_peptides(
     df_peptides                 :   DataFrame with the following columns:
                                     'peptide_id'
                                     'peptide_sequence'
-    enforced_peptide_pairs      :   List of tuples (peptide ID, peptide ID).
     num_peptides_per_batch      :   Number of peptides per batch.
 
     Returns
@@ -107,21 +116,7 @@ def split_peptides(
     # Step 2. Create a list of dictionaries
     list_dict = [defaultdict(list) for i in range(0, num_batches)]
 
-    # Step 3. Assign enforced peptides into batches first
-    for peptide_id_1, peptide_id_2 in enforced_peptide_pairs:
-        peptide_id_1_sequence = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_1, 'peptide_sequence'].values[0]
-        peptide_id_2_sequence = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_2, 'peptide_sequence'].values[0]
-        for i in range(0, num_batches):
-            if len(list_dict[i]['peptide_id']) <= num_peptides_per_batch - 2:
-                if peptide_id_1 not in list_dict[i]['peptide_id']:
-                    list_dict[i]['peptide_id'].append(peptide_id_1)
-                    list_dict[i]['peptide_sequence'].append(peptide_id_1_sequence)
-                if peptide_id_2 not in list_dict[i]['peptide_id']:
-                    list_dict[i]['peptide_id'].append(peptide_id_2)
-                    list_dict[i]['peptide_sequence'].append(peptide_id_2_sequence)
-                break
-
-    # Step 4. Assign the rest of peptides into batches
+    # Step 3. Assign the peptides into batches
     for peptide_id in df_peptides['peptide_id'].unique():
         peptide_sequence = df_peptides.loc[df_peptides['peptide_id'] == peptide_id, 'peptide_sequence'].values[0]
         for i in range(0, num_batches):
@@ -131,7 +126,7 @@ def split_peptides(
                     list_dict[i]['peptide_sequence'].append(peptide_sequence)
                 break
 
-    # Step 5. Convert dictionaries into DataFrames
+    # Step 4. Convert dictionaries into DataFrames
     list_df = []
     for data_dict in list_dict:
         df_temp = pd.DataFrame(data_dict)

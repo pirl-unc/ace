@@ -1,31 +1,93 @@
 import pandas as pd
+import pkg_resources
+import torch
 from .data import get_data_path
-from acelib.main import run_ace_generate
+from acelib.main import run_ace_golfy, run_ace_sat_solver
+from acelib.elispot import ELISpot
+from transformers import AutoTokenizer, AutoModelForMaskedLM
+from acelib.sequence_features import AceNeuralEngine
 
 
-def test_generate_small_configuration(small_elispot_configuration):
-    print(len(small_elispot_configuration))
+def test_generate_small_golfy_configuration(small_golfy_elispot_configuration):
+    print(len(small_golfy_elispot_configuration))
 
-def test_generate_large_configuration(large_elispot_configuration):
-    print(len(large_elispot_configuration))
 
-def test_generate_disallowed_peptide_pairs():
-    data = {
-        'peptide_id': [],
-        'peptide_sequence': []
-    }
-    for i in range(1, 26):
-        data['peptide_id'].append('peptide_%i' % i)
-        data['peptide_sequence'].append('')
-    df_peptides = pd.DataFrame(data)
-    disallowed_peptide_pairs = [('peptide_6', 'peptide_7'), ('peptide_3', 'peptide_4')]
-    enforced_peptide_pairs = [('peptide_1', 'peptide_2')]
-    status, df_configuration = run_ace_generate(
+def test_generate_small_sat_solver_configuration(small_sat_solver_elispot_configuration):
+    print(len(small_sat_solver_elispot_configuration))
+
+
+def test_generate_large_golfy_configuration(large_golfy_elispot_configuration):
+    print(len(large_golfy_elispot_configuration))
+
+
+def test_generate_golfy_preferred_peptide_pairs():
+    csv_file = get_data_path(name='25peptide_sequences.csv')
+    df_peptides = pd.read_csv(csv_file)
+    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/trained_model3.pt')
+    ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
+    ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ace_eng = AceNeuralEngine(ESM2_MODEL, ESM2_TOKENIZER, device)
+    ace_eng.load_weights(trained_model_file)
+    preferred_peptide_pairs = ace_eng.find_paired_peptides(
+        peptide_ids=df_peptides['peptide_id'].values.tolist(),
+        peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
+        sim_fxn='euclidean',
+        threshold=0.6
+    )
+    is_valid, df_configuration = run_ace_golfy(
         df_peptides=df_peptides,
         num_peptides_per_pool=5,
         num_coverage=3,
-        num_processes=1,
         random_seed=1,
-        disallowed_peptide_pairs=disallowed_peptide_pairs,
-        enforced_peptide_pairs=enforced_peptide_pairs
+        max_iters=2000,
+        init_mode='greedy',
+        preferred_peptide_pairs=preferred_peptide_pairs
     )
+    assert is_valid, 'With 2000 max iterations, we should have had a valid solution.'
+
+
+def test_generate_sat_solver_preferred_peptide_pairs():
+    # Step 1. Load peptide sequences
+    csv_file = get_data_path(name='25peptide_sequences.csv')
+    df_peptides = pd.read_csv(csv_file)
+
+    # Step 2. Load sequence similarity model
+    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/trained_model3.pt')
+    ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
+    ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ace_eng = AceNeuralEngine(ESM2_MODEL, ESM2_TOKENIZER, device)
+    ace_eng.load_weights(trained_model_file)
+
+    # Step 3. Predict preferred peptide pairs
+    preferred_peptide_pairs = ace_eng.find_paired_peptides(
+        peptide_ids=df_peptides['peptide_id'].values.tolist(),
+        peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
+        sim_fxn='euclidean',
+        threshold=0.6
+    )
+
+    # Step 4. Create the first coverage peptide-pool assignments while respecting
+    # the preferred peptide pairs or clusters
+    df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
+        df_peptides=df_peptides,
+        peptide_clusters=preferred_peptide_pairs,
+        num_peptides_per_pool=5
+    )
+    disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
+        df_configuration=df_configuration_first_coverage
+    )
+
+    # Step 4. Run SAT solver
+    df_configuration = run_ace_sat_solver(
+        df_peptides=df_peptides,
+        num_peptides_per_pool=5,
+        num_coverage=2,
+        num_peptides_per_batch=100,
+        random_seed=1,
+        num_processes=1,
+        is_first_coverage=False,
+        disallowed_peptide_pairs=disallowed_peptide_pairs
+    )
+    df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])

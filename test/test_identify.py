@@ -5,12 +5,12 @@ from src.acelib.main import run_ace_identify
 from src.acelib.aid_plate_reader import AIDPlateReader
 
 
-def test_identify_small_configuration(small_elispot_configuration):
+def test_identify_small_configuration(small_sat_solver_elispot_configuration):
     ground_truth_hit_peptide_ids = ['peptide_1','peptide_10']
-    hit_pool_ids = list(small_elispot_configuration.loc[small_elispot_configuration['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
+    hit_pool_ids = list(small_sat_solver_elispot_configuration.loc[small_sat_solver_elispot_configuration['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
     df_hits_max = run_ace_identify(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=small_elispot_configuration
+        df_configuration=small_sat_solver_elispot_configuration
     )
     hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'

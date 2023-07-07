@@ -50,6 +50,15 @@ _AMINO_ACID_PROPERTIES = pd.DataFrame(
 ROSTLAB_PROT_BERT = "Rostlab/prot_bert"
 
 
+class GenerateModes:
+    GOLFY = 'golfy'
+    SAT_SOLVER = 'sat_solver'
+    ALL = [
+        GOLFY,
+        SAT_SOLVER
+    ]
+
+
 class PlateTypes:
     PLATE_96_WELLS = '96-well_plate'
     ALL = [
@@ -71,7 +80,30 @@ class DeconvolutionResults:
     CANDIDATE_HIT = 'candidate_hit'
 
 
-class OptimizationLevel:
-    OPTIMAL = 'optimal'
-    SUB_OPTIMAL = 'sub-optimal'
+class GolfyInitModes:
+    GREEDY = 'greedy'
+    RANDOM = 'random'
+    ALL = [
+        GREEDY,
+        RANDOM
+    ]
 
+
+class TrainedModels:
+    MODEL_1 = 'trained_model1.pt'
+    MODEL_2 = 'trained_model2.pt'
+    MODEL_3 = 'trained_model3.pt'
+    ALL = [
+        MODEL_1,
+        MODEL_2,
+        MODEL_3
+    ]
+
+
+class SequenceSimilarityFunctions:
+    EUCLIDEAN = 'euclidean'
+    COSINE = 'cosine'
+    ALL = [
+        EUCLIDEAN,
+        COSINE
+    ]

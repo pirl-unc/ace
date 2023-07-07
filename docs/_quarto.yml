@@ -1,7 +1,9 @@
 project:
   type: website
+  output-dir: .
 
 website:
+  title: "ACE"
   sidebar:
     style: "docked"
     search: true

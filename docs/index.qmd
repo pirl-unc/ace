@@ -12,21 +12,32 @@ title: "Getting Started"
 
 **Updated date**: July 3, 2023
 
-`ACE` is a python library and command-line software for: 
+`ACE` is a python library and command-line software for:
 
-1. Generating an optimized configuration for ELISpot assays.
-2. Identifying (deconvolving) hit peptides from ELISpot assay results.
-3. Verifying whether a given ELISpot configuration is optimal.
+1. Generation of ELISpot configurations.
+2. Identification (deconvolution) of hit peptides from ELISpot results.
+3. Verification of optimality of an ELISpot configuration.
 
 ## **Installation**
+
+Please first download the latest stable release of `ACE` from [here](https://github.com/pirl-unc/ace/releases)
 
 ```bash
 pip install ace-<version>.tar.gz
 ```
 
+## Dependencies
+
+- [golfy](https://github.com/pirl-unc/golfy)
+- [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
+- torch
+- transformers>=4.30.2
+- pandas
+- openpyxl
+
 ## **Command Line Interface**
 
-```markdown
+```bash
 usage: ace [-h] [--version] {generate,identify,verify} ...
 
 ACE Configurator for ELISpot.
