@@ -50,7 +50,7 @@ def run_ace_golfy(
     random_seed                 :   Random seed.
     max_iters                   :   Number of maximum iterations for golfy.
     init_mode                   :   Init mode.
-    preferred_peptide_pairs     :   List of preferred peptide pairs.
+    preferred_peptide_pairs     :   List of tuples (peptide ID, peptide ID).
 
     Returns
     -------
@@ -66,15 +66,13 @@ def run_ace_golfy(
     # Step 1. Set random seed
     random.seed(random_seed)
 
-    # Step 2. Convert peptide IDs to integer IDs
-    # key = peptide ID (e.g. 'peptide_1')
-    # value = peptide ID integer (e.g. 1)
-    peptide_ids_dict = {}
-    for peptide_id in df_peptides['peptide_id'].values.tolist():
-        peptide_ids_dict[peptide_id] = int(peptide_id.split('_')[1])
-    preferred_neighbors = []
+    # Step 2. Create a DataFrame of peptide IDs and index IDs
+    df_peptides['peptide_index'] = list(range(0, len(df_peptides)))
+    preferred_neighbors = [] # list of tuples (peptide ID index, peptide ID index)
     for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
-        preferred_neighbors.append((peptide_ids_dict[peptide_id_1], peptide_ids_dict[peptide_id_2]))
+        peptide_index_1 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_1,'peptide_index'].values[0]
+        peptide_index_2 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_2,'peptide_index'].values[0]
+        preferred_neighbors.append((peptide_index_1, peptide_index_2))
 
     # Step 3. Run golfy
     golfy_solution = init(
@@ -87,7 +85,10 @@ def run_ace_golfy(
     optimize(golfy_solution, max_iters=max_iters)
 
     # Step 4. Convert golfy assignments to a DataFrame
-    df_configuration = convert_golfy_results(golfy_assignment=golfy_solution.assignments)
+    df_configuration = convert_golfy_results(
+        golfy_assignment=golfy_solution.assignments,
+        df_peptides=df_peptides
+    )
 
     logger.info('Finished running golfy.')
     return is_valid(golfy_solution), df_configuration
@@ -126,15 +127,17 @@ def __run_sat_solver(
                                         'cp_model.MODEL_INVALID'
                                         'cp_model.UNKNOWN'
     df_configuration                :   pd.DataFrame with the following columns:
+                                        'coverage_id'
                                         'pool_id',
                                         'peptide_id'
+                                        'peptide_sequence'
     """
     # Step 1. Create an ELISpot configuration
     elispot = ELISpot(
         num_peptides_per_pool=num_peptides_per_pool,
         num_coverage=num_coverage,
         num_processes=num_processes,
-        peptide_ids=list(df_peptides['peptide_id'].unique())
+        df_peptides=df_peptides
     )
 
     # Step 2. Generate an ELISpot experiment configuration
@@ -231,13 +234,15 @@ def run_ace_identify(
     ----------
     hit_pool_ids                    :   Hit pool IDs.
     df_configuration                :   DataFrame with the following columns:
+                                        'coverage_id'
                                         'pool_id'
                                         'peptide_id'
-
+                                        'peptide_sequence'
     Returns
     -------
     df_hits_max                     :   DataFrame with the following columns:
                                         'peptide_id'
+                                        'peptide_sequence'
                                         'pool_ids'
                                         'num_coverage'
                                         'deconvolution_result'

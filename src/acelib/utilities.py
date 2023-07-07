@@ -48,13 +48,20 @@ def get_open_port() -> int:
     return port
 
 
-def convert_golfy_results(golfy_assignment: Dict):
+def convert_golfy_results(
+        golfy_assignment: Dict,
+        df_peptides: pd.DataFrame
+) -> pd.DataFrame:
     """
     Converts golfy results into a DataFrame.
 
     Parameters
     ----------
     golfy_assignment    :   Dictionary.
+    df_peptides         :   pd.DatFrame with the following columns:
+                            'peptide_id'
+                            'peptide_index'
+                            'peptide_sequence'
 
     Returns
     -------
@@ -62,11 +69,13 @@ def convert_golfy_results(golfy_assignment: Dict):
                             'coverage_id'
                             'pool_id'
                             'peptide_id'
+                            'peptide_sequence'
     """
     data = {
         'coverage_id': [],
         'pool_id': [],
-        'peptide_id': []
+        'peptide_id': [],
+        'peptide_sequence': []
     }
     curr_pool_idx = 1
     for key, value in golfy_assignment.items():
@@ -75,9 +84,11 @@ def convert_golfy_results(golfy_assignment: Dict):
             curr_pool_id = 'pool_%i' % curr_pool_idx
             curr_pool_idx += 1
             for p in value2:
+                df_curr_peptide = df_peptides.loc[df_peptides['peptide_index'] == p,:]
                 data['coverage_id'].append(curr_coverage_id)
                 data['pool_id'].append(curr_pool_id)
-                data['peptide_id'].append('peptide_%i' % (p + 1))
+                data['peptide_id'].append(df_curr_peptide['peptide_id'].values[0])
+                data['peptide_sequence'].append(df_curr_peptide['peptide_sequence'].values[0])
     return pd.DataFrame(data)
 
 

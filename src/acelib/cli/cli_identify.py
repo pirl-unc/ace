@@ -76,7 +76,8 @@ def add_ace_identify_arg_parser(sub_parsers):
         type=str,
         required=True,
         help="ELISpot configuration CSV file. "
-             "Expected columns: 'pool_id', 'peptide_id', 'plate_id', 'well_id'."
+             "Expected columns: 'pool_id', 'peptide_id', 'peptide_sequence'. Please note that if --read-out-file-type is aid_plate_reader, "
+             "then the configuration must have these additional columns: 'plate_id', 'well_id'."
     )
     parser_required.add_argument(
         "--min-positive-spot-count",
@@ -110,13 +111,24 @@ def run_ace_identify_from_parsed_args(args):
                 min_positive_spot_count
                 output_csv_file
     """
+    # Step 1. Load the original ELISpot configuration
     df_configuration = pd.read_csv(args.configuration_csv_file)
 
+    # Step 2. Load the read-out data
     if args.readout_file_type == ReadOutFileTypes.POOL_IDS:
         df_readout = pd.read_csv(args.readout_files[0])
         df_readout = df_readout[df_readout['spot_count'] >= args.min_positive_spot_count]
         hit_pool_ids = list(df_readout['pool_id'].unique())
     elif args.readout_file_type == ReadOutFileTypes.AID_PLATE_READER:
+        if 'plate_id' not in df_configuration.columns.values.tolist():
+            logger.error("The column 'plate_id' must be present in the CSV configuration file "
+                         "if you supply AID plate reader XLSX read-out file(s) for deconvolution to work.")
+            exit(1)
+        if 'well_id' not in df_configuration.columns.values.tolist():
+            logger.error("The column 'well_id' must be present in the CSV configuration file "
+                         "if you supply AID plate reader XLSX read-out file(s) for deconvolution to work.")
+            exit(1)
+
         df_hits_all = pd.DataFrame()
         plate_id = 1
         for file in args.readout_files:

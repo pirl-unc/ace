@@ -29,7 +29,7 @@ from ..constants import *
 from ..default_parameters import *
 from ..elispot import ELISpot
 from ..logger import get_logger
-from ..main import run_ace_sat_solver, run_ace_golfy
+from ..main import run_ace_sat_solver, run_ace_golfy, run_ace_verify
 from ..utilities import convert_golfy_results, split_peptides
 from ..sequence_features import AceNeuralEngine
 
@@ -257,21 +257,19 @@ def run_ace_generate_from_parsed_args(args):
             sim_fxn=args.sequence_similarity_function,
             threshold=args.sequence_similarity_threshold
         )
-        peptide_clusters = [] # todo: compute peptide clusters
 
-        # Deduplicate
+        # Deduplicate peptide pairs
         preferred_peptide_pairs_deduped = []
         for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
             if ((peptide_id_1, peptide_id_2) not in preferred_peptide_pairs_deduped) and \
                 ((peptide_id_2, peptide_id_1) not in preferred_peptide_pairs_deduped):
                 preferred_peptide_pairs_deduped.append((peptide_id_1, peptide_id_2))
         logger.info('Based on our sequence similarity neural engine, here are '
-                    'the peptide clusters that we will try to pool together '
-                    '(%i clusters):' % len(peptide_clusters))
-        for peptide_cluster in peptide_clusters:
-            logger.info(peptide_cluster)
+                    'the peptide pairs that we will try to pool together '
+                    '(%i pairs):' % len(preferred_peptide_pairs_deduped))
+        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs_deduped:
+            logger.info('%s and %s' % (peptide_id_1, peptide_id_2))
     else:
-        peptide_clusters = []
         preferred_peptide_pairs_deduped = []
 
     # Step 3. Generate an ELISpot configuration
@@ -302,24 +300,26 @@ def run_ace_generate_from_parsed_args(args):
     elif args.mode == GenerateModes.SAT_SOLVER:
         # Create the first coverage peptide-pool assignments while respecting
         # the preferred peptide pairs or clusters
-        if len(peptide_clusters) > 0:
+        if len(preferred_peptide_pairs_deduped) > 0:
             df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
                 df_peptides=df_peptides,
-                peptide_clusters=peptide_clusters,
+                preferred_peptide_pairs=preferred_peptide_pairs_deduped,
                 num_peptides_per_pool=args.num_peptides_per_pool
             )
-            disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
+            disallowed_peptide_pairs = ELISpot.fetch_pooled_peptide_pairs(
                 df_configuration=df_configuration_first_coverage
             )
             is_first_coverage = False
+            num_coverage = args.num_coverage - 1
         else:
             df_configuration_first_coverage = pd.DataFrame()
             disallowed_peptide_pairs = []
             is_first_coverage = True
+            num_coverage = args.num_coverage
         df_configuration = run_ace_sat_solver(
             df_peptides=df_peptides,
             num_peptides_per_pool=args.num_peptides_per_pool,
-            num_coverage=args.num_coverage - 1,
+            num_coverage=num_coverage,
             num_peptides_per_batch=args.num_peptides_per_batch,
             random_seed=args.random_seed,
             num_processes=args.num_processes,
@@ -330,6 +330,12 @@ def run_ace_generate_from_parsed_args(args):
     else:
         logger.error('Unknown mode: %s' % args.mode)
         exit(1)
+
+    run_ace_verify(
+        df_configuration=df_configuration,
+        num_peptides_per_pool=args.num_peptides_per_pool,
+        num_coverage=args.num_coverage
+    )
 
     # Step 4. Assign plate and well IDs
     if args.assign_well_ids:

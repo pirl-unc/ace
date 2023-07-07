@@ -3,6 +3,7 @@ import pkg_resources
 import torch
 from .data import get_data_path
 from acelib.main import run_ace_golfy, run_ace_sat_solver
+from acelib.elispot import ELISpot
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from acelib.sequence_features import AceNeuralEngine
 
@@ -45,3 +46,48 @@ def test_generate_golfy_preferred_peptide_pairs():
     )
     assert is_valid, 'With 2000 max iterations, we should have had a valid solution.'
 
+
+def test_generate_sat_solver_preferred_peptide_pairs():
+    # Step 1. Load peptide sequences
+    csv_file = get_data_path(name='25peptide_sequences.csv')
+    df_peptides = pd.read_csv(csv_file)
+
+    # Step 2. Load sequence similarity model
+    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/trained_model3.pt')
+    ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
+    ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ace_eng = AceNeuralEngine(ESM2_MODEL, ESM2_TOKENIZER, device)
+    ace_eng.load_weights(trained_model_file)
+
+    # Step 3. Predict preferred peptide pairs
+    preferred_peptide_pairs = ace_eng.find_paired_peptides(
+        peptide_ids=df_peptides['peptide_id'].values.tolist(),
+        peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
+        sim_fxn='euclidean',
+        threshold=0.6
+    )
+
+    # Step 4. Create the first coverage peptide-pool assignments while respecting
+    # the preferred peptide pairs or clusters
+    df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
+        df_peptides=df_peptides,
+        peptide_clusters=preferred_peptide_pairs,
+        num_peptides_per_pool=5
+    )
+    disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
+        df_configuration=df_configuration_first_coverage
+    )
+
+    # Step 4. Run SAT solver
+    df_configuration = run_ace_sat_solver(
+        df_peptides=df_peptides,
+        num_peptides_per_pool=5,
+        num_coverage=2,
+        num_peptides_per_batch=100,
+        random_seed=1,
+        num_processes=1,
+        is_first_coverage=False,
+        disallowed_peptide_pairs=disallowed_peptide_pairs
+    )
+    df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])

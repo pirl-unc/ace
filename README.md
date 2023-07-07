@@ -1,10 +1,12 @@
 # ACE Configurator for ELISpot
 
-`ACE` generates ELISpot configurations and identifies (deconvolves) hit peptides 
-from ELISpot results.
+A command-line toolkit and Python library for generating ELISpot configurations 
+and deconvolution of hit peptides from ELISpot results.
 
-Described below is a quick tutorial on `ACE`. For detailed documentation, 
-please refer to our [official documentation](https://pirl-unc.github.io/ace/). 
+Read the full documentation at https://pirl-unc.github.io/ace/
+
+[![Build Status](https://app.travis-ci.com/pirl-unc/ace.svg?branch=main)](https://app.travis-ci.com/pirl-unc/ace)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## 01. Installation
 
@@ -13,16 +15,7 @@ Download the latest stable release version from [here](https://github.com/pirl-u
 pip install ace-<version>.tar.gz
 ```
 
-## 02. Dependencies
-
-- [golfy](https://github.com/pirl-unc/golfy)
-- [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
-- torch
-- transformers>=4.30.2
-- pandas
-- openpyxl
-
-## 03. Usage
+## 02. Usage
 
 ```
 usage: ace [-h] [--version] {generate,identify,verify} ...
@@ -41,12 +34,7 @@ optional arguments:
   --version, -v         show program's version number and exit
 ```
 
-### 03-1. Generate an ELISpot configuration
-
-In the example below, you want to generate an ELISpot configuration that 
-pools 10 peptides per pool (i.e. well) for a total of 100 unique peptides. 
-You also want to repeat each peptide 3 times (i.e. 3x coverage); each peptide 
-will appear in 3 different pools.
+### 02-1. Generate an ELISpot configuration
 
 ```shell
 ace generate \
@@ -70,7 +58,7 @@ The output CSV file [100peptides_10perpool_3x.csv]() has the following columns:
 Please note that we have generated several ELISpot configurations that are readily 
 available for download [here]().
 
-### 03-2. Identify (deconvolve) hit peptides
+### 02-2. Identify (deconvolve) hit peptides
 
 Let's say you have successfully run an ELISpot experiment with the above configuration 
 (`100peptides_10perpool_3x.csv`). Now you want to identify (deconvolve) hit 
