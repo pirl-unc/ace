@@ -277,6 +277,56 @@ class ELISpot:
             return df_configuration
 
     @staticmethod
+    def compute_transitive_neighbors(
+            preferred_peptide_pairs: List[Tuple[str,str,float]]
+    ) -> List[List[str]]:
+        """
+        Computes transitive peptide neighbors.
+
+        Parameters
+        ----------
+        preferred_peptide_pairs :   List of tuples (peptide ID, peptide ID, score).
+
+        Returns
+        -------
+        peptide_neighbors       :   List of peptide lists.
+        """
+        # Step 1. Create a dictionary to store peptide relationships
+        peptide_dict = {}
+        for peptide_id_1, peptide_id_2, score in preferred_peptide_pairs:
+            if peptide_id_1 not in peptide_dict:
+                peptide_dict[peptide_id_1] = set()
+            if peptide_id_2 not in peptide_dict:
+                peptide_dict[peptide_id_2] = set()
+            peptide_dict[peptide_id_1].add(peptide_id_2)
+            peptide_dict[peptide_id_2].add(peptide_id_1)
+
+        # Find transitive peptide IDs
+        transitive_peptides = []
+        for peptide_id in peptide_dict:
+            stack = list(peptide_dict[peptide_id])
+            visited = set()
+            while stack:
+                curr_peptide_id = stack.pop()
+                if curr_peptide_id not in visited:
+                    visited.add(curr_peptide_id)
+                    if curr_peptide_id in peptide_dict:
+                        stack.extend(peptide_dict[curr_peptide_id])
+            transitive_peptides.append(list(visited))
+
+        transitive_peptides_ = []
+        for i in transitive_peptides:
+            duplicate = False
+            for j in transitive_peptides_:
+                if set(i) == j:
+                    duplicate = True
+                    break
+            if not duplicate:
+                transitive_peptides_.append(set(i))
+
+        return [list(p) for p in transitive_peptides_]
+
+    @staticmethod
     def fetch_pooled_peptide_pairs(
             df_configuration: pd.DataFrame
     ) -> List[Tuple[str,str]]:
@@ -304,7 +354,7 @@ class ELISpot:
     @staticmethod
     def generate_first_coverage_configuration(
             df_peptides: pd.DataFrame,
-            preferred_peptide_pairs: List[Tuple[str,str]],
+            preferred_peptide_pairs: List[Tuple[str,str,float]],
             num_peptides_per_pool: int
     ) -> pd.DataFrame:
         """
@@ -316,7 +366,8 @@ class ELISpot:
         df_peptides             :   pd.DataFrame with the following columns:
                                     'peptide_id'
                                     'peptide_sequence'
-        preferred_peptide_pairs :   List of tuples of peptide IDs.
+        preferred_peptide_pairs :   List of tuples
+                                    (peptide ID, peptide ID, score).
         num_peptides_per_pool   :   Number of peptides per pool.
 
         Returns
@@ -333,79 +384,28 @@ class ELISpot:
         for i in range(1, num_pools + 1):
             pools[i] = []
 
-        # Step 2. Assign pool IDs
-        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
-            # Find either peptide in the pools first
-            peptide_id_1_pool_id = -1
-            peptide_id_2_pool_id = -1
-            for key, value in pools.items():
-                if peptide_id_1 in pools[key]:
-                    peptide_id_1_pool_id = key
-                if peptide_id_2 in pools[key]:
-                    peptide_id_2_pool_id = key
+        # Step 2. Compute transitive neighbors
+        peptide_neighbors = ELISpot.compute_transitive_neighbors(preferred_peptide_pairs=preferred_peptide_pairs)
 
-            # Append peptides
-            if peptide_id_1_pool_id == -1 and peptide_id_2_pool_id == -1:
-                # Neither peptide has been assigned to any pools yet
-                assigned = False
-                for curr_pool_idx in range(1, num_pools + 1):
-                    if len(pools[curr_pool_idx]) <= (num_peptides_per_pool - 2):
-                        pools[curr_pool_idx].append(peptide_id_1)
-                        pools[curr_pool_idx].append(peptide_id_2)
-                        assigned = True
+        # Step 3. Assign pool IDs
+        preferred_peptide_ids = []
+        for peptide_neighbor in peptide_neighbors:
+            for peptide_id in peptide_neighbor:
+                preferred_peptide_ids.append(peptide_id)
+                for pool_id in pools.keys():
+                    if len(pools[pool_id]) < num_peptides_per_pool:
+                        pools[pool_id].append(peptide_id)
                         break
-                if not assigned:
-                    peptide_ids = [peptide_id_1, peptide_id_2]
-                    while len(peptide_ids) > 0:
-                        for curr_pool_idx in range(1, num_pools + 1):
-                            if len(pools[curr_pool_idx]) < num_peptides_per_pool:
-                                pools[curr_pool_idx].append(peptide_ids[0])
-                                peptide_ids.pop(0)
-                                break
-            elif peptide_id_1_pool_id != -1 and peptide_id_2_pool_id == -1:
-                # Peptide 1 has been assigned to a pool and peptide 2 has not been assigned yet
-                if len(pools[peptide_id_1_pool_id]) < num_peptides_per_pool:
-                    pools[peptide_id_1_pool_id].append(peptide_id_2)
-                else:
-                    for curr_pool_idx in range(1, num_pools + 1):
-                        if len(pools[curr_pool_idx]) < num_peptides_per_pool:
-                            pools[curr_pool_idx].append(peptide_id_2)
-                            break
-            elif peptide_id_1_pool_id == -1 and peptide_id_2_pool_id != -1:
-                # Peptide 1 has not been assigned to a pool and peptide 2 has been assigned yet
-                if len(pools[peptide_id_1_pool_id]) < num_peptides_per_pool:
-                    pools[peptide_id_1_pool_id].append(peptide_id_2)
-                else:
-                    for curr_pool_idx in range(1, num_pools + 1):
-                        if len(pools[curr_pool_idx]) < num_peptides_per_pool:
-                            pools[curr_pool_idx].append(peptide_id_1)
-                            break
-            else:
-                # Both peptides exist already
-                continue
 
-        # Step 4. Flatten the list
-        preferred_peptide_ids = set()
-        for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
-            preferred_peptide_ids.add(peptide_id_1)
-            preferred_peptide_ids.add(peptide_id_2)
+        # Step 4. Assign pool IDs for remaining peptide IDs
+        for peptide_id in df_peptides['peptide_id'].unique():
+            if peptide_id not in preferred_peptide_ids:
+                for curr_pool_idx in range(1, num_pools + 1):
+                    if len(pools[curr_pool_idx]) < num_peptides_per_pool:
+                        pools[curr_pool_idx].append(peptide_id)
+                        break
 
-        # Step 5. Add the remaining peptide IDs
-        remaining_peptide_ids = list(
-            df_peptides.loc[
-                df_peptides['peptide_id'].isin(list(preferred_peptide_ids)) == False,
-                'peptide_id'
-            ].unique()
-        )
-
-        # Step 6. Assign pool IDs for remaining peptide IDs
-        for peptide_id in remaining_peptide_ids:
-            for curr_pool_idx in range(1, num_pools + 1):
-                if len(pools[curr_pool_idx]) < num_peptides_per_pool:
-                    pools[curr_pool_idx].append(peptide_id)
-                    break
-
-        # Step 7. Assign pool IDs for all peptides
+        # Step 5. Assign pool IDs for all peptides
         data = {
             'coverage_id': [],
             'pool_id': [],

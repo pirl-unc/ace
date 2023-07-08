@@ -35,7 +35,7 @@ def run_ace_golfy(
         random_seed:int,
         max_iters: int,
         init_mode: str,
-        preferred_peptide_pairs: List[Tuple[str, str]] = []
+        preferred_peptide_pairs: List[Tuple[str, str, float]] = []
 ) -> Tuple[bool, pd.DataFrame]:
     """
     Generate an ELISpot configuration using golfy.
@@ -50,7 +50,7 @@ def run_ace_golfy(
     random_seed                 :   Random seed.
     max_iters                   :   Number of maximum iterations for golfy.
     init_mode                   :   Init mode.
-    preferred_peptide_pairs     :   List of tuples (peptide ID, peptide ID).
+    preferred_peptide_pairs     :   List of tuples (peptide ID, peptide ID, score).
 
     Returns
     -------
@@ -69,7 +69,7 @@ def run_ace_golfy(
     # Step 2. Create a DataFrame of peptide IDs and index IDs
     df_peptides['peptide_index'] = list(range(0, len(df_peptides)))
     preferred_neighbors = [] # list of tuples (peptide ID index, peptide ID index)
-    for peptide_id_1, peptide_id_2 in preferred_peptide_pairs:
+    for peptide_id_1, peptide_id_2, score in preferred_peptide_pairs:
         peptide_index_1 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_1,'peptide_index'].values[0]
         peptide_index_2 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_2,'peptide_index'].values[0]
         preferred_neighbors.append((peptide_index_1, peptide_index_2))

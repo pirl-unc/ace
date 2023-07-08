@@ -33,7 +33,7 @@ def test_generate_golfy_preferred_peptide_pairs():
         peptide_ids=df_peptides['peptide_id'].values.tolist(),
         peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
         sim_fxn='euclidean',
-        threshold=0.6
+        threshold=0.7
     )
     is_valid, df_configuration = run_ace_golfy(
         df_peptides=df_peptides,
@@ -65,17 +65,18 @@ def test_generate_sat_solver_preferred_peptide_pairs():
         peptide_ids=df_peptides['peptide_id'].values.tolist(),
         peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
         sim_fxn='euclidean',
-        threshold=0.6
+        threshold=0.7
     )
+    print(preferred_peptide_pairs)
 
     # Step 4. Create the first coverage peptide-pool assignments while respecting
     # the preferred peptide pairs or clusters
     df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
         df_peptides=df_peptides,
-        peptide_clusters=preferred_peptide_pairs,
+        preferred_peptide_pairs=preferred_peptide_pairs,
         num_peptides_per_pool=5
     )
-    disallowed_peptide_pairs = ELISpot.compute_disallowed_peptide_pairs(
+    disallowed_peptide_pairs = ELISpot.fetch_pooled_peptide_pairs(
         df_configuration=df_configuration_first_coverage
     )
 
