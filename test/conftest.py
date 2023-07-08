@@ -44,8 +44,7 @@ def small_sat_solver_elispot_configuration():
         num_coverage=3,
         num_peptides_per_batch=100,
         random_seed=1,
-        num_processes=1,
-        is_first_coverage=True
+        num_processes=1
     )
     return df_configuration
 

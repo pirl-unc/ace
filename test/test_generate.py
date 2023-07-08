@@ -67,18 +67,6 @@ def test_generate_sat_solver_preferred_peptide_pairs():
         sim_fxn='euclidean',
         threshold=0.7
     )
-    print(preferred_peptide_pairs)
-
-    # Step 4. Create the first coverage peptide-pool assignments while respecting
-    # the preferred peptide pairs or clusters
-    df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
-        df_peptides=df_peptides,
-        preferred_peptide_pairs=preferred_peptide_pairs,
-        num_peptides_per_pool=5
-    )
-    disallowed_peptide_pairs = ELISpot.fetch_pooled_peptide_pairs(
-        df_configuration=df_configuration_first_coverage
-    )
 
     # Step 4. Run SAT solver
     df_configuration = run_ace_sat_solver(
@@ -88,7 +76,5 @@ def test_generate_sat_solver_preferred_peptide_pairs():
         num_peptides_per_batch=100,
         random_seed=1,
         num_processes=1,
-        is_first_coverage=False,
-        disallowed_peptide_pairs=disallowed_peptide_pairs
+        preferred_peptide_pairs=preferred_peptide_pairs
     )
-    df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])

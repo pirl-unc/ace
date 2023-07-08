@@ -156,8 +156,7 @@ def run_ace_sat_solver(
         num_peptides_per_batch: int,
         random_seed: int,
         num_processes: int,
-        is_first_coverage: bool,
-        disallowed_peptide_pairs: List[Tuple[str, str]] = []
+        preferred_peptide_pairs: List[Tuple[str,str,float]] = []
 ) -> pd.DataFrame:
     """
     Generate an ELISpot configuration using SAT solver.
@@ -172,8 +171,7 @@ def run_ace_sat_solver(
     num_peptides_per_batch      :   Number of peptides per batch.
     random_seed                 :   Random seed.
     num_processes               :   Number of processes.
-    is_first_coverage           :   True if first coverage. False otherwise.
-    disallowed_peptide_pairs    :   List of disallowed peptide pairs.
+    preferred_peptide_pairs     :   List of tuples (peptide ID, peptide ID, score).
 
     Returns
     -------
@@ -183,6 +181,24 @@ def run_ace_sat_solver(
                                     'peptide_id'
     """
     logger.info('Started running SAT solver.')
+
+    # Generate first coverage configuration if there are preferred peptide pairs
+    if len(preferred_peptide_pairs) > 0:
+        df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
+            df_peptides=df_peptides,
+            preferred_peptide_pairs=preferred_peptide_pairs,
+            num_peptides_per_pool=num_peptides_per_pool
+        )
+        disallowed_peptide_pairs = ELISpot.fetch_pooled_peptide_pairs(
+            df_configuration=df_configuration_first_coverage
+        )
+        is_first_coverage = False
+        num_coverage = num_coverage - 1
+    else:
+        df_configuration_first_coverage = pd.DataFrame()
+        disallowed_peptide_pairs = []
+        is_first_coverage = True
+        num_coverage = num_coverage
 
     if len(list(df_peptides['peptide_id'].unique())) > num_peptides_per_batch:
         # Split peptides into batches
@@ -218,6 +234,8 @@ def run_ace_sat_solver(
         if status != cp_model.OPTIMAL:
             logger.error('Exiting program. Please review your configuration parameters before running SAT-solver again.')
             exit(1)
+
+    df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])
 
     logger.info('Finished running SAT solver.')
     return df_configuration

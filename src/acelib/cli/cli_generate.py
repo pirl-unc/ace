@@ -291,36 +291,15 @@ def run_ace_generate_from_parsed_args(args):
                         'Try running ACE again but with a higher number of '
                         '--golfy-max-iters')
     elif args.mode == GenerateModes.SAT_SOLVER:
-        # Create the first coverage peptide-pool assignments while respecting
-        # the preferred peptide pairs or clusters
-        if len(preferred_peptide_pairs) > 0:
-            df_configuration_first_coverage = ELISpot.generate_first_coverage_configuration(
-                df_peptides=df_peptides,
-                preferred_peptide_pairs=preferred_peptide_pairs,
-                num_peptides_per_pool=args.num_peptides_per_pool
-            )
-            disallowed_peptide_pairs = ELISpot.fetch_pooled_peptide_pairs(
-                df_configuration=df_configuration_first_coverage
-            )
-            is_first_coverage = False
-            num_coverage = args.num_coverage - 1
-        else:
-            df_configuration_first_coverage = pd.DataFrame()
-            disallowed_peptide_pairs = []
-            is_first_coverage = True
-            num_coverage = args.num_coverage
-
         df_configuration = run_ace_sat_solver(
             df_peptides=df_peptides,
             num_peptides_per_pool=args.num_peptides_per_pool,
-            num_coverage=num_coverage,
+            num_coverage=args.num_coverage,
             num_peptides_per_batch=args.num_peptides_per_batch,
             random_seed=args.random_seed,
             num_processes=args.num_processes,
-            is_first_coverage=is_first_coverage,
-            disallowed_peptide_pairs=disallowed_peptide_pairs
+            preferred_peptide_pairs=preferred_peptide_pairs
         )
-        df_configuration = pd.concat([df_configuration_first_coverage, df_configuration])
     else:
         logger.error('Unknown mode: %s' % args.mode)
         exit(1)
