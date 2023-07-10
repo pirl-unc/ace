@@ -18,15 +18,15 @@ pip install ace-<version>.tar.gz
 ## 02. Usage
 
 ```
-usage: ace [-h] [--version] {generate,identify,verify} ...
+usage: ace [-h] [--version] {generate,deconvolve,verify} ...
 
 ACE Configurator for ELISpot.
 
 positional arguments:
-  {generate,identify,verify}
+  {generate,deconvolve,verify}
                         ACE sub-commands.
     generate            Generates an ELIspot experiment configuration.
-    identify            Identify hit peptide IDs given read-outs from an ELIspot experiment.
+    deconvolve          Deconvolve hit peptide IDs given read-outs from an ELIspot experiment.
     verify              Verifies whether an ELIspot configuration satisfies all ACE constraints.
 
 optional arguments:
@@ -58,10 +58,10 @@ Here is what the output CSV file [100peptides_10perpool_3x.csv]() looks like:
 Please note that we have generated several ELISpot configurations that are readily 
 available for download [here]().
 
-### 02-2. Identify (deconvolve) hit peptides
+### 02-2. Deconvolve hit peptides
 
 Let's say you have successfully run an ELISpot experiment with the above configuration 
-(`100peptides_10perpool_3x.csv`). Now you want to identify (deconvolve) hit 
+(`100peptides_10perpool_3x.csv`). Now you want to deconvolve hit 
 peptides. Here we describe how you can achieve this using `ACE`.
 
 #### AID Plate Reader
@@ -73,13 +73,14 @@ the machine.
 
 ![](docs/resources/aid_plate_reader_xlsx_example.png)
 
-Identify (deconvolve) hit peptides from your ELISpot experiment:
+Deconvolve hit peptides from your ELISpot experiment:
 
 ```shell
-ace identify \
+ace deconvolve \
   --readout-file-type aid_plate_reader \
   --readout-files /path/elispot_results.xlsx \
   --configuration-csv-file /path/100peptides_10perpool_3x.csv \
+  --min-coverage 3 \
   --min-positive-spot-count 300 \
   --output-csv-file ace_deconvolution_results.csv
 ```
@@ -96,13 +97,14 @@ You can alternatively supply a generic ELISpot results `csv` file to `ACE`:
 | ... | ... |
 | pool_30 | 0 |
 
-Identify (deconvolve) hit peptides from your ELISpot experiment:
+Deconvolve hit peptides from your ELISpot experiment:
 
 ```shell
-ace identify \
+ace deconvolve \
   --readout-file-type pool_id \
   --readout-files /path/elispot_results.csv \
   --configuration-csv-file /path/100peptides_10perpool_3x.csv \
+  --min-coverage 3 \
   --min-positive-spot-count 300 \
   --output-csv-file ace_deconvolution_results.csv
 ```

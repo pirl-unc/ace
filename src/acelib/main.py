@@ -245,6 +245,7 @@ def run_ace_sat_solver(
 def run_ace_deconvolve(
         hit_pool_ids: List[str],
         df_configuration: pd.DataFrame,
+        min_coverage: int
 ) -> pd.DataFrame:
     """
     Deconvolves hit peptide IDs.
@@ -257,9 +258,11 @@ def run_ace_deconvolve(
                                         'pool_id'
                                         'peptide_id'
                                         'peptide_sequence'
+    min_coverage                    :   Minimum coverage.
+
     Returns
     -------
-    df_hits_max                     :   DataFrame with the following columns:
+    df_hits                         :   DataFrame with the following columns:
                                         'peptide_id'
                                         'peptide_sequence'
                                         'pool_ids'
@@ -268,7 +271,8 @@ def run_ace_deconvolve(
     """
     return ELISpot.deconvolve_hit_peptides(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration
+        df_configuration=df_configuration,
+        min_coverage=min_coverage
     )
 
 

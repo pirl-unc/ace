@@ -10,7 +10,8 @@ def test_deconvolve_small_configuration(small_sat_solver_elispot_configuration):
     hit_pool_ids = list(small_sat_solver_elispot_configuration.loc[small_sat_solver_elispot_configuration['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
     df_hits_max = run_ace_deconvolve(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=small_sat_solver_elispot_configuration
+        df_configuration=small_sat_solver_elispot_configuration,
+        min_coverage=3
     )
     hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
@@ -24,7 +25,8 @@ def test_deconvolve_small_configuration_aid_version():
     hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
     df_hits_max = run_ace_deconvolve(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration
+        df_configuration=df_configuration,
+        min_coverage=3
     )
     expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
     hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
@@ -38,7 +40,8 @@ def test_deconvolve_small_configuration_pool_id_version():
     hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
     df_hits_max = run_ace_deconvolve(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration
+        df_configuration=df_configuration,
+        min_coverage=3
     )
     expected_peptide_ids = sorted(['peptide_1', 'peptide_7', 'peptide_14', 'peptide_25'])
     expected_second_round_peptide_ids = ['peptide_9']

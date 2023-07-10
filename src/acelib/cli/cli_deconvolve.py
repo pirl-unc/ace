@@ -80,6 +80,14 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
              "then the configuration must have these additional columns: 'plate_id', 'well_id'."
     )
     parser_required.add_argument(
+        "--min-coverage",
+        dest="min_coverage",
+        type=int,
+        required=True,
+        help="Minimum coverage for a peptide to be considered a hit. "
+             "Recommended value: the coverage of the original ELISpot configuration."
+    )
+    parser_required.add_argument(
         "--min-positive-spot-count",
         dest="min_positive_spot_count",
         type=int,
@@ -108,6 +116,7 @@ def run_ace_deconvolve_from_parsed_args(args):
                 readout_file_type
                 readout_files
                 configuration_csv_file
+                min_coverage
                 min_positive_spot_count
                 output_csv_file
     """
@@ -138,8 +147,9 @@ def run_ace_deconvolve_from_parsed_args(args):
         df_readout = pd.merge(df_configuration, df_hits_all, on=['plate_id', 'well_id'])
         hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= args.min_positive_spot_count, 'pool_id'].unique())
 
-    df_hits_max = run_ace_deconvolve(
+    df_hits = run_ace_deconvolve(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration
+        df_configuration=df_configuration,
+        min_coverage=args.min_coverage
     )
-    df_hits_max.to_csv(args.output_csv_file, index=False)
+    df_hits.to_csv(args.output_csv_file, index=False)
