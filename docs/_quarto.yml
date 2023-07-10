@@ -14,7 +14,7 @@ website:
       - section: "Commands"
         contents:
           - generate.qmd
-          - identify.qmd
+          - deconvolve.qmd
           - verify.qmd
       - section: "API"
         contents:

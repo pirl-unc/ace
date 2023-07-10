@@ -423,7 +423,7 @@ class ELISpot:
         return pd.DataFrame(data)
 
     @staticmethod
-    def identify_hit_peptides(
+    def deconvolve_hit_peptides(
             hit_pool_ids: List[str],
             df_configuration: pd.DataFrame
     ) -> pd.DataFrame:
@@ -454,7 +454,7 @@ class ELISpot:
             if num_coverage > configuration_max_coverage:
                 configuration_max_coverage = num_coverage
 
-        # Step 2. Identify hit peptide IDs
+        # Step 2. Deconvolve hit peptide IDs
         hit_peptides_dict = defaultdict(list)
         for curr_pool_id in hit_pool_ids:
             curr_hit_peptide_ids = df_configuration.loc[df_configuration['pool_id'] == curr_pool_id, 'peptide_id'].values.tolist()
@@ -500,7 +500,7 @@ class ELISpot:
             if not unique:
                 second_round_assay_peptide_ids.add(peptide_id)
 
-        # Step 7. Identify hit peptide IDs.
+        # Step 7. Deconvolve hit peptide IDs.
         data = {
             'peptide_id': [],
             'peptide_sequence': [],

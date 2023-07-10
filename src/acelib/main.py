@@ -242,12 +242,12 @@ def run_ace_sat_solver(
     return df_configuration
 
 
-def run_ace_identify(
+def run_ace_deconvolve(
         hit_pool_ids: List[str],
         df_configuration: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Identifies hit peptide IDs.
+    Deconvolves hit peptide IDs.
 
     Parameters
     ----------
@@ -266,7 +266,7 @@ def run_ace_identify(
                                         'num_coverage'
                                         'deconvolution_result'
     """
-    return ELISpot.identify_hit_peptides(
+    return ELISpot.deconvolve_hit_peptides(
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )

@@ -13,7 +13,7 @@
 
 """
 The purpose of this python3 script is to create parser
-and run ACE 'identify' command.
+and run ACE 'deconvolve' command.
 """
 
 
@@ -31,9 +31,9 @@ from ..main import *
 logger = get_logger(__name__)
 
 
-def add_ace_identify_arg_parser(sub_parsers):
+def add_ace_deconvolve_arg_parser(sub_parsers):
     """
-    Adds 'identify' parser.
+    Adds 'deconvolve' parser.
 
     Parameters
     ----------
@@ -44,8 +44,8 @@ def add_ace_identify_arg_parser(sub_parsers):
     An instance of argparse.ArgumentParser subparsers.
     """
     parser = sub_parsers.add_parser(
-        'identify',
-        help='Identify hit peptide IDs given read-outs from an ELISpot experiment.'
+        'deconvolve',
+        help='Deconvolve hit peptide IDs given read-outs from an ELISpot experiment.'
     )
     parser._action_groups.pop()
 
@@ -93,13 +93,13 @@ def add_ace_identify_arg_parser(sub_parsers):
         required=True,
         help="Output CSV file."
     )
-    parser.set_defaults(which='identify')
+    parser.set_defaults(which='deconvolve')
     return sub_parsers
 
 
-def run_ace_identify_from_parsed_args(args):
+def run_ace_deconvolve_from_parsed_args(args):
     """
-    Runs ACE 'identify' command using parameters from parsed arguments.
+    Runs ACE 'deconvolve' command using parameters from parsed arguments.
 
     Parameters
     ----------
@@ -138,7 +138,7 @@ def run_ace_identify_from_parsed_args(args):
         df_readout = pd.merge(df_configuration, df_hits_all, on=['plate_id', 'well_id'])
         hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= args.min_positive_spot_count, 'pool_id'].unique())
 
-    df_hits_max = run_ace_identify(
+    df_hits_max = run_ace_deconvolve(
         hit_pool_ids=hit_pool_ids,
         df_configuration=df_configuration
     )

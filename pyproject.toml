@@ -47,7 +47,7 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-acelib = ["*.pt"]
+acelib = ["resources/models/*.pt"]
 
 [project.scripts]
 ace = "acelib.cli.cli_main:run"

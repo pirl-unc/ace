@@ -19,7 +19,7 @@ The purpose of this python3 script is to implement the primary ACE command.
 import argparse
 import acelib
 from .cli_generate import *
-from .cli_identify import *
+from .cli_deconvolve import *
 from .cli_verify import *
 
 
@@ -51,15 +51,15 @@ def run():
     # Step 1. Initialize argument parser
     arg_parser, sub_parsers = init_arg_parser()
     sub_parsers = add_ace_generate_arg_parser(sub_parsers=sub_parsers)      # generate
-    sub_parsers = add_ace_identify_arg_parser(sub_parsers=sub_parsers)      # identify
+    sub_parsers = add_ace_deconvolve_arg_parser(sub_parsers=sub_parsers)    # deconvolve
     sub_parsers = add_ace_verify_arg_parser(sub_parsers=sub_parsers)        # verify
     args = arg_parser.parse_args()
 
     # Step 2. Execute function based on CLI arguments
     if args.which == 'generate':
         run_ace_generate_from_parsed_args(args=args)
-    elif args.which == 'identify':
-        run_ace_identify_from_parsed_args(args=args)
+    elif args.which == 'deconvolve':
+        run_ace_deconvolve_from_parsed_args(args=args)
     elif args.which == 'verify':
         run_ace_verify_from_parsed_args(args=args)
     else:

@@ -15,7 +15,7 @@ title: "Getting Started"
 `ACE` is a python library and command-line software for:
 
 1. Generation of ELISpot configurations.
-2. Identification (deconvolution) of hit peptides from ELISpot results.
+2. Deconvolution of hit peptides from ELISpot results.
 3. Verification of optimality of an ELISpot configuration.
 
 ## **Installation**
@@ -38,15 +38,15 @@ pip install ace-<version>.tar.gz
 ## **Command Line Interface**
 
 ```bash
-usage: ace [-h] [--version] {generate,identify,verify} ...
+usage: ace [-h] [--version] {generate,deconvolve,verify} ...
 
 ACE Configurator for ELISpot.
 
 positional arguments:
-  {generate,identify,verify}
+  {generate,deconvolve,verify}
                         ACE sub-commands.
     generate            Generates an ELISpot experiment configuration.
-    identify            Identify hit peptide IDs given read-outs from an ELISpot experiment.
+    deconvolve          Deconvolve hit peptide IDs given read-outs from an ELISpot experiment.
     verify              Verifies whether an ELISpot configuration satisfies all ACE constraints.
 
 optional arguments:
@@ -57,7 +57,7 @@ optional arguments:
 **ACE includes the following commands:** 
 
 * [generate](generate.qmd) (generate an ELISpot configuration)
-* [identify](identify.qmd) (identify/deconvolve hit peptides from ELISpot results)
+* [deconvolve](deconvolve.qmd) (deconvolve hit peptides from ELISpot results)
 * [verify](verify.qmd) (verify if an ELISpot configuration is optimal)
 
 ## **Citation**

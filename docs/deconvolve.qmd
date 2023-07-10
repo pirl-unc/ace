@@ -1,11 +1,11 @@
 ---
-title: "identify"
+title: "deconvolve"
 ---
 
-This command identifies (deconvolves) hit peptides from ELISpot results.
+This command deconvolves hit peptides from ELISpot results.
 
 ```bash
-usage: ace identify [-h] 
+usage: ace deconvolve [-h] 
     --readout-file-type READOUT_FILE_TYPE 
     --readout-files READOUT_FILES 
     --configuration-csv-file CONFIGURATION_CSV_FILE 
@@ -26,7 +26,7 @@ usage: ace identify [-h]
 Let's say you used the [generate](generate.qmd) command in `ACE` to generate an ELISpot configuration for pooling 10 
 peptides per pool for a total of 100 unique peptides. The configuration also repeated each peptide 3 times 
 (i.e. 3x coverage); you created `100peptides_10perpool_3x.csv`. You took this configuration and 
-successfully ran an ELISpot experiment. Now you want to identify (deconvolve) hit peptides. 
+successfully ran an ELISpot experiment. Now you want to deconvolve hit peptides. 
 Here we describe how you can achieve this using `ACE`.
 
 #### AID Plate Reader
@@ -38,10 +38,10 @@ the machine.
 
 ![](resources/aid_plate_reader_xlsx_example.png)
 
-Identify (deconvolve) hit peptides from your ELISpot experiment:
+Deconvolve hit peptides from your ELISpot experiment:
 
 ```bash
-ace identify \
+ace deconvolve \
   --readout-file-type aid_plate_reader \
   --readout-files /path/elispot_results.xlsx \
   --configuration-csv-file /path/100peptides_10perpool_3x.csv \
@@ -61,10 +61,10 @@ You can alternatively supply a generic ELISpot results `csv` file to `ACE`:
 | ... | ... |
 | pool_30 | 0 |
 
-Identify (deconvolve) hit peptides from your ELISpot experiment:
+Deconvolve hit peptides from your ELISpot experiment:
 
 ```bash
-ace identify \
+ace deconvolve \
   --readout-file-type pool_id \
   --readout-files /path/elispot_results.csv \
   --configuration-csv-file /path/100peptides_10perpool_3x.csv \
