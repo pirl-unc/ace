@@ -18,6 +18,7 @@ before_install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
+  - which python
   - python --version
   - chmod +x lint.sh
 install:
@@ -39,7 +40,8 @@ install:
   - conda install -c conda-forge transformers
   - pip install golfy>=1.5.0
   - pip install . --verbose
-  - which ace
+  - ls /home/travis/miniconda/envs/test-environment/lib/python3.9/site-packages/acelib/*
+  - ls /home/travis/miniconda/envs/test-environment/lib/python3.9/site-packages/acelib/resources/models/*
 before_script:
   - bash lint.sh
 script:
