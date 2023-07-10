@@ -39,6 +39,7 @@ install:
   - conda install -c conda-forge transformers
   - pip install golfy>=1.5.0
   - pip install . --verbose
+  - which ace
 before_script:
   - bash lint.sh
 script:
