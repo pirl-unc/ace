@@ -243,7 +243,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>ACE</code> is a python library and command-line software for:</p>
 <ol type="1">
 <li>Generation of ELISpot configurations.</li>
-<li>Identification (deconvolution) of hit peptides from ELISpot results.</li>
+<li>Deconvolution of hit peptides from ELISpot results.</li>
 <li>Verification of optimality of an ELISpot configuration.</li>
 </ol>
 <section id="installation" class="level2">
@@ -264,15 +264,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="command-line-interface" class="level2">
 <h2 class="anchored" data-anchor-id="command-line-interface"><strong>Command Line Interface</strong></h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace [-h] [--version] <span class="dt">{generate</span><span class="op">,</span><span class="dt">identify</span><span class="op">,</span><span class="dt">verify}</span> ...</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace [-h] [--version] <span class="dt">{generate</span><span class="op">,</span><span class="dt">deconvolve</span><span class="op">,</span><span class="dt">verify}</span> ...</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ACE</span> Configurator for ELISpot.</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{generate</span><span class="op">,</span><span class="dt">identify</span><span class="op">,</span><span class="dt">verify}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{generate</span><span class="op">,</span><span class="dt">deconvolve</span><span class="op">,</span><span class="dt">verify}</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">ACE</span> sub-commands.</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">generate</span>            Generates an ELISpot experiment configuration.</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">identify</span>            Identify hit peptide IDs given read-outs from an ELISpot experiment.</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">deconvolve</span>          Deconvolve hit peptide IDs given read-outs from an ELISpot experiment.</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="ex">verify</span>              Verifies whether an ELISpot configuration satisfies all ACE constraints.</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">optional</span> arguments:</span>
@@ -281,7 +281,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><strong>ACE includes the following commands:</strong></p>
 <ul>
 <li><a href="./generate.html">generate</a> (generate an ELISpot configuration)</li>
-<li><a href="identify.qmd">identify</a> (identify/deconvolve hit peptides from ELISpot results)</li>
+<li><a href="./deconvolve.html">deconvolve</a> (deconvolve hit peptides from ELISpot results)</li>
 <li><a href="./verify.html">verify</a> (verify if an ELISpot configuration is optimal)</li>
 </ul>
 </section>
