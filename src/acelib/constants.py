@@ -89,17 +89,6 @@ class GolfyInitModes:
     ]
 
 
-class TrainedModels:
-    MODEL_1 = 'trained_model1.pt'
-    MODEL_2 = 'trained_model2.pt'
-    MODEL_3 = 'trained_model3.pt'
-    ALL = [
-        MODEL_1,
-        MODEL_2,
-        MODEL_3
-    ]
-
-
 class SequenceSimilarityFunctions:
     EUCLIDEAN = 'euclidean'
     COSINE = 'cosine'

@@ -124,15 +124,6 @@ def add_ace_generate_arg_parser(sub_parsers):
              (', '.join(PlateTypes.ALL), PlateTypes.PLATE_96_WELLS)
     )
     parser_optional.add_argument(
-        "--trained-model",
-        dest="trained_model",
-        type=str,
-        default=TrainedModels.MODEL_3,
-        choices=TrainedModels.ALL,
-        required=False,
-        help="Sequence similarity trained model (default: %s)" % TrainedModels.MODEL_3
-    )
-    parser_optional.add_argument(
         "--sequence-similarity-threshold",
         dest="sequence_similarity_threshold",
         type=float,
@@ -219,7 +210,6 @@ def run_ace_generate_from_parsed_args(args):
                 mode
                 assign_well_ids
                 plate_type
-                trained_model
                 sequence_similarity_function
                 sequence_similarity_threshold
                 random_seed
@@ -246,7 +236,7 @@ def run_ace_generate_from_parsed_args(args):
     # Step 2. Identify disallowed / enforced peptide pairs
     if is_sequence_available:
         # Load trained model
-        trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/%s' % args.trained_model)
+        trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/seq_sim_trained_model.pt')
         ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
         ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

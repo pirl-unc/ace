@@ -23,7 +23,7 @@ def test_generate_large_golfy_configuration(large_golfy_elispot_configuration):
 def test_generate_golfy_preferred_peptide_pairs():
     csv_file = get_data_path(name='25peptide_sequences.csv')
     df_peptides = pd.read_csv(csv_file)
-    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/trained_model3.pt')
+    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/seq_sim_trained_model.pt')
     ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -53,7 +53,7 @@ def test_generate_sat_solver_preferred_peptide_pairs():
     df_peptides = pd.read_csv(csv_file)
 
     # Step 2. Load sequence similarity model
-    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/trained_model3.pt')
+    trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/seq_sim_trained_model.pt')
     ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
