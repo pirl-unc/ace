@@ -47,7 +47,7 @@ ace generate \
   --plate-type 96-well_plate
 ```
 
-The output CSV file [100peptides_10perpool_3x.csv]() has the following columns:
+Here is what the output CSV file [100peptides_10perpool_3x.csv]() looks like:
 
 | coverage_id | pool_id | peptide_id  | plate_id | well_id |
 |-------------|---------|-------------|----------|---------|
