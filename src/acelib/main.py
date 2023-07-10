@@ -14,6 +14,7 @@
 import pandas as pd
 import math
 import random
+import os
 from golfy import init, is_valid, optimize
 from ortools.sat.python import cp_model
 from typing import Callable, List, Tuple

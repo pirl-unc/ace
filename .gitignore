@@ -5,6 +5,7 @@ __pycache__/
 src/ace.egg-info/
 data/
 notebooks/*.pt
+examples/*.csv
 *.pyc
 .coverage*
 *.DS_Store

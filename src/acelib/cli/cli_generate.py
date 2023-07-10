@@ -20,6 +20,7 @@ and run ACE 'generate' command.
 import math
 import pandas as pd
 import pkg_resources
+import os
 import random
 import torch
 from ortools.sat.python import cp_model
