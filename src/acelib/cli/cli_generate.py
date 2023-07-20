@@ -26,12 +26,13 @@ import torch
 from ortools.sat.python import cp_model
 from transformers import BertModel, BertTokenizer
 from transformers import AutoTokenizer, AutoModelForMaskedLM
+from ..block_assignment import BlockAssignment
+from ..block_design import BlockDesign
 from ..constants import *
 from ..default_parameters import *
-from ..elispot import ELISpot
 from ..logger import get_logger
-from ..main import run_ace_sat_solver, run_ace_golfy, run_ace_verify
-from ..utilities import convert_golfy_results, split_peptides
+from ..main import run_ace_sat_solver, run_ace_golfy
+from ..utilities import *
 from ..sequence_features import AceNeuralEngine
 
 
@@ -66,10 +67,10 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Total number of peptides."
     )
     parser_required_mutually_exclusive.add_argument(
-        "--peptides-csv-file",
-        dest="peptides_csv_file",
+        "--peptides-excel-file",
+        dest="peptides_excel_file",
         type=str,
-        help="Peptides CSV file with the following expected columns: "
+        help="Peptides Excel file with the following columns: "
              "'peptide_id', 'peptide_sequence'. Please note that only "
              "either this parameter or '--num-peptides' can be supplied."
     )
@@ -78,7 +79,8 @@ def add_ace_generate_arg_parser(sub_parsers):
         dest="num_peptides_per_pool",
         type=int,
         required=True,
-        help="Number of peptides per pool (i.e. well)."
+        help="Number of peptides per pool (i.e. well). "
+             "Please make sure this number is divisible by the total number of peptides."
     )
     parser_required.add_argument(
         "--num-coverage",
@@ -88,11 +90,11 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Total coverage (i.e. number of peptide replicates)."
     )
     parser_required.add_argument(
-        "--output-csv-file",
-        dest="output_csv_file",
+        "--output-excel-file",
+        dest="output_excel_file",
         type=str,
         required=True,
-        help="Output CSV file."
+        help="Output assignment Excel file."
     )
 
     # Optional arguments
@@ -179,16 +181,42 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Number of processes (default: %i)." % GENERATE_NUM_PROCESSES
     )
     parser_optional_sat_solver.add_argument(
-        "--num-peptides-per-batch",
-        dest="num_peptides_per_batch",
+        "--max-peptides-per-block",
+        dest="max_peptides_per_block",
         type=int,
-        default=GENERATE_NUM_PEPTIDES_PER_BATCH,
+        default=GENERATE_MAX_PEPTIDES_PER_BLOCK,
         required=False,
-        help="Number of peptides per batch (default: %i). "
+        help="Maximum number of peptides per block (default: %i). "
+             "This parameter applies when --mode sat_solver. "
              "The SAT-solver divides peptides into the specified number of peptides "
              "if the total number of peptides is bigger than the specified number "
-             "(e.g. 220 peptides are divided into 2 batches of 100 peptides and 1 "
-             "batch of 20 peptides if --num-peptides-per-batch is 100)." % GENERATE_NUM_PEPTIDES_PER_BATCH
+             "(e.g. 220 peptides are divided into 2 blocks of 100 peptides and 1 "
+             "block of 20 peptides if --max-peptides-per-block is 100). "
+             "Increasing this number from the current default value will likely "
+             "make the computation intractable so it is recommended that you "
+             "keep this at %i." %
+             (GENERATE_MAX_PEPTIDES_PER_BLOCK, GENERATE_MAX_PEPTIDES_PER_BLOCK)
+    )
+    parser_optional_sat_solver.add_argument(
+        "--max-peptides-per-pool",
+        dest="max_peptides_per_pool",
+        type=int,
+        default=GENERATE_MAX_PEPTIDES_PER_POOL,
+        required=False,
+        help="Maximum number of peptides per pool (default: %i). "
+             "This parameter applies when --mode sat_solver. "
+             "Increasing this number from the current default value will likely "
+             "make the computation intractable so it is recommended that you "
+             "keep this at %i." %
+             (GENERATE_MAX_PEPTIDES_PER_POOL, GENERATE_MAX_PEPTIDES_PER_POOL)
+    )
+    parser_optional_sat_solver.add_argument(
+        "--verbose",
+        dest="verbose",
+        type=bool,
+        required=False,
+        default=True,
+        help="If True, prints messages. Otherwise, messages are not printed (default: True)."
     )
     parser.set_defaults(which='generate')
     return sub_parsers
@@ -203,10 +231,11 @@ def run_ace_generate_from_parsed_args(args):
     args    :   argparse.ArgumentParser object
                 with the following variables:
                 num_peptides
-                peptides_csv_file
+                peptides_excel_file
+                design_csv_file
                 num_peptides_per_pool
                 num_coverage
-                output_csv_file
+                output_excel_file
                 mode
                 assign_well_ids
                 plate_type
@@ -216,24 +245,26 @@ def run_ace_generate_from_parsed_args(args):
                 golfy_max_iters
                 golfy_init_mode
                 num_processes
-                num_peptides_per_batch
+                max_peptides_per_block
+                max_peptides_per_pool
+                verbose
     """
     # Step 1. Load peptide data
-    if args.peptides_csv_file is not None:
-        df_peptides = pd.read_csv(args.peptides_csv_file)
+    if args.peptides_excel_file is not None:
+        peptides = convert_dataframe_to_peptides(df_peptides=pd.read_excel(args.peptides_excel_file))
         is_sequence_available = True
     else:
-        data = {
-            'peptide_id': [],
-            'peptide_sequence': []
-        }
+        peptides = []
         for i in range(1, args.num_peptides + 1):
-            data['peptide_id'].append('peptide_%i' % i)
-            data['peptide_sequence'].append('')
-        df_peptides = pd.DataFrame(data)
+            peptides.append(('peptide_%i' % i, ''))
         is_sequence_available = False
 
-    # Step 2. Identify disallowed / enforced peptide pairs
+    # Step 2. Check input parameters
+    if len(peptides) % args.num_peptides_per_pool != 0:
+        logger.error('The number of peptides per pool must be divisible by the total number of peptides.')
+        exit(1)
+
+    # Step 3. Identify pairs of similar peptides
     if is_sequence_available:
         # Load trained model
         trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/seq_sim_trained_model.pt')
@@ -242,71 +273,76 @@ def run_ace_generate_from_parsed_args(args):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         ace_eng = AceNeuralEngine(ESM2_MODEL, ESM2_TOKENIZER, device)
         ace_eng.load_weights(trained_model_file)
+
+        # Identify pairs of similar peptides
         preferred_peptide_pairs = ace_eng.find_paired_peptides(
-            peptide_ids=df_peptides['peptide_id'].values.tolist(),
-            peptide_sequences=df_peptides['peptide_sequence'].values.tolist(),
+            peptide_ids=[p[0] for p in peptides],
+            peptide_sequences=[p[1] for p in peptides],
             sim_fxn=args.sequence_similarity_function,
             threshold=args.sequence_similarity_threshold
         )
-        logger.info('Based on our sequence similarity neural engine, here are '
-                    'the peptide pairs that we will try to pool together '
-                    '(%i pairs):' % len(preferred_peptide_pairs))
-        logger.info('peptide ID, peptide ID: similarity score')
-        for peptide_id_1, peptide_id_2, score in preferred_peptide_pairs:
-            logger.info('%s, %s: %f' % (peptide_id_1, peptide_id_2, score))
+        if args.verbose:
+            logger.info('Based on our sequence similarity neural engine, here are '
+                        'the peptide pairs that we will try to pool together '
+                        '(%i pairs):' % len(preferred_peptide_pairs))
+            logger.info('peptide ID, peptide ID: similarity score')
+            for peptide_id_1, peptide_id_2, score in preferred_peptide_pairs:
+                logger.info('%s, %s: %f' % (peptide_id_1, peptide_id_2, score))
     else:
         preferred_peptide_pairs = []
+    preferred_peptide_pairs = [(p1, p2) for p1, p2, score in preferred_peptide_pairs]
 
-    # Step 3. Generate an ELISpot configuration
-    if (args.num_peptides_per_pool > 10 or args.num_coverage > 3) and (args.mode == GenerateModes.SAT_SOLVER):
-        logger.info('Please note that we recommend '
-                    '--num-peptides-per-pool to be equal to or less than 10 and '
-                    '--num-coverage to be equal to or less than 3 for --mode sat_solver. '
-                    'We will still run SAT-solver but please note that this computation might '
-                    'take a long time (more than 24 hours at least based on internal testing). '
-                    'We recommend using --mode golfy for the requested parameters.')
+    # Step 4. Generate a block design
+    block_design = BlockDesign(
+        peptides=peptides,
+        num_peptides_per_pool=args.num_peptides_per_pool,
+        num_coverage=args.num_coverage,
+        max_peptides_per_block=args.max_peptides_per_block,
+        disallowed_peptide_pairs=[],
+        preferred_peptide_pairs=preferred_peptide_pairs
+    )
 
+    # Step 5. Generate a block assignment
     if args.mode == GenerateModes.GOLFY:
-        is_valid, df_configuration = run_ace_golfy(
-            df_peptides=df_peptides,
-            num_peptides_per_pool=args.num_peptides_per_pool,
-            num_coverage=args.num_coverage,
+        block_assignment = run_ace_golfy(
+            block_design=block_design,
             random_seed=args.random_seed,
             max_iters=args.golfy_max_iters,
             init_mode=args.golfy_init_mode,
-            preferred_peptide_pairs=preferred_peptide_pairs
+            verbose=args.verbose
         )
-        if not is_valid:
-            logger.info('The configuration generated by golfy did not result in '
-                        'each peptide with a unique combination of pools. '
-                        'Try running ACE again but with a higher number of '
-                        '--golfy-max-iters')
     elif args.mode == GenerateModes.SAT_SOLVER:
-        df_configuration = run_ace_sat_solver(
-            df_peptides=df_peptides,
-            num_peptides_per_pool=args.num_peptides_per_pool,
-            num_coverage=args.num_coverage,
-            num_peptides_per_batch=args.num_peptides_per_batch,
-            random_seed=args.random_seed,
+        block_assignment = run_ace_sat_solver(
+            block_design=block_design,
+            max_peptides_per_pool=args.max_peptides_per_pool,
             num_processes=args.num_processes,
-            preferred_peptide_pairs=preferred_peptide_pairs
+            verbose=args.verbose
         )
     else:
         logger.error('Unknown mode: %s' % args.mode)
         exit(1)
 
-    run_ace_verify(
-        df_configuration=df_configuration,
-        num_peptides_per_pool=args.num_peptides_per_pool,
-        num_coverage=args.num_coverage
+    # Step 6. Check if the block assignment is optimal
+    # re-assign value because it could have been decremented
+    # to account for preferred peptide neighbors (1x coverage).
+    block_design.num_coverage = args.num_coverage
+    block_assignment.is_optimal(
+        num_coverage=block_design.num_coverage,
+        num_peptides_per_pool=block_design.num_peptides_per_pool,
+        verbose=args.verbose
     )
 
-    # Step 4. Assign plate and well IDs
+    # Step 7. Assign plate and well IDs
     if args.assign_well_ids:
-        df_configuration = ELISpot.assign_well_ids(
-            df_configuration=df_configuration,
+        df_assignment = BlockAssignment.assign_well_ids(
+            df_assignment=block_assignment.to_dataframe(),
             plate_type=args.plate_type
         )
+    else:
+        df_assignment = block_assignment.to_dataframe()
 
-    df_configuration.to_csv(args.output_csv_file, index=False)
-
+    # Step 8. Write design and assignment to an Excel file
+    df_design = block_design.to_dataframe()
+    with pd.ExcelWriter(args.output_excel_file, engine='openpyxl') as writer:
+        df_assignment.to_excel(writer, sheet_name='block_assignment', index=False)
+        df_design.to_excel(writer, sheet_name='block_design', index=False)

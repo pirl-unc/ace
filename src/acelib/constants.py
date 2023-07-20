@@ -66,7 +66,7 @@ class PlateTypes:
     ]
 
 
-class ReadOutFileTypes:
+class ReadoutFileTypes:
     POOL_IDS = 'pool_id'
     AID_PLATE_READER = 'aid_plate_reader'
     ALL = [
@@ -75,7 +75,7 @@ class ReadOutFileTypes:
     ]
 
 
-class DeconvolutionResults:
+class DeconvolutionLabels:
     HIT = 'hit'
     CANDIDATE_HIT = 'candidate_hit'
 
@@ -96,3 +96,4 @@ class SequenceSimilarityFunctions:
         EUCLIDEAN,
         COSINE
     ]
+
