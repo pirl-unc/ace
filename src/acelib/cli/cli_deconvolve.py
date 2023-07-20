@@ -17,12 +17,10 @@ and run ACE 'deconvolve' command.
 """
 
 
-from __future__ import print_function, division, absolute_import
-
-
 import pandas as pd
-from ..aid_plate_reader import AIDPlateReader
-from ..constants import ReadOutFileTypes
+from ..plate_readout import PlateReadout
+from ..constants import ReadoutFileTypes
+from ..deconvolution import deconvolve_hit_peptides
 from ..default_parameters import *
 from ..logger import get_logger
 from ..main import *
@@ -56,8 +54,8 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         dest="readout_file_type",
         type=str,
         required=True,
-        help="ELISpot read-out file type (allowed options: %s)." %
-             (', '.join(ReadOutFileTypes.ALL))
+        help="ELISpot readout file type (allowed options: %s)." %
+             (', '.join(ReadoutFileTypes.ALL))
     )
     parser_required.add_argument(
         "--readout-files",
@@ -65,27 +63,22 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         type=str,
         action='append',
         required=True,
-        help="ELISpot read-out file(s)."
-             "If the readout-file-type is 'pool_id', then the expected columns of the CSV file are: 'pool_id', 'spot_count'. "
+        help="ELISpot readout file(s)."
+             "If the readout-file-type is 'pool_id', then the expected columns of the Excel file are: 'pool_id', 'spot_count'. "
              "If the readout-file-type is 'aid_plate_reader', then the readout-files are the Excel files from the AID plate reader machine. "
              "If the readout-file type is 'aid_plate_reader' and there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc."
     )
     parser_required.add_argument(
-        "--configuration-csv-file",
-        dest="configuration_csv_file",
+        "--assignment-excel-file",
+        dest="assignment_excel_file",
         type=str,
         required=True,
-        help="ELISpot configuration CSV file. "
-             "Expected columns: 'pool_id', 'peptide_id', 'peptide_sequence'. Please note that if --read-out-file-type is aid_plate_reader, "
+        help="ELISpot assignment Excel file. "
+             "Expected columns: 'pool_id', 'peptide_id', 'peptide_sequence' "
+             "in a sheet named 'block_assignment'. "
+             "Expected columns: ''. "
+             "Please note that if --read-out-file-type is aid_plate_reader, "
              "then the configuration must have these additional columns: 'plate_id', 'well_id'."
-    )
-    parser_required.add_argument(
-        "--min-coverage",
-        dest="min_coverage",
-        type=int,
-        required=True,
-        help="Minimum coverage for a peptide to be considered a hit. "
-             "Recommended value: the coverage of the original ELISpot configuration."
     )
     parser_required.add_argument(
         "--min-positive-spot-count",
@@ -95,11 +88,11 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         help="Number of spots for a pool to be considered a positive hit."
     )
     parser_required.add_argument(
-        "--output-csv-file",
-        dest="output_csv_file",
+        "--output-excel-file",
+        dest="output_excel_file",
         type=str,
         required=True,
-        help="Output CSV file."
+        help="Output deconvolution Excel file."
     )
     parser.set_defaults(which='deconvolve')
     return sub_parsers
@@ -115,41 +108,51 @@ def run_ace_deconvolve_from_parsed_args(args):
                 with the following variables:
                 readout_file_type
                 readout_files
-                configuration_csv_file
-                min_coverage
+                assignment_excel_file
                 min_positive_spot_count
-                output_csv_file
+                output_excel_file
     """
-    # Step 1. Load the original ELISpot configuration
-    df_configuration = pd.read_csv(args.configuration_csv_file)
+    # Step 1. Load the original block assignment and design data
+    block_assignment = BlockAssignment.read_excel_file(excel_file=args.assignment_excel_file)
+    block_design = BlockDesign.read_excel_file(excel_file=args.assignment_excel_file)
 
-    # Step 2. Load the read-out data
-    if args.readout_file_type == ReadOutFileTypes.POOL_IDS:
-        df_readout = pd.read_csv(args.readout_files[0])
+    # Step 2. Load the readout data
+    if args.readout_file_type == ReadoutFileTypes.POOL_IDS:
+        df_readout = pd.read_excel(args.readout_files[0])
         df_readout = df_readout[df_readout['spot_count'] >= args.min_positive_spot_count]
         hit_pool_ids = list(df_readout['pool_id'].unique())
-    elif args.readout_file_type == ReadOutFileTypes.AID_PLATE_READER:
-        if 'plate_id' not in df_configuration.columns.values.tolist():
-            logger.error("The column 'plate_id' must be present in the CSV configuration file "
-                         "if you supply AID plate reader XLSX read-out file(s) for deconvolution to work.")
+    elif args.readout_file_type == ReadoutFileTypes.AID_PLATE_READER:
+        df_assignment = block_assignment.to_dataframe()
+        if 'plate_id' not in df_assignment.columns.values.tolist():
+            logger.error("The column 'plate_id' must be present in the Excel assignment file "
+                         "if you supply AID plate reader XLSX readout file(s) for deconvolution.")
             exit(1)
-        if 'well_id' not in df_configuration.columns.values.tolist():
-            logger.error("The column 'well_id' must be present in the CSV configuration file "
-                         "if you supply AID plate reader XLSX read-out file(s) for deconvolution to work.")
+        if 'well_id' not in df_assignment.columns.values.tolist():
+            logger.error("The column 'well_id' must be present in the Excel assignment file "
+                         "if you supply AID plate reader XLSX readout file(s) for deconvolution.")
             exit(1)
-
-        df_hits_all = pd.DataFrame()
+        plate_readouts = []
         plate_id = 1
         for file in args.readout_files:
-            df_hits = AIDPlateReader.load_readout_file(excel_file=file, plate_id=plate_id)
-            df_hits_all = pd.concat([df_hits_all, df_hits])
+            plate_readout = PlateReadout.read_aid_plate_reader_file(
+                excel_file=file, plate_id=plate_id
+            )
+            plate_readouts.append(plate_readout)
             plate_id += 1
-        df_readout = pd.merge(df_configuration, df_hits_all, on=['plate_id', 'well_id'])
+        plate_readout = PlateReadout.merge(plate_readouts=plate_readouts)
+        df_readout = pd.merge(df_assignment, plate_readout.to_dataframe(), on=['plate_id', 'well_id'])
         hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= args.min_positive_spot_count, 'pool_id'].unique())
 
-    df_hits = run_ace_deconvolve(
+    # Step 3. Perform deconvolution
+    deconvolution_result = deconvolve_hit_peptides(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration,
-        min_coverage=args.min_coverage
+        df_assignment=block_assignment.to_dataframe(),
+        num_coverage=block_design.num_coverage
     )
-    df_hits.to_csv(args.output_csv_file, index=False)
+
+    # Step 4. Write to Excel file
+    deconvolution_result.to_dataframe().to_excel(
+        args.output_excel_file,
+        sheet_name='deconvoluted',
+        index=False
+    )
