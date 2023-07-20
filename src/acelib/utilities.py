@@ -18,10 +18,12 @@ The purpose of this python3 script is to implement utility functions.
 
 import pandas as pd
 import math
+import random
 import socket
 from collections import defaultdict
 from typing import Dict, List, Tuple
 from .logger import get_logger
+from .types import *
 
 
 logger = get_logger(__name__)
@@ -48,89 +50,68 @@ def get_open_port() -> int:
     return port
 
 
-def convert_golfy_results(
-        golfy_assignment: Dict,
-        df_peptides: pd.DataFrame
-) -> pd.DataFrame:
+def convert_peptides_to_dataframe(peptides: Peptides) -> pd.DataFrame:
     """
-    Converts golfy results into a DataFrame.
+    Convert Peptides to pd.DataFrame.
 
     Parameters
     ----------
-    golfy_assignment    :   Dictionary.
-    df_peptides         :   pd.DatFrame with the following columns:
-                            'peptide_id'
-                            'peptide_index'
-                            'peptide_sequence'
+    peptides    :   Peptides.
 
     Returns
     -------
-    df_configuration    :   DataFrame with the following columns:
-                            'coverage_id'
-                            'pool_id'
-                            'peptide_id'
-                            'peptide_sequence'
+    df_peptides :   pd.DataFrame with the following columns:
+                    'peptide_id'
+                    'peptide_sequence'
     """
     data = {
-        'coverage_id': [],
-        'pool_id': [],
         'peptide_id': [],
         'peptide_sequence': []
     }
-    curr_pool_idx = 1
-    for key, value in golfy_assignment.items():
-        curr_coverage_id = 'coverage_%i' % (key + 1)
-        for key2, value2 in value.items():
-            curr_pool_id = 'pool_%i' % curr_pool_idx
-            curr_pool_idx += 1
-            for p in value2:
-                df_curr_peptide = df_peptides.loc[df_peptides['peptide_index'] == p,:]
-                data['coverage_id'].append(curr_coverage_id)
-                data['pool_id'].append(curr_pool_id)
-                data['peptide_id'].append(df_curr_peptide['peptide_id'].values[0])
-                data['peptide_sequence'].append(df_curr_peptide['peptide_sequence'].values[0])
+    for peptide_id, peptide_sequence in peptides:
+        data['peptide_id'].append(peptide_id)
+        data['peptide_sequence'].append(peptide_sequence)
     return pd.DataFrame(data)
 
 
-def split_peptides(
-        df_peptides: pd.DataFrame,
-        num_peptides_per_batch: int
-) -> List[pd.DataFrame]:
+def convert_dataframe_to_peptides(df_peptides: pd.DataFrame) -> Peptides:
     """
-    Splits a DataFrame of peptides into batches.
+    Convert pd.DataFrame to Peptides.
 
     Parameters
     ----------
-    df_peptides                 :   DataFrame with the following columns:
-                                    'peptide_id'
-                                    'peptide_sequence'
-    num_peptides_per_batch      :   Number of peptides per batch.
+    df_peptides :   pd.DataFrame with the following columns:
+                    'peptide_id'
+                    'peptide_sequence'
 
     Returns
     -------
-    list_df_peptides            :   List of DataFrames.
+    peptides    :   Peptides.
     """
-    # Step 1. Calculate the number of batches
-    num_batches = math.ceil(len(df_peptides) / num_peptides_per_batch)
+    peptides = []
+    for index, value in df_peptides.iterrows():
+        peptides.append((value['peptide_id'], value['peptide_sequence']))
+    return peptides
 
-    # Step 2. Create a list of dictionaries
-    list_dict = [defaultdict(list) for i in range(0, num_batches)]
 
-    # Step 3. Assign the peptides into batches
-    for peptide_id in df_peptides['peptide_id'].unique():
-        peptide_sequence = df_peptides.loc[df_peptides['peptide_id'] == peptide_id, 'peptide_sequence'].values[0]
-        for i in range(0, num_batches):
-            if len(list_dict[i]['peptide_id']) < num_peptides_per_batch:
-                if peptide_id not in list_dict[i]['peptide_id']:
-                    list_dict[i]['peptide_id'].append(peptide_id)
-                    list_dict[i]['peptide_sequence'].append(peptide_sequence)
-                break
+def generate_random_seed():
+    return random.randint(1, 1000000)
 
-    # Step 4. Convert dictionaries into DataFrames
-    list_df = []
-    for data_dict in list_dict:
-        df_temp = pd.DataFrame(data_dict)
-        list_df.append(df_temp)
 
-    return list_df
+def is_prime(num: int) -> bool:
+    """
+    Returns True if the supplied number is a prime number.
+
+    Parameters
+    ----------
+    num         :   Number (integer).
+
+    Returns
+    -------
+    is_prime    :   True if the supplied number is a prime number.
+    """
+    for i in range(2, num):
+        if (num % i) == 0:
+            return False
+    return True
 

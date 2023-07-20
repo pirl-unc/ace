@@ -12,15 +12,21 @@
 
 
 """
-Purpose of this Code is to Handle the Sequence Similarity Elements of the ACE CP-SAT
+The purpose of this python3 script is to implement the AceNeuralEngine class,
+which handles the sequence similarity component of the SAT solver.
 """
+
+
 import numpy as np
 import pandas as pd
 import torch.nn as nn
 import torch
 from transformers import BertModel, BertTokenizer
 from transformers import AutoTokenizer, AutoModelForMaskedLM
+from .logger import get_logger
 
+
+logger = get_logger(__name__)
 
 
 class AceNeuralEngine(nn.Module):
@@ -41,6 +47,7 @@ class AceNeuralEngine(nn.Module):
     Representation implementations are based on the HuggingFace Transformers library
     and code from this Kaggle Notebook: https://www.kaggle.com/code/rhtsingh/utilizing-transformer-representations-efficiently
     """
+
     def __init__(self, base_model, tokenizer, device=None):
         super(AceNeuralEngine, self).__init__()
         self.model = base_model
@@ -116,6 +123,7 @@ class AceNeuralEngine(nn.Module):
 
     def load_weights(self, weights_path):
         """Load weights from a file"""
+        logger.info(self.device)
         self.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def save_weights(self, weights_path):
@@ -183,7 +191,6 @@ class AceNeuralEngine(nn.Module):
                 else:
                     raise ValueError("Similarity function must be 'euclidean' or 'cosine'")
         return list(paired_peptide_ids)
-    
     @staticmethod
     def to_paired_peptide_df(paired_peptide_triples):
         """Convert a list of paired peptides to a dataframe"""

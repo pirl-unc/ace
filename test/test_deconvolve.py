@@ -1,51 +1,63 @@
 import pandas as pd
 from .data import get_data_path
-from src.acelib.constants import DeconvolutionResults
-from src.acelib.main import run_ace_deconvolve
-from src.acelib.aid_plate_reader import AIDPlateReader
+from src.acelib.constants import DeconvolutionLabels
+from acelib.block_assignment import BlockAssignment
+from acelib.block_design import BlockDesign
+from acelib.deconvolution import deconvolve_hit_peptides
+from acelib.plate_readout import PlateReadout
 
 
-def test_deconvolve_small_configuration(small_sat_solver_elispot_configuration):
+def test_deconvolve_golfy_assignment_1(golfy_assignment_1):
     ground_truth_hit_peptide_ids = ['peptide_1','peptide_10']
-    hit_pool_ids = list(small_sat_solver_elispot_configuration.loc[small_sat_solver_elispot_configuration['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
-    df_hits_max = run_ace_deconvolve(
+    df_assignment = golfy_assignment_1.to_dataframe()
+    hit_pool_ids = list(df_assignment.loc[df_assignment['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
+    deconvolution_result = deconvolve_hit_peptides(
         hit_pool_ids=hit_pool_ids,
-        df_configuration=small_sat_solver_elispot_configuration,
-        min_coverage=3
+        df_assignment=golfy_assignment_1.to_dataframe(),
+        num_coverage=3
     )
-    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
+    df_deconvolution = deconvolution_result.to_dataframe()
+    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
-def test_deconvolve_small_configuration_aid_version():
-    configuration_file = get_data_path(name='25peptides_5perpool_3x.csv')
-    df_configuration = pd.read_csv(configuration_file)
-    excel_file = get_data_path(name='25peptides_5perpool_3x_aid_plate_reader_simulated_results.xlsx')
-    df_hits = AIDPlateReader.load_readout_file(excel_file=excel_file, plate_id=1)
-    df_readout = pd.merge(df_configuration, df_hits, on=['plate_id', 'well_id'])
-    hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
-    df_hits_max = run_ace_deconvolve(
-        hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration,
-        min_coverage=3
+
+def test_deconvolve_aid_plate_reader_readout():
+    block_assignment = BlockAssignment.read_excel_file(
+        excel_file=get_data_path(name='25peptides_5perpool_3x_noseqsim_sat-solver.xlsx'),
+        sheet_name='block_assignment'
     )
+    plate_readout = PlateReadout.read_aid_plate_reader_file(
+        excel_file=get_data_path(name='25peptides_5perpool_3x_aid-plate-reader_readout.xlsx'),
+        plate_id=1
+    )
+    df_readout = pd.merge(block_assignment.to_dataframe(), plate_readout.to_dataframe(), on=['plate_id', 'well_id'])
+    hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
+    deconvolution_result = deconvolve_hit_peptides(
+        hit_pool_ids=hit_pool_ids,
+        df_assignment=block_assignment.to_dataframe(),
+        num_coverage=3
+    )
+    df_deconvolution = deconvolution_result.to_dataframe()
     expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
-    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
+    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.HIT, 'peptide_id'].values.tolist())
     assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
-def test_deconvolve_small_configuration_pool_id_version():
-    configuration_file = get_data_path(name='25peptides_5perpool_3x.csv')
-    df_configuration = pd.read_csv(configuration_file)
-    csv_file = get_data_path(name='25peptides_5perpool_3x_simulated_results.csv')
-    df_readout = pd.read_csv(csv_file)
-    hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
-    df_hits_max = run_ace_deconvolve(
-        hit_pool_ids=hit_pool_ids,
-        df_configuration=df_configuration,
-        min_coverage=3
+
+def test_deconvolve_pool_id_readout():
+    block_assignment = BlockAssignment.read_excel_file(
+        excel_file=get_data_path(name='25peptides_5perpool_3x_noseqsim_sat-solver.xlsx')
     )
-    expected_peptide_ids = sorted(['peptide_1', 'peptide_7', 'peptide_14', 'peptide_25'])
-    expected_second_round_peptide_ids = ['peptide_9']
-    hit_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.HIT, 'peptide_id'].values.tolist())
-    second_round_assay_peptide_ids = sorted(df_hits_max.loc[df_hits_max['deconvolution_result'] == DeconvolutionResults.CANDIDATE_HIT, 'peptide_id'].values.tolist())
-    assert hit_peptide_ids == expected_peptide_ids, 'peptide_1, peptide_7, peptide_14, peptide_25 are hits.'
-    assert second_round_assay_peptide_ids == expected_second_round_peptide_ids, 'peptide_9 is a candidate hit.'
+    df_readout = pd.read_excel(
+        get_data_path(name='25peptides_5perpool_3x_pool-id_readout.xlsx')
+    )
+    hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= 300, 'pool_id'].unique())
+    deconvolution_result = deconvolve_hit_peptides(
+        hit_pool_ids=hit_pool_ids,
+        df_assignment=block_assignment.to_dataframe(),
+        num_coverage=3
+    )
+    df_deconvolution = deconvolution_result.to_dataframe()
+    expected_peptide_ids = sorted(['peptide_1', 'peptide_10'])
+    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.HIT, 'peptide_id'].values.tolist())
+    assert hit_peptide_ids == expected_peptide_ids, 'peptide_1 and peptide_10 are hits.'
+
