@@ -8,15 +8,15 @@ title: "Getting Started"
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.0.7.0`
+**Latest Stable Version**: `0.0.79.0`
 
-**Updated date**: July 3, 2023
+**Updated date**: July 20, 2023
 
 `ACE` is a python library and command-line software for:
 
-1. Generation of ELISpot configurations.
+1. Generation of ELISpot assignments.
 2. Deconvolution of hit peptides from ELISpot results.
-3. Verification of optimality of an ELISpot configuration.
+3. Verification of optimality of an ELISpot assignment.
 
 ## **Installation**
 
@@ -28,11 +28,12 @@ pip install ace-<version>.tar.gz
 
 ## Dependencies
 
-- [golfy](https://github.com/pirl-unc/golfy)
+- [golfy>=2.3.0](https://github.com/pirl-unc/golfy)
 - [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
 - torch
-- transformers>=4.30.2
-- pandas
+- transformers==4.30.2
+- pandas>=1.5.2
+- numpy>=1.23.1
 - openpyxl
 
 ## **Command Line Interface**
