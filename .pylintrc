@@ -5,7 +5,4 @@ init-hook='import sys; sys.path.append(".")'
 # Without ignoring this, we get errors like:
 # E:249,20: Module 'numpy' has no 'nan' member (no-member)
 ignored-modules = numpy
-
-# Without ignoring this, we get errors like:
-# python/exacto/main.py:33:0: E0611: No name 'exactors' in module 'exacto' (no-name-in-module)
-disable=E0611,E0110
+disable = E0611, E0110, abstract-class-instantiated

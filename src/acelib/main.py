@@ -77,7 +77,7 @@ def run_ace_golfy(
     # Step 3. Run golfy
     golfy_solution = init(
         num_peptides=len(df_peptides['peptide_id'].unique()),
-        peptides_per_pool=block_design.num_peptides_per_pool,
+        max_peptides_per_pool=block_design.num_peptides_per_pool,
         num_replicates=block_design.num_coverage,
         strategy=init_mode,
         preferred_neighbors=preferred_neighbors,
@@ -101,6 +101,7 @@ def run_ace_sat_solver(
         block_design: BlockDesign,
         max_peptides_per_pool: int = GENERATE_MAX_PEPTIDES_PER_POOL,
         num_processes: int = GENERATE_NUM_PROCESSES,
+        shuffle_iters: int = GENERATE_SHUFFLE_ITERS,
         verbose: bool = True
 ) -> BlockAssignment:
     """
@@ -111,6 +112,7 @@ def run_ace_sat_solver(
     block_design            :   BlockDesign object.
     max_peptides_per_pool   :   Maximum number of peptides per pool.
     num_processes           :   Number of processes (default: 4).
+    shuffle_iters           :   Number of iterations to shuffle pool IDs (default: 100).
     verbose                 :   If True, prints messages.
 
     Returns
@@ -188,6 +190,11 @@ def run_ace_sat_solver(
             block_assignments.append(block_assignment)
 
     # Step 4. Merge assignments
+    block_assignments = BlockAssignment.minimize_violations(
+        block_assignments=block_assignments,
+        shuffle_iters=shuffle_iters,
+        verbose=verbose
+    )
     block_assignment = BlockAssignment.merge(block_assignments=block_assignments)
 
     if verbose:

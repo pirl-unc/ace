@@ -16,8 +16,10 @@ The purpose of this python3 script is to implement the BlockAssignment dataclass
 """
 
 
+import copy
 import pandas as pd
 import math
+import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import combinations, product
@@ -84,6 +86,29 @@ class BlockAssignment:
         if pool not in self.assignments[coverage].keys():
             self.assignments[coverage][pool] = []
         self.assignments[coverage][pool].append((peptide_id, peptide_sequence))
+
+    def count_violations(self) -> int:
+        """
+        Counts the number of violations (i.e. number of peptides with
+        non-unique pool assignment).
+
+        Returns
+        -------
+        num_violations      :   Number of violations.
+        """
+        df_assignments = self.to_dataframe()
+        pool_ids_peptides_dict = defaultdict(list)
+        for peptide_id in list(df_assignments['peptide_id'].unique()):
+            pool_ids = list(df_assignments.loc[df_assignments['peptide_id'] == peptide_id, 'pool_id'].unique())
+            pool_ids = sorted(pool_ids)
+            pool_ids_peptides_dict[','.join([str(i) for i in pool_ids])].append(peptide_id)
+
+        num_violations = 0
+        for key, value in pool_ids_peptides_dict.items():
+            if len(value) > 1:
+                for peptide_id in value:
+                    num_violations += 1
+        return num_violations
 
     def to_dataframe(self) -> pd.DataFrame:
         data = {
@@ -180,6 +205,37 @@ class BlockAssignment:
 
         return constraint_1_bool & constraint_2_bool & constraint_3_bool
 
+    def shuffle_pool_ids(self):
+        """
+        Shuffles
+
+        Returns
+        -------
+
+        """
+        # Step 1. Shuffle pool IDs
+        curr_pool_ids = list(self.to_dataframe()['pool_id'].unique())
+        new_pool_ids = list(self.to_dataframe()['pool_id'].unique())
+        random.shuffle(new_pool_ids)
+
+        # Step 2. Create a dictionary of old and new pool IDs
+        new_pool_ids_dict = {}
+        for i in range(0, len(curr_pool_ids)):
+            new_pool_ids_dict[curr_pool_ids[i]] = new_pool_ids[i]
+
+        # Step 3. Reassign pool IDs
+        old_assignments = self.assignments
+        self.assignments = {}
+        for coverage, pool_dict in old_assignments.items():
+            for pool, peptide_ids in pool_dict.items():
+                for peptide_id, peptide_sequence in peptide_ids:
+                    self.add_peptide(
+                        coverage=coverage,
+                        pool=new_pool_ids_dict[pool],
+                        peptide_id=peptide_id,
+                        peptide_sequence=peptide_sequence
+                    )
+
     @staticmethod
     def assign_well_ids(
             df_assignment: pd.DataFrame,
@@ -230,6 +286,7 @@ class BlockAssignment:
                 pool_well_ids_dict['plate_id'].append(curr_plate_id)
                 pool_well_ids_dict['well_id'].append(curr_well_id)
             df_pool_wells_ids = pd.DataFrame(pool_well_ids_dict)
+            df_assignment.drop(columns=['plate_id', 'well_id'], inplace=True)
             df_configuration = pd.merge(df_assignment, df_pool_wells_ids, on='pool_id')
             return df_configuration
         else:
@@ -488,6 +545,40 @@ class BlockAssignment:
                 )
         return block_assignment
 
+    @staticmethod
+    def minimize_violations(
+            block_assignments: List['BlockAssignment'],
+            shuffle_iters: int,
+            verbose: bool = True
+    ) -> List['BlockAssignment']:
+        """
+        Minimizes violations (i.e. non-unique pool assignment) in a list of
+        block assignments by shuffling pool IDs.
+
+        Parameters
+        ----------
+        block_assignments   :   List of BlockAssignment objects.
+        shuffle_iters       :   Number of iterations to shuffle pool IDs.
+
+        Returns
+        -------
+        block_assignments   :   List of BlockAssignment objects.
+        """
+        min_violations = BlockAssignment.merge(block_assignments=block_assignments).count_violations()
+        curr_block_assignments = copy.deepcopy(block_assignments)
+        best_block_assignments = copy.deepcopy(block_assignments)
+        for _ in range(0, shuffle_iters):
+            random_idx = random.choice(list(range(0, len(curr_block_assignments))))
+            curr_block_assignments[random_idx].shuffle_pool_ids()
+            curr_num_violations = BlockAssignment.merge(block_assignments=curr_block_assignments).count_violations()
+            if curr_num_violations < min_violations:
+                if verbose:
+                    logger.info('Found a better assignment: current number of violations: %i, new number of violations: %i' %
+                                (min_violations, curr_num_violations))
+                best_block_assignments = copy.deepcopy(curr_block_assignments)
+                min_violations = curr_num_violations
+        return best_block_assignments
+
 
 def compute_transitive_neighbors(
         peptide_pairs: PeptidePairs
@@ -538,4 +629,5 @@ def compute_transitive_neighbors(
             transitive_peptides_.append(set(i))
 
     return [list(p) for p in transitive_peptides_]
+
 

@@ -19,10 +19,11 @@ and run ACE 'generate' command.
 
 import math
 import pandas as pd
-import pkg_resources
 import os
 import random
 import torch
+from importlib import resources
+from pathlib import Path
 from ortools.sat.python import cp_model
 from transformers import BertModel, BertTokenizer
 from transformers import AutoTokenizer, AutoModelForMaskedLM
@@ -181,6 +182,15 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Number of processes (default: %i)." % GENERATE_NUM_PROCESSES
     )
     parser_optional_sat_solver.add_argument(
+        "--shuffle-iters",
+        dest="shuffle_iters",
+        type=int,
+        required=False,
+        default=GENERATE_SHUFFLE_ITERS,
+        help="Number of iterations to shuffle pool IDs to minimize "
+             "number of non-unique pool assignment violations (default: %i)." % GENERATE_SHUFFLE_ITERS
+    )
+    parser_optional_sat_solver.add_argument(
         "--max-peptides-per-block",
         dest="max_peptides_per_block",
         type=int,
@@ -245,6 +255,7 @@ def run_ace_generate_from_parsed_args(args):
                 golfy_max_iters
                 golfy_init_mode
                 num_processes
+                shuffle_iters
                 max_peptides_per_block
                 max_peptides_per_pool
                 verbose
@@ -267,7 +278,7 @@ def run_ace_generate_from_parsed_args(args):
     # Step 3. Identify pairs of similar peptides
     if is_sequence_available:
         # Load trained model
-        trained_model_file = pkg_resources.resource_filename('acelib', 'resources/models/seq_sim_trained_model.pt')
+        trained_model_file = resources.path('acelib.resources.models', 'seq_sim_trained_model.pt')
         ESM2_TOKENIZER = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
         ESM2_MODEL = AutoModelForMaskedLM.from_pretrained("facebook/esm2_t6_8M_UR50D", return_dict=True, output_hidden_states=True)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -343,6 +354,7 @@ def run_ace_generate_from_parsed_args(args):
 
     # Step 8. Write design and assignment to an Excel file
     df_design = block_design.to_dataframe()
-    with pd.ExcelWriter(args.output_excel_file, engine='openpyxl') as writer:
-        df_assignment.to_excel(writer, sheet_name='block_assignment', index=False)
-        df_design.to_excel(writer, sheet_name='block_design', index=False)
+    writer = pd.ExcelWriter(args.output_excel_file, engine='openpyxl')
+    df_assignment.to_excel(writer, sheet_name='block_assignment', index=False)
+    df_design.to_excel(writer, sheet_name='block_design', index=False)
+    writer.save()

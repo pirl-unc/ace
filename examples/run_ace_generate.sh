@@ -70,7 +70,7 @@ echo ""
 
 echo "Example 7. Golfy with peptide sequences (25/5/3x)"
 ace generate \
-  --peptides-csv-file ../test/data/25peptide_sequences.csv \
+  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
   --num-peptides-per-pool 5 \
   --num-coverage 3 \
   --num-processes 1 \
@@ -81,7 +81,7 @@ echo ""
 
 echo "Example 8. SAT solver with peptide sequences (25/5/3x)"
 ace generate \
-  --peptides-csv-file ../test/data/25peptide_sequences.csv \
+  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
   --num-peptides-per-pool 5 \
   --num-coverage 3 \
   --num-processes 6 \

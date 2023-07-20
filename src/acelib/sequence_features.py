@@ -23,6 +23,10 @@ import torch.nn as nn
 import torch
 from transformers import BertModel, BertTokenizer
 from transformers import AutoTokenizer, AutoModelForMaskedLM
+from .logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class AceNeuralEngine(nn.Module):
@@ -119,6 +123,7 @@ class AceNeuralEngine(nn.Module):
 
     def load_weights(self, weights_path):
         """Load weights from a file"""
+        logger.info(self.device)
         self.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def save_weights(self, weights_path):
