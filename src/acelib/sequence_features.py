@@ -183,6 +183,7 @@ class AceNeuralEngine(nn.Module):
                 else:
                     raise ValueError("Similarity function must be 'euclidean' or 'cosine'")
         return list(paired_peptide_ids)
+    
     @staticmethod
     def to_paired_peptide_df(paired_peptide_triples):
         """Convert a list of paired peptides to a dataframe"""
