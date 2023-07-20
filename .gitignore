@@ -3,9 +3,7 @@ dist/
 build/
 __pycache__/
 src/ace.egg-info/
-data/
 notebooks/*.pt
-examples/*.csv
 examples/*.xlsx
 *.pyc
 .coverage*
