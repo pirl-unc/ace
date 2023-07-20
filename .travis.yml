@@ -37,7 +37,7 @@ install:
   - python -m pip install --upgrade --user ortools
   - mamba install openpyxl
   - conda install pytorch torchvision -c pytorch
-  - conda install -c conda-forge transformers
+  - pip install transformers==4.30.2
   - pip install golfy>=2.3.0
   - pip install . --verbose
 before_script:
