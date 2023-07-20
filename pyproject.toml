@@ -20,7 +20,7 @@ requires = [
     "torch",
     "transformers>=4.30.2",
     "openpyxl",
-    "golfy>=1.5.0",
+    "golfy>=2.3.0",
     "scikit-learn"
 ]
 
