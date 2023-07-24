@@ -123,7 +123,6 @@ class AceNeuralEngine(nn.Module):
 
     def load_weights(self, weights_path):
         """Load weights from a file"""
-        logger.info(self.device)
         self.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def save_weights(self, weights_path):

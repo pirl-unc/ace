@@ -42,6 +42,7 @@ def run_ace_golfy(
         random_seed: int = GENERATE_RANDOM_SEED,
         max_iters: int = GENERATE_GOLFY_MAX_ITERS,
         init_mode: str = GENERATE_GOLFY_INIT_MODE,
+        allow_extra_pools: bool = GENERATE_GOLFY_ALLOW_EXTRA_POOLS,
         verbose: bool = True
 ) -> BlockAssignment:
     """
@@ -53,6 +54,7 @@ def run_ace_golfy(
     random_seed         :   Random seed.
     max_iters           :   Number of maximum iterations for golfy.
     init_mode           :   Init mode.
+    allow_extra_pools   :   Allow extra pools.
     verbose             :   If True, prints messages.
 
     Returns
@@ -81,9 +83,15 @@ def run_ace_golfy(
         num_replicates=block_design.num_coverage,
         strategy=init_mode,
         preferred_neighbors=preferred_neighbors,
+        allow_extra_pools=allow_extra_pools,
         verbose=verbose
     )
-    optimize(golfy_solution, max_iters=max_iters, verbose=verbose)
+    optimize(
+        golfy_solution,
+        max_iters=max_iters,
+        allow_extra_pools=allow_extra_pools,
+        verbose=verbose
+    )
 
     if verbose:
         logger.info('Finished running golfy.')
@@ -190,16 +198,19 @@ def run_ace_sat_solver(
             block_assignments.append(block_assignment)
 
     # Step 4. Merge assignments
+    logger.info('Started minimizing violations.')
     block_assignments = BlockAssignment.minimize_violations(
         block_assignments=block_assignments,
         shuffle_iters=shuffle_iters,
         verbose=verbose
     )
+    logger.info('Finished minimizing violations.')
     block_assignment = BlockAssignment.merge(block_assignments=block_assignments)
 
     if verbose:
         logger.info('Finished running SAT solver.')
-        logger.info('The returning block assignment has %i pools in total.' % block_assignment.num_pools)
-        logger.info('The returning block assignment has %i peptides in total.' % len(block_assignment.peptide_ids))
+        logger.info('The returning block assignment has the following:')
+        logger.info('\t%i pools in total.' % block_assignment.num_pools)
+        logger.info('\t%i peptides in total.' % len(block_assignment.peptide_ids))
     return block_assignment
 

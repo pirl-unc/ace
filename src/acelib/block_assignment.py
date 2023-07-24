@@ -87,27 +87,31 @@ class BlockAssignment:
             self.assignments[coverage][pool] = []
         self.assignments[coverage][pool].append((peptide_id, peptide_sequence))
 
-    def count_violations(self) -> int:
+    def num_violations(self) -> float:
         """
-        Counts the number of violations (i.e. number of peptides with
-        non-unique pool assignment).
+        Number of violations
+        (i.e. number of times two peptides appear together more than once).
 
         Returns
         -------
         num_violations      :   Number of violations.
         """
+        # Step 1. Create a dictionary of peptides and pools
         df_assignments = self.to_dataframe()
-        pool_ids_peptides_dict = defaultdict(list)
-        for peptide_id in list(df_assignments['peptide_id'].unique()):
-            pool_ids = list(df_assignments.loc[df_assignments['peptide_id'] == peptide_id, 'pool_id'].unique())
-            pool_ids = sorted(pool_ids)
-            pool_ids_peptides_dict[','.join([str(i) for i in pool_ids])].append(peptide_id)
+        peptide_pool_dict = defaultdict(list)
+        peptide_ids = list(df_assignments['peptide_id'].unique())
+        for peptide_id in peptide_ids:
+            peptide_pool_dict[peptide_id] = list(df_assignments.loc[df_assignments['peptide_id'] == peptide_id, 'pool_id'].unique())
 
+        # Step 2. Enumerate the number of violations
         num_violations = 0
-        for key, value in pool_ids_peptides_dict.items():
-            if len(value) > 1:
-                for peptide_id in value:
-                    num_violations += 1
+        for i in range(0, len(peptide_ids)):
+            for j in range(i + 1, len(peptide_ids)):
+                p1_pools = peptide_pool_dict[peptide_ids[i]]
+                p2_pools = peptide_pool_dict[peptide_ids[j]]
+                shared_pools = set(p1_pools).intersection(set(p2_pools))
+                if len(shared_pools) > 1:
+                    num_violations += len(shared_pools) - 1
         return num_violations
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -144,7 +148,8 @@ class BlockAssignment:
         Verifies whether a given ELISpot assignment satisfies the following constraints:
         1. Each peptide is in 'num_coverage' number of different pools.
         2. Each peptide is in exactly one unique combination of pool IDs.
-        3. There is an optimal (minimal) number of pools.
+        3. Two peptides are not pooled together more than once.
+        4. There is an optimal (minimal) number of pools.
 
         Parameters
         ---------
@@ -182,28 +187,41 @@ class BlockAssignment:
         for key, value in pool_ids_peptides_dict.items():
             if len(value) > 1:
                 if verbose:
-                    logger.info("Assignment does not meet constraint #2. Pools %s have the following peptides:" % key)
-                    for peptide_id in value:
-                        logger.info(peptide_id)
+                    if constraint_2_bool:
+                        logger.info("Assignment does not meet constraint #2: there are peptides that do not belong to exactly one unique combination of pool IDs.")
+                    logger.info("\tPools %s have the following peptides: %s." % (key, ','.join(value)))
                 constraint_2_bool = False
         if constraint_2_bool:
             if verbose:
                 logger.info('Assignment meets constraint #2: each peptide belongs to exactly one unique combination of pool IDs.')
 
-        # Step 3. Check that there is an optimal number of pools
+        # Step 3. Two peptides are not pooled together more than once.
         constraint_3_bool = True
+        num_violations = self.num_violations()
+        if num_violations > 0:
+            constraint_3_bool = False
+            if verbose:
+                logger.info("Assignment does not meet constraint #3: violation score is %i "
+                            "(proxy of number of times peptide pairs are pooled together more than once)." %
+                            num_violations)
+        else:
+            if verbose:
+                logger.info('Assignment meets constraint #3: every pair of peptides is pooled together at most once.')
+
+        # Step 4. Check that there is an optimal number of pools
+        constraint_4_bool = True
         num_pools = math.ceil(len(df_assignments['peptide_id'].unique()) / num_peptides_per_pool) * num_coverage
         if len(df_assignments['pool_id'].unique()) != num_pools:
             num_extra_pools = len(df_assignments['pool_id'].unique()) - num_pools
             if verbose:
-                logger.info('Assignment does not meet constraint #3: %i extra pool(s) than the minimum possible number of pools (%i).' %
+                logger.info('Assignment does not meet constraint #4: %i extra pool(s) than the minimum possible number of pools (%i).' %
                             (num_extra_pools, num_pools))
-            constraint_3_bool = False
-        if constraint_3_bool:
+            constraint_4_bool = False
+        if constraint_4_bool:
             if verbose:
-                logger.info('Assignment meets constraint #3: there is an optimal (minimal) number of pools (%i).' % num_pools)
+                logger.info('Assignment meets constraint #4: there is an optimal (minimal) number of pools (%i).' % num_pools)
 
-        return constraint_1_bool & constraint_2_bool & constraint_3_bool
+        return constraint_1_bool & constraint_2_bool & constraint_3_bool & constraint_4_bool
 
     def shuffle_pool_ids(self):
         """
@@ -552,7 +570,7 @@ class BlockAssignment:
             verbose: bool = True
     ) -> List['BlockAssignment']:
         """
-        Minimizes violations (i.e. non-unique pool assignment) in a list of
+        Minimizes violations (i.e. number of times peptide pairs are pooled together more than once) in a list of
         block assignments by shuffling pool IDs.
 
         Parameters
@@ -564,16 +582,16 @@ class BlockAssignment:
         -------
         block_assignments   :   List of BlockAssignment objects.
         """
-        min_violations = BlockAssignment.merge(block_assignments=block_assignments).count_violations()
+        min_violations = BlockAssignment.merge(block_assignments=block_assignments).num_violations()
         curr_block_assignments = copy.deepcopy(block_assignments)
         best_block_assignments = copy.deepcopy(block_assignments)
         for _ in range(0, shuffle_iters):
             random_idx = random.choice(list(range(0, len(curr_block_assignments))))
             curr_block_assignments[random_idx].shuffle_pool_ids()
-            curr_num_violations = BlockAssignment.merge(block_assignments=curr_block_assignments).count_violations()
+            curr_num_violations = BlockAssignment.merge(block_assignments=curr_block_assignments).num_violations()
             if curr_num_violations < min_violations:
                 if verbose:
-                    logger.info('Found a better assignment: current number of violations: %i, new number of violations: %i' %
+                    logger.info('\tFound a better assignment; current number of violations: %i, new number of violations: %i' %
                                 (min_violations, curr_num_violations))
                 best_block_assignments = copy.deepcopy(curr_block_assignments)
                 min_violations = curr_num_violations

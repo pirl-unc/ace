@@ -377,7 +377,7 @@ class BlockDesign:
                 peptides = block_design.peptides[start_peptide_idx:end_peptide_idx + 1]
                 start_peptide_idx = end_peptide_idx + 1
                 if verbose:
-                    logger.info('\t\tAppending block design for %i peptides, %i peptides per pool' %
+                    logger.info('\tAppending block design for %i peptides, %i peptides per pool' %
                                 (len(peptides), num_peptides_per_pool))
                 block_design_ = BlockDesign(
                     peptides=peptides,

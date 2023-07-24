@@ -17,6 +17,7 @@ and run ACE 'generate' command.
 """
 
 
+import argparse
 import math
 import pandas as pd
 import os
@@ -171,6 +172,15 @@ def add_ace_generate_arg_parser(sub_parsers):
         required=False,
         help="Initialization mode for golfy (default: %s)." % GENERATE_GOLFY_INIT_MODE
     )
+    parser_optional_golfy.add_argument(
+        "--golfy-allow-extra-pools",
+        dest="golfy_allow_extra_pools",
+        type=eval,
+        default=GENERATE_GOLFY_ALLOW_EXTRA_POOLS,
+        choices=[True, False],
+        required=False,
+        help="Allow extra pools for golfy (default: %r)." % GENERATE_GOLFY_ALLOW_EXTRA_POOLS
+    )
 
     parser_optional_sat_solver = parser.add_argument_group("optional arguments (applies when '--mode sat_solver')")
     parser_optional_sat_solver.add_argument(
@@ -254,6 +264,7 @@ def run_ace_generate_from_parsed_args(args):
                 random_seed
                 golfy_max_iters
                 golfy_init_mode
+                golfy_allow_extra_pools
                 num_processes
                 shuffle_iters
                 max_peptides_per_block
@@ -320,6 +331,7 @@ def run_ace_generate_from_parsed_args(args):
             random_seed=args.random_seed,
             max_iters=args.golfy_max_iters,
             init_mode=args.golfy_init_mode,
+            allow_extra_pools=args.golfy_allow_extra_pools,
             verbose=args.verbose
         )
     elif args.mode == GenerateModes.SAT_SOLVER:
@@ -327,6 +339,7 @@ def run_ace_generate_from_parsed_args(args):
             block_design=block_design,
             max_peptides_per_pool=args.max_peptides_per_pool,
             num_processes=args.num_processes,
+            shuffle_iters=args.shuffle_iters,
             verbose=args.verbose
         )
     else:
