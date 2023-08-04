@@ -135,6 +135,9 @@ def empirical_deconvolve(
         curr_hit_peptide_ids = df_assignment.loc[df_assignment['pool_id'] == curr_pool_id, 'peptide_id'].values.tolist()
         for curr_hit_peptide_id in curr_hit_peptide_ids:
             hit_peptides_dict[curr_hit_peptide_id].append(curr_pool_id)
+    for peptide_id in df_assignment['peptide_id'].unique():
+        if peptide_id not in hit_peptides_dict.keys():
+            hit_peptides_dict[peptide_id] = []
 
     # Step 2. Identify coverage and pool IDs for each hit peptide
     data = {
@@ -196,10 +199,15 @@ def empirical_deconvolve(
             data['deconvolution_label'].append(DeconvolutionLabels.NOT_A_HIT)
     df_deconvolution = pd.DataFrame(data)
     df_deconvolution = pd.merge(df_hits, df_deconvolution, on=['peptide_id'])
+    
+    assert len(df_assignment['peptide_id'].unique()) == len(df_deconvolution), 'All peptide IDs must be present in the deconvolution result.'
 
     deconvolution_result = DeconvolutionResult()
-    for index, row in df_deconvolution.iterrows():
-        pool_ids = [int(p) for p in row['pool_ids'].split(';')]
+    for _, row in df_deconvolution.iterrows():
+        if row['pool_ids'] == '':
+            pool_ids = []
+        else:
+            pool_ids = [int(p) for p in row['pool_ids'].split(';')]
         deconvolution_result.add_peptide(
             peptide_id=row['peptide_id'],
             peptide_sequence=row['peptide_sequence'],
