@@ -20,12 +20,12 @@ requires = [
     "torch",
     "transformers==4.30.2",
     "openpyxl",
-    "golfy>=2.3.0"
+    "golfy>=2.5.0"
 ]
 
 [project]
 name = "ace"
-version = "0.0.9.3"
+version = "0.0.9.9"
 requires-python = ">=3.7"
 keywords = [
     "elispot",

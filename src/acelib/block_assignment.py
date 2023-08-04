@@ -22,12 +22,13 @@ import math
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
+from golfy import Design
 from itertools import combinations, product
 from typing import Dict, List, Tuple, Type
-from .constants import PlateTypes
+from .constants import *
 from .logger import get_logger
 from .utilities import convert_peptides_to_dataframe
-from .types import Assignments, Peptides, PeptideId, PeptidePairs, PoolId, PlateId, WellId
+from .types import *
 
 
 logger = get_logger(__name__)
@@ -86,6 +87,89 @@ class BlockAssignment:
         if pool not in self.assignments[coverage].keys():
             self.assignments[coverage][pool] = []
         self.assignments[coverage][pool].append((peptide_id, peptide_sequence))
+
+    def assign_well_ids(self, num_plate_wells: int):
+        """
+        Assigns plate and well IDs to an ELISpot configuration.
+
+        Parameters
+        ----------
+        num_plate_wells     :   Number of wells on plate (allowed values: 24, 48, 96, 384).
+        """
+        # Step 1. Clear the current self.plate_ids
+        self.plate_ids = {} # key = pool ID, value = (plate ID, well ID)
+
+        # Step 2. Prepare well IDs
+        def get_24_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D']
+            col_prefixes = range(1, 7)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_48_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F']
+            col_prefixes = range(1, 9)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_96_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+            col_prefixes = range(1, 13)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_384_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+            col_prefixes = range(1, 15)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+
+        curr_plate_id = 1
+        if num_plate_wells == PlateWells.WELLS_24:
+            curr_well_ids = get_24_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_48:
+            curr_well_ids = get_48_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_96:
+            curr_well_ids = get_96_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_384:
+            curr_well_ids = get_384_well_ids()
+        else:
+            logger.error('Unsupported number of wells: %i' % num_plate_wells)
+            exit(1)
+
+        # Step 3. Assign well IDs
+        for pool_id in sorted(self.to_dataframe()['pool_id'].unique()):
+            if len(curr_well_ids) == 0:
+                if num_plate_wells == PlateWells.WELLS_24:
+                    curr_well_ids = get_24_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_48:
+                    curr_well_ids = get_48_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_96:
+                    curr_well_ids = get_96_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_384:
+                    curr_well_ids = get_384_well_ids()
+                else:
+                    logger.error('Unsupported number of wells: %i' % num_plate_wells)
+                    exit(1)
+                curr_plate_id += 1
+            curr_well_id = curr_well_ids[0]
+            curr_well_ids.pop(0)
+            self.plate_ids['pool_id'] = (curr_plate_id, curr_well_id)
+
+    def get_peptide_sequence(self, peptide_id: PeptideId) -> PoolId:
+        """
+        Returns the peptide sequence of a peptide ID.
+
+        Returns
+        -------
+        peptide_sequence    :   Peptide sequence.
+        """
+        df = self.to_dataframe()
+        return df.loc[df['peptide_id'] == peptide_id, 'peptide_sequence'].values[0]
+    
+    def get_pool_ids(self, peptide_id: PeptideId) -> PoolId:
+        """
+        Returns pool IDs for a peptide ID.
+
+        Returns
+        -------
+        pool_ids    :   List of PooldId.
+        """
+        df = self.to_dataframe()
+        return df.loc[df['peptide_id'] == peptide_id, 'pool_id'].values.tolist()
 
     def num_violations(self) -> float:
         """
@@ -254,62 +338,49 @@ class BlockAssignment:
                         peptide_sequence=peptide_sequence
                     )
 
-    @staticmethod
-    def assign_well_ids(
-            df_assignment: pd.DataFrame,
-            plate_type: str
-    ) -> pd.DataFrame:
+    def to_golfy_design(self) -> Tuple[Design, PeptideIndices]:
         """
-        Assigns plate and well IDs to an ELISpot configuration.
-
-        Parameters
-        ----------
-        df_assignment       :   DataFrame with the following columns:
-                                'coverage_id'
-                                'pool_id',
-                                'peptide_id'
-                                'peptide_sequence'
-        plate_type          :   Plate type (allowed values: '96-well plate').
+        Returns in golfy design variable type.
 
         Returns
         -------
-        df_assignment       :   DataFrame with the following columns:
-                                'coverage_id'
-                                'pool_id',
-                                'peptide_id'
-                                'peptide_sequence'
-                                'plate_id'
-                                'well_id'
+        design          :   Design object.
+        peptide_indices :   Dictionary where
+                            key     = peptide index
+                            value   = peptide ID
         """
-        if plate_type == PlateTypes.PLATE_96_WELLS:
-            def get_96_well_plate_ids():
-                row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                col_prefixes = range(1, 13)
-                return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        # Step 1. Create dictionaries of peptide indices to IDs (and vice and versa)
+        peptide_idx_to_id_dict = {}
+        peptide_id_to_idx_dict = {}
+        idx = 0
+        for peptide_id in self.peptide_ids:
+            peptide_idx_to_id_dict[idx] = peptide_id
+            peptide_id_to_idx_dict[peptide_id] = idx
+            idx += 1
 
-            curr_plate_id = 1
-            curr_well_ids = get_96_well_plate_ids()
-            pool_well_ids_dict = {
-                'pool_id': [],
-                'plate_id': [],
-                'well_id': []
-            }
-            for pool_id in sorted(df_assignment['pool_id'].unique()):
-                if len(curr_well_ids) == 0:
-                    curr_well_ids = get_96_well_plate_ids()
-                    curr_plate_id += 1
-                curr_well_id = curr_well_ids[0]
-                curr_well_ids.pop(0)
-                pool_well_ids_dict['pool_id'].append(pool_id)
-                pool_well_ids_dict['plate_id'].append(curr_plate_id)
-                pool_well_ids_dict['well_id'].append(curr_well_id)
-            df_pool_wells_ids = pd.DataFrame(pool_well_ids_dict)
-            df_assignment.drop(columns=['plate_id', 'well_id'], inplace=True)
-            df_configuration = pd.merge(df_assignment, df_pool_wells_ids, on='pool_id')
-            return df_configuration
-        else:
-            logger.error('Unsupported plate_type: %s' % plate_type)
-            exit(1)
+        # Step 2. Create assignments for golfy Design class
+        assignments = {}
+        num_peptides_per_pool = -1
+        for coverage in self.assignments.keys():
+            assignments[coverage-1] = {}
+            for pool in self.assignments[coverage].keys():
+                assignments[coverage-1][pool-1] = []
+                for peptide_id, peptide_sequence in self.assignments[coverage][pool]:
+                    assignments[coverage-1][pool-1].append(peptide_id_to_idx_dict[peptide_id])
+                if num_peptides_per_pool < len(self.assignments[coverage][pool]):
+                    num_peptides_per_pool = len(self.assignments[coverage][pool])
+
+        # Step 3. Create a golfy Design object
+        design = Design(
+            num_peptides=len(self.peptide_ids),
+            max_peptides_per_pool=num_peptides_per_pool,
+            num_replicates=len(self.assignments.keys()),
+            allow_extra_pools=False,
+            invalid_neighbors=[],
+            preferred_neighbors=[],
+            assignments=assignments
+        )
+        return design, peptide_idx_to_id_dict
 
     @staticmethod
     def generate_single_coverage_block_assignment(
@@ -342,6 +413,8 @@ class BlockAssignment:
 
         # Step 2. Compute transitive neighbors
         peptide_neighbors = compute_transitive_neighbors(peptide_pairs=preferred_peptide_pairs)
+        for peptide_neighbor in peptide_neighbors:
+            random.shuffle(peptide_neighbor)
 
         # Step 3. Assign pool IDs for peptide neighbors
         preferred_peptide_ids = []

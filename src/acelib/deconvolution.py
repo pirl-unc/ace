@@ -16,6 +16,7 @@ The purpose of this python3 script is to implement functions related to deconvol
 """
 
 
+import golfy
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List
@@ -33,15 +34,16 @@ logger = get_logger(__name__)
 class DeconvolutionResult:
     hit_peptides: HitPeptides = field(default_factory=list)
 
-    def add_hit_peptide(
+    def add_peptide(
             self,
             peptide_id: str,
             peptide_sequence: str,
-            deconvolution_label: str,
+            peptide_activity_level: float,
+            label: str,
             pool_ids: List[PoolId]
     ):
         """
-        Add a hit peptide.
+        Add a peptide.
 
         Parameters
         ----------
@@ -50,29 +52,63 @@ class DeconvolutionResult:
         deconvolution_label     :   Deconvolution label.
         pool_ids                :   Pool IDs.
         """
-        self.hit_peptides.append((peptide_id, peptide_sequence, deconvolution_label, pool_ids))
-
+        self.hit_peptides.append(
+            (peptide_id, 
+             peptide_sequence, 
+             peptide_activity_level,
+             label,
+             pool_ids)
+        )
+        
     def to_dataframe(self):
         data = {
             'peptide_id': [],
             'peptide_sequence': [],
+            'peptide_activity_level': [],
             'pool_ids': [],
             'num_coverage': [],
             'deconvolution_result': []
         }
-        for peptide_id, peptide_sequence, label, pool_ids in self.hit_peptides:
+        for peptide_id, peptide_sequence, peptide_activity, label, pool_ids in self.hit_peptides:
             data['peptide_id'].append(peptide_id)
             data['peptide_sequence'].append(peptide_sequence)
+            data['peptide_activity_level'].append(peptide_activity)
             data['pool_ids'].append(';'.join([str(p) for p in pool_ids]))
             data['num_coverage'].append(len(pool_ids))
             data['deconvolution_result'].append(label)
         return pd.DataFrame(data)
 
 
-def deconvolve_hit_peptides(
+def convert_to_golfy_spotcounts(
+        spot_counts: SpotCounts, 
+        block_assignment: BlockAssignment
+) -> golfy.SpotCounts:
+    """
+    Converts spot counts to golfy SpotCounts.
+
+    Parameters
+    ----------
+    spot_counts             :   Dictionary where
+                                key     = pool ID
+                                value   = spot count
+    block_assignment        :   BlockAssignment object.
+
+    Returns
+    -------
+    spot_counts_            :   golfy.SpotCounts.
+    """
+    spot_counts_ = {}
+    for coverage in block_assignment.assignments.keys():
+        spot_counts_[coverage-1] = {}
+        for pool in block_assignment.assignments[coverage].keys():
+            spot_counts_[coverage-1][pool-1] = spot_counts[pool]
+    return spot_counts_
+
+
+def empirical_deconvolve(
         hit_pool_ids: List[PoolId],
         df_assignment: pd.DataFrame,
-        num_coverage: int
+        min_coverage: int
 ) -> DeconvolutionResult:
     """
     Identifies hit peptide IDs given read-outs from an ELISpot experiment.
@@ -85,11 +121,11 @@ def deconvolve_hit_peptides(
                                 'pool_id'
                                 'peptide_id'
                                 'peptide_sequence'
-    num_coverage            :   Coverage.
+    min_coverage            :   Minimum coverage.
 
     Returns
     -------
-    deconvolution_result    :   DeconvolutionResult object.
+    deconvolution_result    :   EmpiricalDeconvolutionResult object.
     """
     # Step 1. Deconvolve hit peptide IDs
     # key = peptide ID
@@ -112,24 +148,23 @@ def deconvolve_hit_peptides(
         data['num_coverage'].append(len(value))
     df_hits = pd.DataFrame(data)
 
-    # Step 3. Identify peptide maximum coverage
-    df_hits = df_hits[df_hits['num_coverage'] == num_coverage]
-    if len(df_hits) == 0:
-        logger.info('Returning as there are no peptides with the desired hit coverage (%ix).' % num_coverage)
+    # Step 3. Identify peptide coverage
+    df_hits_ = df_hits[df_hits['num_coverage'] >= min_coverage]
+    if len(df_hits_) == 0:
+        logger.info('Returning as there are no peptides with the desired minimum hit coverage (%ix).' % min_coverage)
         return DeconvolutionResult()
 
     # Step 4. Identify hit pool IDs and the associated peptide IDs
     hit_pool_ids_dict = defaultdict(list)  # key = pool ID, value = list of peptide IDs
-    for index, value in df_hits.iterrows():
+    for _, value in df_hits_.iterrows():
         peptide_id = value['peptide_id']
         pool_ids = value['pool_ids'].split(';')
         for pool_id in pool_ids:
             hit_pool_ids_dict[int(pool_id)].append(peptide_id)
 
-    # Step 5. For the peptides that have the maximum coverage,
-    # identify second-round assay peptides
+    # Step 5. For the peptides that have the maximum coverage, identify second-round assay peptides
     second_round_assay_peptide_ids = set()
-    for peptide_id in df_hits['peptide_id'].unique():
+    for peptide_id in df_hits_['peptide_id'].unique():
         pool_ids = df_assignment.loc[df_assignment['peptide_id'] == peptide_id, 'pool_id'].values.tolist()
         unique = False
         for pool_id in pool_ids:
@@ -138,33 +173,39 @@ def deconvolve_hit_peptides(
         if not unique:
             second_round_assay_peptide_ids.add(peptide_id)
 
-    # Step 6. Deconvolve hit peptide IDs.
+    # Step 6. Deconvolve hit peptide IDs
     data = {
         'peptide_id': [],
         'peptide_sequence': [],
         'deconvolution_label': []
     }
-    for peptide_id in df_hits['peptide_id'].unique():
+    for peptide_id in df_assignment['peptide_id'].unique():
         peptide_sequence = df_assignment.loc[df_assignment['peptide_id'] == peptide_id ,'peptide_sequence'].values[0]
-        if peptide_id not in second_round_assay_peptide_ids:
-            data['peptide_id'].append(peptide_id)
-            data['peptide_sequence'].append(peptide_sequence)
-            data['deconvolution_label'].append(DeconvolutionLabels.HIT)
+        if peptide_id in df_hits_['peptide_id'].unique():
+            if peptide_id not in second_round_assay_peptide_ids:
+                data['peptide_id'].append(peptide_id)
+                data['peptide_sequence'].append(peptide_sequence)
+                data['deconvolution_label'].append(DeconvolutionLabels.CONFIDENT_HIT)
+            else:
+                data['peptide_id'].append(peptide_id)
+                data['peptide_sequence'].append(peptide_sequence)
+                data['deconvolution_label'].append(DeconvolutionLabels.CANDIDATE_HIT)
         else:
             data['peptide_id'].append(peptide_id)
             data['peptide_sequence'].append(peptide_sequence)
-            data['deconvolution_label'].append(DeconvolutionLabels.CANDIDATE_HIT)
+            data['deconvolution_label'].append(DeconvolutionLabels.NOT_A_HIT)
     df_deconvolution = pd.DataFrame(data)
     df_deconvolution = pd.merge(df_hits, df_deconvolution, on=['peptide_id'])
 
     deconvolution_result = DeconvolutionResult()
     for index, row in df_deconvolution.iterrows():
-        deconvolution_result.add_hit_peptide(
+        pool_ids = [int(p) for p in row['pool_ids'].split(';')]
+        deconvolution_result.add_peptide(
             peptide_id=row['peptide_id'],
             peptide_sequence=row['peptide_sequence'],
-            deconvolution_label=row['deconvolution_label'],
-            pool_ids=[int(p) for p in row['pool_ids'].split(';')]
+            peptide_activity_level=len(pool_ids),
+            label=row['deconvolution_label'],
+            pool_ids=pool_ids
         )
-
     return deconvolution_result
 
