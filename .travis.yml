@@ -38,6 +38,7 @@ install:
   - mamba install openpyxl
   - conda install pytorch torchvision -c pytorch
   - pip install transformers==4.30.2
+  - pip install Levenshtein
   - pip install golfy>=2.3.0
   - pip install . --verbose
 before_script:
