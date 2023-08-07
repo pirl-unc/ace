@@ -37,6 +37,7 @@ install:
   - python -m pip install --upgrade --user ortools
   - mamba install openpyxl
   - conda install pytorch torchvision -c pytorch
+  - pip install scikit-learn
   - pip install transformers==4.30.2
   - pip install Levenshtein
   - pip install golfy>=2.3.0
