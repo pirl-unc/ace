@@ -145,6 +145,14 @@ def add_ace_generate_arg_parser(sub_parsers):
         choices=SequenceSimilarityFunctions.ALL,
         help="Sequence similarity function (default: %s)." % GENERATE_SEQUENCE_SIMILARITY_FUNCTION
     )
+    parser_optional.add_argument(
+        "--cluster-peptides",
+        dest="cluster_peptides",
+        type=bool,
+        default=True,
+        required=False,
+        help="Cluster peptides if set to true (default: true)."
+    )
 
     parser_optional_golfy = parser.add_argument_group("optional arguments (applies when '--mode golfy')")
     parser_optional_golfy.add_argument(
@@ -272,10 +280,12 @@ def run_ace_generate_from_parsed_args(args):
     # Step 1. Load peptide data
     if args.peptides_excel_file is not None:
         peptides = convert_dataframe_to_peptides(df_peptides=pd.read_excel(args.peptides_excel_file))
+        cluster_peptides = args.cluster_peptides
     else:
         peptides = []
         for i in range(1, args.num_peptides + 1):
             peptides.append(('peptide_%i' % i, ''))
+        cluster_peptides = False
 
     # Step 2. Check input parameters
     if len(peptides) % args.num_peptides_per_pool != 0 and args.mode == GenerateModes.CPSAT_SOLVER:
@@ -288,6 +298,7 @@ def run_ace_generate_from_parsed_args(args):
         num_peptides_per_pool=args.num_peptides_per_pool,
         num_coverage=args.num_coverage,
         trained_model_file=resources.path('acelib.resources.models', 'trained_model5.pt'),
+        cluster_peptides=cluster_peptides,
         mode=args.mode,
         sequence_similarity_function=args.sequence_similarity_function,
         sequence_similarity_threshold=args.sequence_similarity_threshold,

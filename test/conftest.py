@@ -8,7 +8,7 @@ from golfy import init, is_valid, optimize
 
 
 @pytest.fixture
-def golfy_assignment_1() -> BlockAssignment:
+def golfy_assignment_25pep5per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 26):
         peptides.append(('peptide_%i' % i, ''))
@@ -17,6 +17,7 @@ def golfy_assignment_1() -> BlockAssignment:
         num_peptides_per_pool=5,
         num_coverage=3,
         trained_model_file='',
+        cluster_peptides=False,
         mode='golfy',
         golfy_random_seed=1
     )
@@ -28,7 +29,7 @@ def golfy_assignment_1() -> BlockAssignment:
 
 
 @pytest.fixture
-def sat_solver_assignment_1() -> BlockAssignment:
+def sat_solver_assignment_25pep5per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 26):
         peptides.append(('peptide_%i' % i, ''))
@@ -36,6 +37,7 @@ def sat_solver_assignment_1() -> BlockAssignment:
         peptides=peptides,
         num_peptides_per_pool=5,
         num_coverage=3,
+        cluster_peptides=False,
         trained_model_file='',
         mode='cpsat_solver',
         golfy_random_seed=1
@@ -55,7 +57,7 @@ def sat_solver_assignment_1() -> BlockAssignment:
 
 
 @pytest.fixture
-def golfy_assignment_2() -> BlockAssignment:
+def golfy_assignment_120pep12per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 121):
         peptides.append(('peptide_%i' % i, ''))
@@ -64,6 +66,7 @@ def golfy_assignment_2() -> BlockAssignment:
         num_peptides_per_pool=12,
         num_coverage=3,
         trained_model_file='',
+        cluster_peptides=False,
         mode='golfy',
         golfy_random_seed=1
     )

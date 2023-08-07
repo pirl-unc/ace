@@ -224,6 +224,7 @@ def run_ace_generate(
         num_peptides_per_pool: int,
         num_coverage: int,
         trained_model_file: str,
+        cluster_peptides: bool,
         mode: GenerateModes.ALL = GenerateModes.GOLFY,
         sequence_similarity_function: SequenceSimilarityFunctions.ALL = SequenceSimilarityFunctions.EUCLIDEAN,
         sequence_similarity_threshold: float = 0.8,
@@ -248,6 +249,7 @@ def run_ace_generate(
     num_peptides_per_pool               :   Number of peptides per pool.
     num_coverage                        :   Coverage.
     trained_model_file                  :   Trained model file.
+    cluster_peptides                    :   Cluster peptides.
     mode                                :   'golfy' or 'cpsat_solver' (default: 'golfy').
     sequence_similarity_function        :   'euclidean', 'cosine' or 'levenshtein' (default: 'euclidean').
     sequence_similarity_threshold       :   Sequence similarity threshold. Recommended values: 
@@ -271,14 +273,8 @@ def run_ace_generate(
     block_assignment                    :   BlockAssignment object.
     block_design                        :   BlockDesign object.
     """
-    # Step 1. Check if sequences are available
-    is_sequence_available = True
-    for _, peptide_sequence in peptides:
-        if peptide_sequence == '':
-            is_sequence_available = False
-
     # Step 2. Identify pairs of similar peptides
-    if is_sequence_available:
+    if cluster_peptides:
         if sequence_similarity_function == SequenceSimilarityFunctions.LEVENSHTEIN:
             preferred_peptide_pairs = AceNeuralEngine.find_levenshtein_paired_peptides(
                 peptide_ids=[p[0] for p in peptides],

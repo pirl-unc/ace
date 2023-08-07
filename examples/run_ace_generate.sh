@@ -1,61 +1,117 @@
-echo "Example 1. Golfy without peptide sequences (120/12/3x)"
+# Golfy
+echo "Golfy Example 1: 90 Peptides, 9 Peptides per Pool, 3x Coverage."
 ace generate \
-  --num-peptides 120 \
-  --num-peptides-per-pool 12 \
+  --num-peptides 90 \
+  --num-peptides-per-pool 9 \
   --num-coverage 3 \
   --mode golfy \
-  --output-excel-file 120peptides_12perpool_3x_noseqsim_golfy.xlsx \
+  --output-excel-file outputs/90peptides_9perpool_3x_noseqsim_golfy.xlsx \
   --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
+  --num-plate-wells 96 \
 
-echo "Example 2. SAT solver without peptide sequences (120/12/3x)"
-ace generate \
-  --num-peptides 120 \
-  --num-peptides-per-pool 12 \
-  --num-coverage 3 \
-  --cpsat-solver-num-processes 6 \
-  --mode cpsat_solver \
-  --output-excel-file 120peptides_12perpool_3x_noseqsim_sat-solver.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
-
-echo "Example 3. Golfy solver without peptide sequences (100/5/3x)"
+echo "Golfy Example 2: 100 Peptides, 5 Peptides per Pool, 3x Coverage."
 ace generate \
   --num-peptides 100 \
   --num-peptides-per-pool 5 \
   --num-coverage 3 \
   --mode golfy \
-  --output-excel-file 100peptides_5perpool_3x_noseqsim_golfy.xlsx \
+  --output-excel-file outputs/100peptides_5perpool_3x_noseqsim_golfy.xlsx \
   --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
+  --num-plate-wells 96 \
 
-echo "Example 4. SAT solver without peptide sequences (100/5/3x)"
-ace generate \
-  --num-peptides 100 \
-  --num-peptides-per-pool 5 \
-  --num-coverage 3 \
-  --cpsat-solver-num-processes 6 \
-  --mode cpsat_solver \
-  --output-excel-file 100peptides_5perpool_3x_noseqsim_sat-solver.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
-
-echo "Example 5. Golfy without peptide sequences (120/8/3x)"
+echo "Golfy Example 3: 120 Peptides, 8 Peptides per Pool, 3x Coverage."
 ace generate \
   --num-peptides 120 \
   --num-peptides-per-pool 8 \
   --num-coverage 3 \
   --mode golfy \
-  --output-excel-file 120peptides_8perpool_3x_noseqsim_golfy.xlsx \
+  --output-excel-file outputs/120peptides_8perpool_3x_noseqsim_golfy.xlsx \
   --assign-well-ids 1 \
   --num-plate-wells 96
-echo ""
 
-echo "Example 6. SAT solver without peptide sequences (120/8/3x)"
+echo "Golfy Example 4: 120 Peptides, 12 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 120 \
+  --num-peptides-per-pool 12 \
+  --num-coverage 3 \
+  --mode golfy \
+  --output-excel-file outputs/120peptides_12perpool_3x_noseqsim_golfy.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "Golfy Example 5: 220 Peptides, 11 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 220 \
+  --num-peptides-per-pool 11 \
+  --num-coverage 3 \
+  --mode golfy \
+  --output-excel-file outputs/220peptides_11perpool_3x_noseqsim_golfy.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "Golfy Example 6: 240 Peptides, 12 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 240 \
+  --num-peptides-per-pool 12 \
+  --num-coverage 3 \
+  --mode golfy \
+  --output-excel-file outputs/240peptides_12perpool_3x_noseqsim_golfy.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "Golfy Example 7: 400 Peptides, 5 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 400 \
+  --num-peptides-per-pool 5 \
+  --num-coverage 3 \
+  --mode golfy \
+  --output-excel-file outputs/240peptides_12perpool_3x_noseqsim_golfy_384plates.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 384
+
+echo "Golfy Example 8: 25 Peptides, 5 Peptides per Pool, 3x Coverage (with Sequences)."
+ace generate \
+  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
+  --num-peptides-per-pool 5 \
+  --num-coverage 3 \
+  --mode golfy \
+  --output-excel-file outputs/25peptides_5perpool_3x_seqsim_golfy.xlsx
+
+# CP-SAT Solver
+echo "CP-SAT Solver Example 1: 90 Peptides, 9 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 90 \
+  --num-peptides-per-pool 9 \
+  --num-coverage 3 \
+  --cpsat-solver-num-processes 6 \
+  --mode cpsat_solver \
+  --output-excel-file outputs/90peptides_9perpool_3x_noseqsim_sat-solver.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "CP-SAT Solver Example 2: 100 Peptides, 5 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 100 \
+  --num-peptides-per-pool 5 \
+  --num-coverage 3 \
+  --cpsat-solver-num-processes 6 \
+  --mode cpsat_solver \
+  --output-excel-file outputs/100peptides_5perpool_3x_noseqsim_sat-solver.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "CP-SAT Solver Example 3: 120 Peptides, 12 Peptides per Pool, 3x Coverage."
+ace generate \
+  --num-peptides 120 \
+  --num-peptides-per-pool 12 \
+  --num-coverage 3 \
+  --cpsat-solver-num-processes 6 \
+  --mode cpsat_solver \
+  --output-excel-file outputs/120peptides_12perpool_3x_noseqsim_sat-solver.xlsx \
+  --assign-well-ids 1 \
+  --num-plate-wells 96
+
+echo "CP-SAT Solver Example 4: 120 Peptides, 8 Peptides per Pool, 3x Coverage."
 ace generate \
   --num-peptides 120 \
   --num-peptides-per-pool 8 \
@@ -63,96 +119,38 @@ ace generate \
   --cpsat-solver-num-processes 6 \
   --cpsat-solver-max-peptides-per-block 64 \
   --mode cpsat_solver \
-  --output-excel-file 120peptides_8perpool_3x_noseqsim_sat-solver.xlsx \
+  --output-excel-file outputs/120peptides_8perpool_3x_noseqsim_sat-solver.xlsx \
   --assign-well-ids 1 \
   --num-plate-wells 96
-echo ""
 
-echo "Example 7. Golfy with peptide sequences (25/5/3x)"
-ace generate \
-  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
-  --num-peptides-per-pool 5 \
-  --num-coverage 3 \
-  --mode golfy \
-  --output-excel-file 25peptides_5perpool_3x_seqsim_golfy.xlsx
-echo ""
-
-echo "Example 8. SAT solver with peptide sequences (25/5/3x)"
-ace generate \
-  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
-  --num-peptides-per-pool 5 \
-  --num-coverage 3 \
-  --cpsat-solver-num-processes 6 \
-  --mode cpsat_solver \
-  --output-excel-file 25peptides_5perpool_3x_seqsim_sat-solver.xlsx
-echo ""
-
-echo "Example 9. Golfy without peptide sequences (90/9/3x)"
-ace generate \
-  --num-peptides 90 \
-  --num-peptides-per-pool 9 \
-  --num-coverage 3 \
-  --mode golfy \
-  --output-excel-file 90peptides_9perpool_3x_noseqsim_golfy.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
-
-echo "Example 10. SAT solver without peptide sequences (90/9/3x)"
-ace generate \
-  --num-peptides 90 \
-  --num-peptides-per-pool 9 \
-  --num-coverage 3 \
-  --cpsat-solver-num-processes 6 \
-  --mode cpsat_solver \
-  --output-excel-file 90peptides_9perpool_3x_noseqsim_sat-solver.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
-
-echo "Example 11. Golfy without peptide sequences (220/11/3x)"
-ace generate \
-  --num-peptides 220 \
-  --num-peptides-per-pool 11 \
-  --num-coverage 3 \
-  --mode golfy \
-  --output-excel-file 220peptides_11perpool_3x_noseqsim_golfy.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo ""
-
-echo "Example 12. SAT solver without peptide sequences (220/11/3x)"
+echo "CP-SAT Solver Example 5: 220 Peptides, 11 Peptides per Pool, 3x Coverage."
 ace generate \
   --num-peptides 220 \
   --num-peptides-per-pool 11 \
   --num-coverage 3 \
   --cpsat-solver-num-processes 6 \
   --mode cpsat_solver \
-  --output-excel-file 220peptides_11perpool_3x_noseqsim_sat-solver.xlsx \
+  --output-excel-file outputs/220peptides_11perpool_3x_noseqsim_sat-solver.xlsx \
   --assign-well-ids 1 \
   --num-plate-wells 96
-echo ""
 
-echo "Example 13. Golfy without peptide sequences (240/12/3x)"
-ace generate \
-  --num-peptides 240 \
-  --num-peptides-per-pool 12 \
-  --num-coverage 3 \
-  --mode golfy \
-  --output-excel-file 240peptides_12perpool_3x_noseqsim_golfy.xlsx \
-  --assign-well-ids 1 \
-  --num-plate-wells 96
-echo""
-
-echo "Example 14. SAT solver without peptide sequences (240/12/3x)"
+echo "CP-SAT Solver Example 6: 240 Peptides, 12 Peptides per Pool, 3x Coverage."
 ace generate \
   --num-peptides 240 \
   --num-peptides-per-pool 12 \
   --num-coverage 3 \
   --cpsat-solver-num-processes 6 \
   --mode cpsat_solver \
-  --output-excel-file 240peptides_12perpool_3x_noseqsim_sat-solver.xlsx \
+  --output-excel-file outputs/240peptides_12perpool_3x_noseqsim_sat-solver.xlsx \
   --assign-well-ids 1 \
   --num-plate-wells 96
 echo""
 
+echo "CP-SAT Solver Example 7: 25 Peptides, 5 Peptides per Pool, 3x Coverage (with Sequences)."
+ace generate \
+  --peptides-excel-file ../test/data/25peptide_sequences.xlsx \
+  --num-peptides-per-pool 5 \
+  --num-coverage 3 \
+  --cpsat-solver-num-processes 6 \
+  --mode cpsat_solver \
+  --output-excel-file outputs/25peptides_5perpool_3x_seqsim_sat-solver.xlsx

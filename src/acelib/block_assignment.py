@@ -114,7 +114,7 @@ class BlockAssignment:
             return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
         def get_384_well_ids():
             row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
-            col_prefixes = range(1, 15)
+            col_prefixes = range(1, 25)
             return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
 
         curr_plate_id = 1
@@ -147,7 +147,7 @@ class BlockAssignment:
                 curr_plate_id += 1
             curr_well_id = curr_well_ids[0]
             curr_well_ids.pop(0)
-            self.plate_ids['pool_id'] = (curr_plate_id, curr_well_id)
+            self.plate_ids[pool_id] = (curr_plate_id, curr_well_id)
 
     def get_peptide_sequence(self, peptide_id: PeptideId) -> PoolId:
         """
@@ -220,7 +220,9 @@ class BlockAssignment:
                     else:
                         data['plate_id'].append('')
                         data['well_id'].append('')
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df.sort_values(by=['peptide_id'], inplace=True)
+        return df
 
     def is_optimal(
             self,

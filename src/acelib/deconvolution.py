@@ -76,7 +76,9 @@ class DeconvolutionResult:
             data['pool_ids'].append(';'.join([str(p) for p in pool_ids]))
             data['num_coverage'].append(len(pool_ids))
             data['deconvolution_result'].append(label)
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df.sort_values(by=['peptide_id'], inplace=True)
+        return df
 
 
 def convert_to_golfy_spotcounts(

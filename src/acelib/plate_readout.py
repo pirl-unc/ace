@@ -74,7 +74,7 @@ class PlateReadout:
         """
         plate_readout = PlateReadout()
         for plate_readout_ in plate_readouts:
-            for readout in plate_readout_:
+            for readout in plate_readout_.observations:
                 plate_readout.add_observation(
                     plate_id=readout[0],
                     well_id=readout[1],
