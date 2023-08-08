@@ -391,7 +391,7 @@ def run_ace_deconvolve(
         golfy_design, peptide_indices = block_assignment.to_golfy_design()
         spot_counts = {}
         for _, row in df_readout.iterrows():
-            spot_counts[row['pool_id']] = int(row['spot_count'])
+            spot_counts[int(row['pool_id'])] = int(row['spot_count'])
         golfy_spot_counts = convert_to_golfy_spotcounts(
             spot_counts=spot_counts,
             block_assignment=block_assignment

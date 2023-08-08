@@ -129,8 +129,8 @@ def empirical_deconvolve(
     -------
     deconvolution_result    :   EmpiricalDeconvolutionResult object.
     """
-    # Step 1. Deconvolve hit peptide IDs
-    # key = peptide ID
+    # Step 1. Identify hit peptide IDs
+    # key   = peptide ID
     # value = pool IDs
     hit_peptides_dict = defaultdict(list)
     for curr_pool_id in hit_pool_ids:
@@ -157,7 +157,22 @@ def empirical_deconvolve(
     df_hits_ = df_hits[df_hits['num_coverage'] >= min_coverage]
     if len(df_hits_) == 0:
         logger.info('Returning as there are no peptides with the desired minimum hit coverage (%ix).' % min_coverage)
-        return DeconvolutionResult()
+        deconvolution_result = DeconvolutionResult()
+        for index, row in df_hits.iterrows():
+            peptide_id = row['peptide_id']
+            peptide_sequence = df_assignment.loc[df_assignment['peptide_id'] == peptide_id, 'peptide_sequence'].values[0]
+            if row['pool_ids'] != '':
+                pool_ids = [int(pool_id) for pool_id in row['pool_ids'].split(';')]
+            else:
+                pool_ids = []
+            deconvolution_result.add_peptide(
+                peptide_id=peptide_id,
+                peptide_sequence=peptide_sequence,
+                peptide_activity_level=row['num_coverage'],
+                label=DeconvolutionLabels.NOT_A_HIT,
+                pool_ids=pool_ids
+            )
+        return deconvolution_result
 
     # Step 4. Identify hit pool IDs and the associated peptide IDs
     hit_pool_ids_dict = defaultdict(list)  # key = pool ID, value = list of peptide IDs

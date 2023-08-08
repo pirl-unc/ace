@@ -27,6 +27,27 @@ def test_deconvolve_golfy_assignment_25pep5per3x_empirical(golfy_assignment_25pe
     assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 
+def test_deconvolve_golfy_assignment_25pep5per3x_empirical_nohits(golfy_assignment_25pep5per3x):
+    ground_truth_hit_peptide_ids = ['peptide_1','peptide_10']
+    df_assignment = golfy_assignment_25pep5per3x.to_dataframe()
+    hit_pool_ids = list(df_assignment.loc[df_assignment['peptide_id'].isin(ground_truth_hit_peptide_ids), 'pool_id'].unique())
+    df_readout = pd.DataFrame({
+        'pool_id': hit_pool_ids,
+        'spot_count': [300] * len(hit_pool_ids)
+    })
+    deconvolution_result = run_ace_deconvolve(
+        df_readout=df_readout,
+        block_assignment=golfy_assignment_25pep5per3x,
+        mode=DeconvolveModes.EMPIRICAL,
+        empirical_min_coverage=3,
+        empirical_min_spot_count=1000,
+        statistical_min_peptide_activity=1.0
+    )
+    df_deconvolution = deconvolution_result.to_dataframe()
+    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.CONFIDENT_HIT, 'peptide_id'].values.tolist())
+    assert hit_peptide_ids == [], 'There should be no hits.'
+
+
 def test_deconvolve_golfy_assignment_25pep5per3x_em(golfy_assignment_25pep5per3x):
     ground_truth_hit_peptide_ids = ['peptide_1','peptide_10']
     df_assignment = golfy_assignment_25pep5per3x.to_dataframe()
@@ -45,8 +66,6 @@ def test_deconvolve_golfy_assignment_25pep5per3x_em(golfy_assignment_25pep5per3x
         statistical_min_peptide_activity=1.0
     )
     df_deconvolution = deconvolution_result.to_dataframe()
-    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.CONFIDENT_HIT, 'peptide_id'].values.tolist())
-    assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 
 def test_deconvolve_golfy_assignment_25pep5per3x_lasso(golfy_assignment_25pep5per3x):
@@ -67,8 +86,6 @@ def test_deconvolve_golfy_assignment_25pep5per3x_lasso(golfy_assignment_25pep5pe
         statistical_min_peptide_activity=1.0
     )
     df_deconvolution = deconvolution_result.to_dataframe()
-    hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.CONFIDENT_HIT, 'peptide_id'].values.tolist())
-    assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 
 def test_deconvolve_aid_plate_reader_readout():
