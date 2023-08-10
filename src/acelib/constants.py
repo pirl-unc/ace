@@ -52,17 +52,34 @@ ROSTLAB_PROT_BERT = "Rostlab/prot_bert"
 
 class GenerateModes:
     GOLFY = 'golfy'
-    SAT_SOLVER = 'sat_solver'
+    CPSAT_SOLVER = 'cpsat_solver'
     ALL = [
         GOLFY,
-        SAT_SOLVER
+        CPSAT_SOLVER
     ]
 
 
-class PlateTypes:
-    PLATE_96_WELLS = '96-well_plate'
+class DeconvolveModes:
+    EMPIRICAL = 'empirical'
+    EM = 'em'
+    LASSO = 'lasso'
     ALL = [
-        PLATE_96_WELLS
+        EMPIRICAL,
+        EM,
+        LASSO
+    ]
+
+
+class PlateWells:
+    WELLS_24 = 24
+    WELLS_48 = 48
+    WELLS_96 = 96
+    WELLS_384 = 384
+    ALL = [
+        WELLS_24,
+        WELLS_48,
+        WELLS_96,
+        WELLS_384,
     ]
 
 
@@ -76,24 +93,38 @@ class ReadoutFileTypes:
 
 
 class DeconvolutionLabels:
-    HIT = 'hit'
+    CONFIDENT_HIT = 'confident_hit'
     CANDIDATE_HIT = 'candidate_hit'
+    NOT_A_HIT = 'not_a_hit'
+    ALL = [
+        CONFIDENT_HIT,
+        CANDIDATE_HIT,
+        NOT_A_HIT
+    ]
 
 
-class GolfyInitModes:
+class GolfyStrategies:
     GREEDY = 'greedy'
     RANDOM = 'random'
+    VALID = 'valid'
+    SINGLETON = 'singleton'
+    REPEAT = 'repeat'
     ALL = [
         GREEDY,
-        RANDOM
+        RANDOM,
+        VALID,
+        SINGLETON,
+        REPEAT
     ]
 
 
 class SequenceSimilarityFunctions:
     EUCLIDEAN = 'euclidean'
     COSINE = 'cosine'
+    LEVENSHTEIN = 'levenshtein'
     ALL = [
+        COSINE,
         EUCLIDEAN,
-        COSINE
+        LEVENSHTEIN
     ]
 

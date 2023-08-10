@@ -18,9 +18,10 @@ and run ACE 'deconvolve' command.
 
 
 import pandas as pd
+from golfy import deconvolve
 from ..plate_readout import PlateReadout
 from ..constants import ReadoutFileTypes
-from ..deconvolution import deconvolve_hit_peptides
+from ..deconvolution import convert_to_golfy_spotcounts, empirical_deconvolve
 from ..default_parameters import *
 from ..logger import get_logger
 from ..main import *
@@ -81,18 +82,48 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
              "then the configuration must have these additional columns: 'plate_id', 'well_id'."
     )
     parser_required.add_argument(
-        "--min-positive-spot-count",
-        dest="min_positive_spot_count",
-        type=int,
-        required=True,
-        help="Number of spots for a pool to be considered a positive hit."
-    )
-    parser_required.add_argument(
         "--output-excel-file",
         dest="output_excel_file",
         type=str,
         required=True,
         help="Output deconvolution Excel file."
+    )
+
+    # Optional arguments
+    parser_optional = parser.add_argument_group('optional arguments')
+    parser_optional.add_argument(
+        "--mode",
+        dest="mode",
+        type=str,
+        default=DeconvolveModes.EMPIRICAL,
+        choices=DeconvolveModes.ALL,
+        required=False,
+        help="Deconvolution mode (default: %s)." % DeconvolveModes.EMPIRICAL
+    )
+    parser_optional.add_argument(
+        "--min-spot-count",
+        dest="min_spot_count",
+        type=int,
+        default=300,
+        required=False,
+        help="Number of spots for a pool to be considered a positive hit."
+    )
+    parser_optional.add_argument(
+        "--min-peptide-activity",
+        dest="min_peptide_activity",
+        type=float,
+        default=DECONVOLVE_MIN_PEPTIDE_ACTIVITY,
+        required=False,
+        help="Minimum estimated activity of a peptide to be considered for hit set. "
+             "This value is used if when '--mode em' or '--mode lasso' (default: %f)." % DECONVOLVE_MIN_PEPTIDE_ACTIVITY
+    )
+    parser_optional.add_argument(
+        "--verbose",
+        dest="verbose",
+        type=bool,
+        required=False,
+        default=True,
+        help="If True, prints messages. Otherwise, messages are not printed (default: True)."
     )
     parser.set_defaults(which='deconvolve')
     return sub_parsers
@@ -111,6 +142,7 @@ def run_ace_deconvolve_from_parsed_args(args):
                 assignment_excel_file
                 min_positive_spot_count
                 output_excel_file
+                mode
     """
     # Step 1. Load the original block assignment and design data
     block_assignment = BlockAssignment.read_excel_file(excel_file=args.assignment_excel_file)
@@ -119,8 +151,6 @@ def run_ace_deconvolve_from_parsed_args(args):
     # Step 2. Load the readout data
     if args.readout_file_type == ReadoutFileTypes.POOL_IDS:
         df_readout = pd.read_excel(args.readout_files[0])
-        df_readout = df_readout[df_readout['spot_count'] >= args.min_positive_spot_count]
-        hit_pool_ids = list(df_readout['pool_id'].unique())
     elif args.readout_file_type == ReadoutFileTypes.AID_PLATE_READER:
         df_assignment = block_assignment.to_dataframe()
         if 'plate_id' not in df_assignment.columns.values.tolist():
@@ -141,18 +171,21 @@ def run_ace_deconvolve_from_parsed_args(args):
             plate_id += 1
         plate_readout = PlateReadout.merge(plate_readouts=plate_readouts)
         df_readout = pd.merge(df_assignment, plate_readout.to_dataframe(), on=['plate_id', 'well_id'])
-        hit_pool_ids = list(df_readout.loc[df_readout['spot_count'] >= args.min_positive_spot_count, 'pool_id'].unique())
 
     # Step 3. Perform deconvolution
-    deconvolution_result = deconvolve_hit_peptides(
-        hit_pool_ids=hit_pool_ids,
-        df_assignment=block_assignment.to_dataframe(),
-        num_coverage=block_design.num_coverage
+    deconvolution_result = run_ace_deconvolve(
+        df_readout=df_readout,
+        block_assignment=block_assignment,
+        mode=args.mode,
+        statistical_min_peptide_activity=args.min_peptide_activity,
+        empirical_min_coverage=block_design.num_coverage,
+        empirical_min_spot_count=args.min_spot_count,
+        verbose=args.verbose
     )
 
-    # Step 4. Write to Excel file
+    # Step 4. Write to an Excel file
     deconvolution_result.to_dataframe().to_excel(
         args.output_excel_file,
-        sheet_name='deconvoluted',
+        sheet_name='deconvolved',
         index=False
     )

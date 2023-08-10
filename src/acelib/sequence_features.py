@@ -21,10 +21,9 @@ import numpy as np
 import pandas as pd
 import torch.nn as nn
 import torch
-from transformers import BertModel, BertTokenizer
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from .logger import get_logger
-
+import Levenshtein as levenshtein
 
 logger = get_logger(__name__)
 
@@ -60,7 +59,6 @@ class AceNeuralEngine(nn.Module):
         Implements the forward function of the nerural engine to get the output of the model
         before grabbing the embedding as the speccified representation.
         """
-        
         # 1. Move the inputs to the correct device
         ### inputs: [batch_size, max_seq_len]
         if isinstance(inputs, list):
@@ -71,6 +69,7 @@ class AceNeuralEngine(nn.Module):
 
         # 2. Get the correct transformer representation
         if representation == 'last_hidden_state':    
+            # representation: [batch_size, seq_len, hidden_size]
             representation = model_outputs.hidden_states[-1]
         
         elif representation == 'pooler_output':
@@ -83,7 +82,8 @@ class AceNeuralEngine(nn.Module):
         elif representation == 'cls_embedding':
             # repesentation: [batch_size, hidden_size]
             representation = model_outputs.hidden_states[-1][:, 0, :]
-    
+
+
         elif representation=='mean_pooling':
             # repesentation: [batch_size, hidden_size]
             input_mask_expanded = attention_mask.unsqueeze(-1).expand(model_outputs.hidden_states[-1].size()).float()
@@ -94,6 +94,7 @@ class AceNeuralEngine(nn.Module):
             representation = model_outputs.hidden_states[-1].mean(dim=1)
 
         elif representation=='max_pooling':
+            # representation: [batch_size, hidden_size]
             representation = torch.max(model_outputs.hidden_states[-1], 1)[0]
                 
         elif representation == 'mean_max_pooling':
@@ -123,7 +124,6 @@ class AceNeuralEngine(nn.Module):
 
     def load_weights(self, weights_path):
         """Load weights from a file"""
-        logger.info(self.device)
         self.load_state_dict(torch.load(weights_path, map_location=self.device))
 
     def save_weights(self, weights_path):
@@ -167,7 +167,25 @@ class AceNeuralEngine(nn.Module):
         assert len(embeddings) == len(sequences)
         return embeddings
 
-    def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.65):
+    def find_paired_peptides(self, peptide_ids, peptide_sequences, representation='last_hidden_state', sim_fxn='euclidean', threshold=0.8, top_k=1):
+        """
+        Find peptides that are predicted to share the same immunological context. Works by embedding the different sequences and then finding those
+        which have a similarity greater than the threshold provided. Then, the post processing is applied so only the most confident top_k pairs are 
+        selected and the transitive property is applied to daisy chain peptides to form clusters. 
+
+        Parameters:
+        ----------------------------------------------------------------------------------------
+            * peptide_ids: List of peptide ids 
+            * peptide_sequences: List of peptide sequences as strings
+            * representation: List 
+            * sim_fxn: String corresponding to one of the above similarity functions ['euclidean', 'cosine', 'levenshtein']
+            * threshold: the similarity threshold to cutoff similar peptides
+            * top_k: the top number of pairs to cut-off. Good values can depend on the dataset but the lower the better.
+        
+        Returns:
+        ----------------------------------------------------------------------------------------
+        paired_peptide_triples: a list of triples of the form [(peptide_id1, peptide_id2, similiarity)]
+        """
         embeddings = self.embed_sequences(peptide_sequences, representation=representation)
         paired_peptide_ids = []
         for i in range(len(peptide_ids)):
@@ -189,8 +207,57 @@ class AceNeuralEngine(nn.Module):
                         else:
                             paired_peptide_ids.append((peptide_ids[i], peptide_ids[j], metric))
                 else:
-                    raise ValueError("Similarity function must be 'euclidean' or 'cosine'")
+                    raise ValueError("Similarity function must be 'euclidean' 'cosine'")
+        
+        return self.post_process(paired_peptide_ids, top_k)
+    
+    @staticmethod
+    def find_levenshtein_paired_peptides(peptide_ids, peptide_sequences, threshold=1):
+        if not float(threshold).is_integer():
+            raise ValueError("Threshold must be an integer value greater than or equal to 1.")
+
+        paired_peptide_ids = []
+        for i in range(len(peptide_ids)):
+            for j in range(len(peptide_ids)):
+                if i == j:
+                    continue
+                metric = levenshtein.distance(peptide_sequences[i], peptide_sequences[j])
+                if metric <= threshold:
+                    if (peptide_sequences[j], peptide_sequences[i], metric) in paired_peptide_ids:
+                        continue
+                    else:
+                        paired_peptide_ids.append((peptide_sequences[i], peptide_sequences[j], metric))
         return list(paired_peptide_ids)
+    
+    @staticmethod
+    def post_process(paired_peptide_triples, n=1, return_dict=False):
+        """
+        Takes a list of triples and then returns the top n peptides for each peptide in the list.
+        """
+        sim_dict = {}
+        
+        # Make the dictionary of peptide and list of similar peptides
+        for i in range(len(paired_peptide_triples)):
+            triple = paired_peptide_triples[i]
+            if triple[0] not in sim_dict:
+                sim_dict[triple[0]] = []
+            sim_dict[triple[0]].append(triple[1:])
+
+        # Sort the list of similar peptides by similarity score and prune to top n
+        for key in sim_dict:
+            sim_dict[key] = sorted(sim_dict[key], key=lambda x: x[1], reverse=True)[:n]
+
+        if return_dict:
+            return sim_dict
+        
+        # Return the list of similar peptides in the same format as the input
+        sim_peps = []
+        for key, value in sim_dict.items():
+            for v in value:
+                sim_peps += [(key, v[0], v[1])]
+
+        return sim_peps
+    
     @staticmethod
     def to_paired_peptide_df(paired_peptide_triples):
         """Convert a list of paired peptides to a dataframe"""

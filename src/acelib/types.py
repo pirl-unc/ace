@@ -23,7 +23,9 @@ from typing import Iterable, Mapping, Tuple
 CoverageId = int
 DeconvolutionLabel = str
 PeptideId = str
+PeptideIndex = int
 PeptideSequence = str
+PeptideActivityLevel = float
 MaxPeptidesPerBlock = int
 NumPeptides = int
 NumPeptidesPerPool = int
@@ -34,9 +36,10 @@ PoolId = int
 SpotCount = int
 WellId = str
 
-PeptidePairs = Iterable[Tuple[PeptideId, PeptideId]]
-Peptides = Iterable[Tuple[PeptideId, PeptideSequence]]
 Assignments = Mapping[CoverageId, Mapping[PoolId, Iterable[Tuple[PeptideId, PeptideSequence]]]]
-HitPeptides = Iterable[Tuple[PeptideId, PeptideSequence, DeconvolutionLabel, Iterable[PoolId]]]
+HitPeptides = Iterable[Tuple[PeptideId, PeptideSequence, PeptideActivityLevel, DeconvolutionLabel, Iterable[PoolId]]]
+Peptides = Iterable[Tuple[PeptideId, PeptideSequence]]
+PeptideIndices = Mapping[PeptideIndex, PeptideId]
+PeptidePairs = Iterable[Tuple[PeptideId, PeptideId]]
 PlateReadoutObservations = Iterable[Tuple[PlateId, WellId, SpotCount]]
-
+SpotCounts = Mapping[PoolId, SpotCount]

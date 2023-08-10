@@ -95,7 +95,7 @@ def convert_dataframe_to_peptides(df_peptides: pd.DataFrame) -> Peptides:
 
 
 def generate_random_seed():
-    return random.randint(1, 1000000)
+    return random.randint(1, 100000000)
 
 
 def is_prime(num: int) -> bool:

@@ -22,12 +22,13 @@ import math
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
+from golfy import Design
 from itertools import combinations, product
 from typing import Dict, List, Tuple, Type
-from .constants import PlateTypes
+from .constants import *
 from .logger import get_logger
 from .utilities import convert_peptides_to_dataframe
-from .types import Assignments, Peptides, PeptideId, PeptidePairs, PoolId, PlateId, WellId
+from .types import *
 
 
 logger = get_logger(__name__)
@@ -87,27 +88,114 @@ class BlockAssignment:
             self.assignments[coverage][pool] = []
         self.assignments[coverage][pool].append((peptide_id, peptide_sequence))
 
-    def count_violations(self) -> int:
+    def assign_well_ids(self, num_plate_wells: int):
         """
-        Counts the number of violations (i.e. number of peptides with
-        non-unique pool assignment).
+        Assigns plate and well IDs to an ELISpot configuration.
+
+        Parameters
+        ----------
+        num_plate_wells     :   Number of wells on plate (allowed values: 24, 48, 96, 384).
+        """
+        # Step 1. Clear the current self.plate_ids
+        self.plate_ids = {} # key = pool ID, value = (plate ID, well ID)
+
+        # Step 2. Prepare well IDs
+        def get_24_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D']
+            col_prefixes = range(1, 7)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_48_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F']
+            col_prefixes = range(1, 9)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_96_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+            col_prefixes = range(1, 13)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        def get_384_well_ids():
+            row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+            col_prefixes = range(1, 25)
+            return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+
+        curr_plate_id = 1
+        if num_plate_wells == PlateWells.WELLS_24:
+            curr_well_ids = get_24_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_48:
+            curr_well_ids = get_48_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_96:
+            curr_well_ids = get_96_well_ids()
+        elif num_plate_wells == PlateWells.WELLS_384:
+            curr_well_ids = get_384_well_ids()
+        else:
+            logger.error('Unsupported number of wells: %i' % num_plate_wells)
+            exit(1)
+
+        # Step 3. Assign well IDs
+        for pool_id in sorted(self.to_dataframe()['pool_id'].unique()):
+            if len(curr_well_ids) == 0:
+                if num_plate_wells == PlateWells.WELLS_24:
+                    curr_well_ids = get_24_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_48:
+                    curr_well_ids = get_48_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_96:
+                    curr_well_ids = get_96_well_ids()
+                elif num_plate_wells == PlateWells.WELLS_384:
+                    curr_well_ids = get_384_well_ids()
+                else:
+                    logger.error('Unsupported number of wells: %i' % num_plate_wells)
+                    exit(1)
+                curr_plate_id += 1
+            curr_well_id = curr_well_ids[0]
+            curr_well_ids.pop(0)
+            self.plate_ids[pool_id] = (curr_plate_id, curr_well_id)
+
+    def get_peptide_sequence(self, peptide_id: PeptideId) -> PoolId:
+        """
+        Returns the peptide sequence of a peptide ID.
+
+        Returns
+        -------
+        peptide_sequence    :   Peptide sequence.
+        """
+        df = self.to_dataframe()
+        return df.loc[df['peptide_id'] == peptide_id, 'peptide_sequence'].values[0]
+    
+    def get_pool_ids(self, peptide_id: PeptideId) -> PoolId:
+        """
+        Returns pool IDs for a peptide ID.
+
+        Returns
+        -------
+        pool_ids    :   List of PooldId.
+        """
+        df = self.to_dataframe()
+        return df.loc[df['peptide_id'] == peptide_id, 'pool_id'].values.tolist()
+
+    def num_violations(self) -> float:
+        """
+        Number of violations
+        (i.e. number of times two peptides appear together more than once).
 
         Returns
         -------
         num_violations      :   Number of violations.
         """
+        # Step 1. Create a dictionary of peptides and pools
         df_assignments = self.to_dataframe()
-        pool_ids_peptides_dict = defaultdict(list)
-        for peptide_id in list(df_assignments['peptide_id'].unique()):
-            pool_ids = list(df_assignments.loc[df_assignments['peptide_id'] == peptide_id, 'pool_id'].unique())
-            pool_ids = sorted(pool_ids)
-            pool_ids_peptides_dict[','.join([str(i) for i in pool_ids])].append(peptide_id)
+        peptide_pool_dict = defaultdict(list)
+        peptide_ids = list(df_assignments['peptide_id'].unique())
+        for peptide_id in peptide_ids:
+            peptide_pool_dict[peptide_id] = list(df_assignments.loc[df_assignments['peptide_id'] == peptide_id, 'pool_id'].unique())
 
+        # Step 2. Enumerate the number of violations
         num_violations = 0
-        for key, value in pool_ids_peptides_dict.items():
-            if len(value) > 1:
-                for peptide_id in value:
-                    num_violations += 1
+        for i in range(0, len(peptide_ids)):
+            for j in range(i + 1, len(peptide_ids)):
+                p1_pools = peptide_pool_dict[peptide_ids[i]]
+                p2_pools = peptide_pool_dict[peptide_ids[j]]
+                shared_pools = set(p1_pools).intersection(set(p2_pools))
+                if len(shared_pools) > 1:
+                    num_violations += len(shared_pools) - 1
         return num_violations
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -132,7 +220,9 @@ class BlockAssignment:
                     else:
                         data['plate_id'].append('')
                         data['well_id'].append('')
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df.sort_values(by=['peptide_id'], inplace=True)
+        return df
 
     def is_optimal(
             self,
@@ -144,7 +234,8 @@ class BlockAssignment:
         Verifies whether a given ELISpot assignment satisfies the following constraints:
         1. Each peptide is in 'num_coverage' number of different pools.
         2. Each peptide is in exactly one unique combination of pool IDs.
-        3. There is an optimal (minimal) number of pools.
+        3. Two peptides are not pooled together more than once.
+        4. There is an optimal (minimal) number of pools.
 
         Parameters
         ---------
@@ -182,28 +273,41 @@ class BlockAssignment:
         for key, value in pool_ids_peptides_dict.items():
             if len(value) > 1:
                 if verbose:
-                    logger.info("Assignment does not meet constraint #2. Pools %s have the following peptides:" % key)
-                    for peptide_id in value:
-                        logger.info(peptide_id)
+                    if constraint_2_bool:
+                        logger.info("Assignment does not meet constraint #2: there are peptides that do not belong to exactly one unique combination of pool IDs.")
+                    logger.info("\tPools %s have the following peptides: %s." % (key, ','.join(value)))
                 constraint_2_bool = False
         if constraint_2_bool:
             if verbose:
                 logger.info('Assignment meets constraint #2: each peptide belongs to exactly one unique combination of pool IDs.')
 
-        # Step 3. Check that there is an optimal number of pools
+        # Step 3. Two peptides are not pooled together more than once.
         constraint_3_bool = True
+        num_violations = self.num_violations()
+        if num_violations > 0:
+            constraint_3_bool = False
+            if verbose:
+                logger.info("Assignment does not meet constraint #3: violation score is %i "
+                            "(proxy of number of times peptide pairs are pooled together more than once)." %
+                            num_violations)
+        else:
+            if verbose:
+                logger.info('Assignment meets constraint #3: every pair of peptides is pooled together at most once.')
+
+        # Step 4. Check that there is an optimal number of pools
+        constraint_4_bool = True
         num_pools = math.ceil(len(df_assignments['peptide_id'].unique()) / num_peptides_per_pool) * num_coverage
         if len(df_assignments['pool_id'].unique()) != num_pools:
             num_extra_pools = len(df_assignments['pool_id'].unique()) - num_pools
             if verbose:
-                logger.info('Assignment does not meet constraint #3: %i extra pool(s) than the minimum possible number of pools (%i).' %
+                logger.info('Assignment does not meet constraint #4: %i extra pool(s) than the minimum possible number of pools (%i).' %
                             (num_extra_pools, num_pools))
-            constraint_3_bool = False
-        if constraint_3_bool:
+            constraint_4_bool = False
+        if constraint_4_bool:
             if verbose:
-                logger.info('Assignment meets constraint #3: there is an optimal (minimal) number of pools (%i).' % num_pools)
+                logger.info('Assignment meets constraint #4: there is an optimal (minimal) number of pools (%i).' % num_pools)
 
-        return constraint_1_bool & constraint_2_bool & constraint_3_bool
+        return constraint_1_bool & constraint_2_bool & constraint_3_bool & constraint_4_bool
 
     def shuffle_pool_ids(self):
         """
@@ -236,62 +340,49 @@ class BlockAssignment:
                         peptide_sequence=peptide_sequence
                     )
 
-    @staticmethod
-    def assign_well_ids(
-            df_assignment: pd.DataFrame,
-            plate_type: str
-    ) -> pd.DataFrame:
+    def to_golfy_design(self) -> Tuple[Design, PeptideIndices]:
         """
-        Assigns plate and well IDs to an ELISpot configuration.
-
-        Parameters
-        ----------
-        df_assignment       :   DataFrame with the following columns:
-                                'coverage_id'
-                                'pool_id',
-                                'peptide_id'
-                                'peptide_sequence'
-        plate_type          :   Plate type (allowed values: '96-well plate').
+        Returns in golfy design variable type.
 
         Returns
         -------
-        df_assignment       :   DataFrame with the following columns:
-                                'coverage_id'
-                                'pool_id',
-                                'peptide_id'
-                                'peptide_sequence'
-                                'plate_id'
-                                'well_id'
+        design          :   Design object.
+        peptide_indices :   Dictionary where
+                            key     = peptide index
+                            value   = peptide ID
         """
-        if plate_type == PlateTypes.PLATE_96_WELLS:
-            def get_96_well_plate_ids():
-                row_prefixes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                col_prefixes = range(1, 13)
-                return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
+        # Step 1. Create dictionaries of peptide indices to IDs (and vice and versa)
+        peptide_idx_to_id_dict = {}
+        peptide_id_to_idx_dict = {}
+        idx = 0
+        for peptide_id in self.peptide_ids:
+            peptide_idx_to_id_dict[idx] = peptide_id
+            peptide_id_to_idx_dict[peptide_id] = idx
+            idx += 1
 
-            curr_plate_id = 1
-            curr_well_ids = get_96_well_plate_ids()
-            pool_well_ids_dict = {
-                'pool_id': [],
-                'plate_id': [],
-                'well_id': []
-            }
-            for pool_id in sorted(df_assignment['pool_id'].unique()):
-                if len(curr_well_ids) == 0:
-                    curr_well_ids = get_96_well_plate_ids()
-                    curr_plate_id += 1
-                curr_well_id = curr_well_ids[0]
-                curr_well_ids.pop(0)
-                pool_well_ids_dict['pool_id'].append(pool_id)
-                pool_well_ids_dict['plate_id'].append(curr_plate_id)
-                pool_well_ids_dict['well_id'].append(curr_well_id)
-            df_pool_wells_ids = pd.DataFrame(pool_well_ids_dict)
-            df_assignment.drop(columns=['plate_id', 'well_id'], inplace=True)
-            df_configuration = pd.merge(df_assignment, df_pool_wells_ids, on='pool_id')
-            return df_configuration
-        else:
-            logger.error('Unsupported plate_type: %s' % plate_type)
-            exit(1)
+        # Step 2. Create assignments for golfy Design class
+        assignments = {}
+        num_peptides_per_pool = -1
+        for coverage in self.assignments.keys():
+            assignments[coverage-1] = {}
+            for pool in self.assignments[coverage].keys():
+                assignments[coverage-1][pool-1] = []
+                for peptide_id, peptide_sequence in self.assignments[coverage][pool]:
+                    assignments[coverage-1][pool-1].append(peptide_id_to_idx_dict[peptide_id])
+                if num_peptides_per_pool < len(self.assignments[coverage][pool]):
+                    num_peptides_per_pool = len(self.assignments[coverage][pool])
+
+        # Step 3. Create a golfy Design object
+        design = Design(
+            num_peptides=len(self.peptide_ids),
+            max_peptides_per_pool=num_peptides_per_pool,
+            num_replicates=len(self.assignments.keys()),
+            allow_extra_pools=False,
+            invalid_neighbors=[],
+            preferred_neighbors=[],
+            assignments=assignments
+        )
+        return design, peptide_idx_to_id_dict
 
     @staticmethod
     def generate_single_coverage_block_assignment(
@@ -324,6 +415,8 @@ class BlockAssignment:
 
         # Step 2. Compute transitive neighbors
         peptide_neighbors = compute_transitive_neighbors(peptide_pairs=preferred_peptide_pairs)
+        for peptide_neighbor in peptide_neighbors:
+            random.shuffle(peptide_neighbor)
 
         # Step 3. Assign pool IDs for peptide neighbors
         preferred_peptide_ids = []
@@ -552,7 +645,7 @@ class BlockAssignment:
             verbose: bool = True
     ) -> List['BlockAssignment']:
         """
-        Minimizes violations (i.e. non-unique pool assignment) in a list of
+        Minimizes violations (i.e. number of times peptide pairs are pooled together more than once) in a list of
         block assignments by shuffling pool IDs.
 
         Parameters
@@ -564,16 +657,16 @@ class BlockAssignment:
         -------
         block_assignments   :   List of BlockAssignment objects.
         """
-        min_violations = BlockAssignment.merge(block_assignments=block_assignments).count_violations()
+        min_violations = BlockAssignment.merge(block_assignments=block_assignments).num_violations()
         curr_block_assignments = copy.deepcopy(block_assignments)
         best_block_assignments = copy.deepcopy(block_assignments)
         for _ in range(0, shuffle_iters):
             random_idx = random.choice(list(range(0, len(curr_block_assignments))))
             curr_block_assignments[random_idx].shuffle_pool_ids()
-            curr_num_violations = BlockAssignment.merge(block_assignments=curr_block_assignments).count_violations()
+            curr_num_violations = BlockAssignment.merge(block_assignments=curr_block_assignments).num_violations()
             if curr_num_violations < min_violations:
                 if verbose:
-                    logger.info('Found a better assignment: current number of violations: %i, new number of violations: %i' %
+                    logger.info('\tFound a better assignment; current number of violations: %i, new number of violations: %i' %
                                 (min_violations, curr_num_violations))
                 best_block_assignments = copy.deepcopy(curr_block_assignments)
                 min_violations = curr_num_violations

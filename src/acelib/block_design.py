@@ -16,7 +16,10 @@ The purpose of this python3 script is to implement the BlockDesign dataclass.
 """
 
 
+import copy
 import math
+import random
+
 import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -37,10 +40,11 @@ class BlockDesign:
     num_peptides_per_pool: int
     num_coverage: int
     max_peptides_per_block: int
+    allow_extra_pools: bool = False
     disallowed_peptide_pairs: PeptidePairs = field(default_factory=list)
     preferred_peptide_pairs: PeptidePairs = field(default_factory=list)
     __dummy_peptide_ids: List[PeptideId] = field(default_factory=list, repr=False)
-    __peptides_dict: Dict[str, str] = field(default_factory=dict)
+    __peptides_dict: Dict[str, str] = field(default_factory=dict, repr=False)
 
     @property
     def all_peptide_ids(self) -> List[PeptideId]:
@@ -231,6 +235,7 @@ class BlockDesign:
             'peptides': [';'.join(peptides)],
             'num_peptides_per_pool': [self.num_peptides_per_pool],
             'num_coverage': [self.num_coverage],
+            'allow_extra_pools': [self.allow_extra_pools],
             'max_peptides_per_block': [self.max_peptides_per_block],
             'disallowed_peptide_pairs': [';'.join(disallowed_peptide_pairs)],
             'preferred_peptide_pairs': [';'.join(preferred_peptide_pairs)]
@@ -377,7 +382,7 @@ class BlockDesign:
                 peptides = block_design.peptides[start_peptide_idx:end_peptide_idx + 1]
                 start_peptide_idx = end_peptide_idx + 1
                 if verbose:
-                    logger.info('\t\tAppending block design for %i peptides, %i peptides per pool' %
+                    logger.info('\tAppending block design for %i peptides, %i peptides per pool' %
                                 (len(peptides), num_peptides_per_pool))
                 block_design_ = BlockDesign(
                     peptides=peptides,
@@ -434,10 +439,12 @@ class BlockDesign:
         num_peptides_per_pool = df['num_peptides_per_pool'].values[0]
         num_coverage = df['num_coverage'].values[0]
         max_peptides_per_block = df['max_peptides_per_block'].values[0]
+        allow_extra_pools = df['allow_extra_pools'].values[0]
         block_design = BlockDesign(
             peptides=peptides,
             num_peptides_per_pool=num_peptides_per_pool,
             num_coverage=num_coverage,
+            allow_extra_pools=allow_extra_pools,
             max_peptides_per_block=max_peptides_per_block,
             disallowed_peptide_pairs=disallowed_peptide_pairs,
             preferred_peptide_pairs=preferred_peptide_pairs

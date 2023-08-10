@@ -5,7 +5,7 @@ build/
 __pycache__/
 src/ace.egg-info/
 notebooks/*.pt
-examples/*.xlsx
+examples/outputs/*.xlsx
 *.pyc
 .coverage*
 *.DS_Store

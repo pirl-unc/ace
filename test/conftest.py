@@ -3,28 +3,25 @@ import pytest
 from .data import get_data_path
 from acelib.block_assignment import BlockAssignment
 from acelib.block_design import BlockDesign
-from acelib.main import run_ace_golfy, run_ace_sat_solver
+from acelib.main import run_ace_generate
 from golfy import init, is_valid, optimize
 
 
 @pytest.fixture
-def golfy_assignment_1() -> BlockAssignment:
+def golfy_assignment_25pep5per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 26):
         peptides.append(('peptide_%i' % i, ''))
-    block_design = BlockDesign(
+    block_assignment, block_design = run_ace_generate(
         peptides=peptides,
         num_peptides_per_pool=5,
         num_coverage=3,
-        max_peptides_per_block=25
+        trained_model_file='',
+        cluster_peptides=False,
+        mode='golfy',
+        golfy_random_seed=1
     )
-    block_assignment = run_ace_golfy(
-        block_design=block_design,
-        random_seed=1,
-        max_iters=2000,
-        init_mode='greedy'
-    )
-    is_optimal = block_assignment.is_optimal(
+    block_assignment.is_optimal(
         num_coverage=3,
         num_peptides_per_pool=5
     )
@@ -32,20 +29,24 @@ def golfy_assignment_1() -> BlockAssignment:
 
 
 @pytest.fixture
-def sat_solver_assignment_1() -> BlockAssignment:
+def sat_solver_assignment_25pep5per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 26):
         peptides.append(('peptide_%i' % i, ''))
+    block_assignment, block_design = run_ace_generate(
+        peptides=peptides,
+        num_peptides_per_pool=5,
+        num_coverage=3,
+        cluster_peptides=False,
+        trained_model_file='',
+        mode='cpsat_solver',
+        golfy_random_seed=1
+    )
     block_design = BlockDesign(
         peptides=peptides,
         num_peptides_per_pool=5,
         num_coverage=3,
         max_peptides_per_block=25
-    )
-    block_assignment = run_ace_sat_solver(
-        block_design=block_design,
-        max_peptides_per_pool=10,
-        num_processes=1
     )
     is_optimal = block_assignment.is_optimal(
         num_coverage=3,
@@ -56,21 +57,18 @@ def sat_solver_assignment_1() -> BlockAssignment:
 
 
 @pytest.fixture
-def golfy_assignment_2() -> BlockAssignment:
+def golfy_assignment_120pep12per3x() -> BlockAssignment:
     peptides = []
     for i in range(1, 121):
         peptides.append(('peptide_%i' % i, ''))
-    block_design = BlockDesign(
+    block_assignment, block_design = run_ace_generate(
         peptides=peptides,
         num_peptides_per_pool=12,
         num_coverage=3,
-        max_peptides_per_block=100
-    )
-    block_assignment = run_ace_golfy(
-        block_design=block_design,
-        random_seed=1,
-        max_iters=2000,
-        init_mode='greedy'
+        trained_model_file='',
+        cluster_peptides=False,
+        mode='golfy',
+        golfy_random_seed=1
     )
     is_optimal = block_assignment.is_optimal(
         num_coverage=3,
