@@ -297,7 +297,7 @@ def run_ace_generate_from_parsed_args(args):
         peptides=peptides,
         num_peptides_per_pool=args.num_peptides_per_pool,
         num_coverage=args.num_coverage,
-        trained_model_file=resources.path('acelib.resources.models', 'trained_model5.pt'),
+        trained_model_file=resources.path('acelib.resources.models', 'trained_model_w_data_augmentation3000.pt'),
         cluster_peptides=cluster_peptides,
         mode=args.mode,
         sequence_similarity_function=args.sequence_similarity_function,
