@@ -20,4 +20,4 @@ notebooks/val_refs/
 playground/
 notebooks/*.zip
 notebooks/model_snapshot/
-
+gui/
