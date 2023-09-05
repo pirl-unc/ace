@@ -18,4 +18,6 @@ notebooks/.ipynb_checkpoints/sequence_properties-checkpoint.ipynb
 notebooks/ace_files/
 notebooks/val_refs/
 playground/
+notebooks/*.zip
+notebooks/model_snapshot/
 
