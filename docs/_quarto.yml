@@ -16,9 +16,6 @@ website:
           - generate.qmd
           - deconvolve.qmd
           - verify.qmd
-      - section: "API"
-        contents:
-          - python_api.qmd
       - section: "Notes"
         contents:
           - developer_notes.qmd

@@ -54,7 +54,7 @@ def add_ace_verify_arg_parser(sub_parsers):
              "The following columns are expected to be present in a "
              "sheet named 'assignment': 'plate_id', 'well_id', 'peptide_id', 'peptide_sequence'. "
              "The following columns are expected to be present in a "
-             "sheet named 'parameters': ''."
+             "sheet named 'parameters': 'num_coverage', 'num_peptides_per_pool'."
     )
     parser.set_defaults(which='verify')
     return sub_parsers

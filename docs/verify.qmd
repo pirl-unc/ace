@@ -10,17 +10,23 @@ This command checks whether a given ELISpot configuration is optimal. An optimal
 
 3. Each peptide belongs to $n_{coverage}$ different pool (well) IDs.
 
-4. All peptide pairs that are similar (above a certain threshold based on a sequence similarity criterion) are pooled together in exactly one pool.
-
 ```bash
-usage: ace verify [-h] 
-    --configuration-csv-file CONFIGURATION_CSV_FILE 
-    --num-peptides-per-pool NUM_PEPTIDES_PER_POOL 
-    --num-coverage NUM_COVERAGE
+usage: ace verify [-h] --assignment-excel-file ASSIGNMENT_EXCEL_FILE
+
+required arguments:
+  --assignment-excel-file ASSIGNMENT_EXCEL_FILE
 ```
 
 | Required Parameter          | Description                                                                               |
 | --------------------------- | ----------------------------------------------------------------------------------------- |
-| `--configuration-csv-file`  | ELISpot configuration CSV file. Expected columns: `coverage_id`, `pool_id`, `peptide_id`. |
-| `--num-peptides-per-pool`   | Number of peptides per pool.                                                              |
-| `--num-coverage`            | Total coverage (i.e. number of peptide replicates).                                       |
+| `--assignment-excel-file`  | ELISpot assignment Excel file. The following columns are expected to be present in a sheet named 'assignment': 'plate_id', 'well_id', 'peptide_id', 'peptide_sequence'. The following columns are expected to be present in a sheet named 'parameters': 'num_coverage', 'num_peptides_per_pool'. |
+
+### Example
+
+```bash
+ace verify --assignment-excel-file 25peptides_5perpool_3x_configuration.xlsx
+```
+
+An example configuration file can be found below:
+
+[25peptides_5perpool_3x_configuration.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx)
