@@ -36,7 +36,7 @@ install:
   - conda install scikit-learn
   - python -m pip install --upgrade --user ortools
   - conda install openpyxl
-  - pip3 install pytorch
+  - pip install torch
   - pip install transformers==4.30.2
   - pip install levenshtein
   - pip install golfy>=2.5.0
