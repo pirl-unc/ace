@@ -19,6 +19,9 @@ website:
       - section: "API"
         contents:
           - python_api.qmd
+      - section: "Notes"
+        contents:
+          - developer_notes.qmd
 
 format:
   html:

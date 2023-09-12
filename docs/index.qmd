@@ -2,23 +2,22 @@
 title: "Getting Started"
 ---
 
-# **ACE Configurator for ELISpot**
+# ACE Configurator for ELISpot
 
 **Source code**: [link](https://github.com/pirl-unc/ace)
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.0.9.0`
+**Latest Stable Version**: `0.1.0.5`
 
-**Updated date**: July 20, 2023
+**Updated date**: September 11, 2023
 
 `ACE` is a python library and command-line software for:
 
 1. Generation of ELISpot assignments.
 2. Deconvolution of hit peptides from ELISpot results.
-3. Verification of optimality of an ELISpot assignment.
 
-## **Installation**
+## 01. Installation
 
 Please first download the latest stable release of `ACE` from [here](https://github.com/pirl-unc/ace/releases)
 
@@ -26,15 +25,17 @@ Please first download the latest stable release of `ACE` from [here](https://git
 pip install ace-<version>.tar.gz
 ```
 
-## Dependencies
+## 02. Dependencies
 
-- [golfy>=2.3.0](https://github.com/pirl-unc/golfy)
-- [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
-- torch
-- transformers==4.30.2
-- pandas>=1.5.2
-- numpy>=1.23.1
-- openpyxl
+* pandas (>=1.5.2)
+* numpy (>=1.23.1)
+* [golfy>=2.5.0](https://github.com/pirl-unc/golfy)
+* [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
+* torch
+* transformers (==4.30.2)
+* scikit-learn
+* openpyxl
+* levenshtein
 
 ## **Command Line Interface**
 
@@ -48,9 +49,9 @@ positional arguments:
                         ACE sub-commands.
     generate            Generates an ELISpot experiment configuration.
     deconvolve          Deconvolve hit peptide IDs given read-outs from an ELISpot experiment.
-    verify              Verifies whether an ELISpot configuration satisfies all ACE constraints.
+    verify              Verifies whether an ELISpot assignment satisfies all ACE constraints.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version, -v         show program's version number and exit
 ```
@@ -63,4 +64,6 @@ optional arguments:
 
 ## **Citation**
 
-If you use `ACE` in a publication, please cite our paper describing `ACE`:
+If you use `ACE` in a publication, please cite our
+[preprint](https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1) describing `ACE`.
+

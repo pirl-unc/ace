@@ -73,7 +73,7 @@ def run_ace_golfy(
     df_peptides = convert_peptides_to_dataframe(peptides=block_design.peptides)
     df_peptides['peptide_index'] = list(range(0, len(df_peptides)))
     preferred_neighbors = [] # list of tuples (peptide ID index, peptide ID index)
-    for peptide_id_1, peptide_id_2 in block_design.preferred_peptide_pairs:
+    for peptide_id_1, peptide_id_2, score in block_design.preferred_peptide_pairs:
         peptide_index_1 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_1,'peptide_index'].values[0]
         peptide_index_2 = df_peptides.loc[df_peptides['peptide_id'] == peptide_id_2,'peptide_index'].values[0]
         preferred_neighbors.append((peptide_index_1, peptide_index_2))
@@ -236,8 +236,7 @@ def run_ace_generate(
         cpsat_solver_shuffle_iters: int = GENERATE_CPSAT_SOLVER_SHUFFLE_ITERS,
         cpsat_solver_max_peptides_per_block: int = GENERATE_CPSAT_SOLVER_MAX_PEPTIDES_PER_BLOCK,
         cpsat_solver_max_peptides_per_pool: int = GENERATE_CPSAT_SOLVER_MAX_PEPTIDES_PER_POOL,
-        assign_well_ids: bool = GENERATE_ASSIGN_WELL_IDS,
-        num_plate_wells: PlateWells.ALL = PlateWells.WELLS_96, 
+        plate_size: PlateWells.ALL = PlateWells.WELLS_96,
         verbose: bool = True
 ) -> Tuple[BlockAssignment, BlockDesign]:
     """
@@ -264,8 +263,7 @@ def run_ace_generate(
     cpsat_solver_shuffle_iters          :   Number of iterations to shuffle for CP-SAT solver (default: 1000).
     cpsat_solver_max_peptides_per_block :   Maximum number of peptides per block for CP-SAT solver (default: 10).
     cpsat_solver_max_peptides_per_pool  :   Maximum number of peptides per pool for CP-SAT solver (default: 100).
-    assign_well_ids                     :   Assigns well IDs (default: True).
-    num_plate_wells                     :   Number of wells on plate (default: 96).
+    plate_size                          :   Plate size (default: 96).
     verbose                             :   Print logs (default: True).
                                         
     Returns
@@ -273,7 +271,7 @@ def run_ace_generate(
     block_assignment                    :   BlockAssignment object.
     block_design                        :   BlockDesign object.
     """
-    # Step 2. Identify pairs of similar peptides
+    # Step 1. Identify pairs of similar peptides
     if cluster_peptides:
         if sequence_similarity_function == SequenceSimilarityFunctions.LEVENSHTEIN:
             preferred_peptide_pairs = AceNeuralEngine.find_levenshtein_paired_peptides(
@@ -301,20 +299,24 @@ def run_ace_generate(
     else:
         preferred_peptide_pairs = []
 
-    preferred_peptide_pairs = [(p1, p2) for p1, p2, score in preferred_peptide_pairs]
-
-    # Step 3. Generate a block design
+    # Step 2. Generate a block design
     block_design = BlockDesign(
         peptides=peptides,
         num_peptides_per_pool=num_peptides_per_pool,
         num_coverage=num_coverage,
+        cluster_peptides=cluster_peptides,
+        plate_size=plate_size,
+        max_iterations=golfy_max_iters,
+        init_strategy=golfy_strategy,
+        sequence_similarity_threshold=sequence_similarity_threshold,
+        sequence_similarity_function=sequence_similarity_function,
         max_peptides_per_block=cpsat_solver_max_peptides_per_block,
         disallowed_peptide_pairs=[],
         allow_extra_pools=golfy_allow_extra_pools,
         preferred_peptide_pairs=preferred_peptide_pairs
     )
 
-    # Step 4. Generate a block assignment
+    # Step 3. Generate a block assignment
     if mode == GenerateModes.GOLFY:
         block_assignment = run_ace_golfy(
             block_design=block_design,
@@ -336,7 +338,7 @@ def run_ace_generate(
         logger.error('Unknown mode: %s' % mode)
         exit(1)
 
-    # Step 5. Check if the block assignment is optimal
+    # Step 4. Check if the block assignment is optimal
     # re-assign value because it could have been decremented
     # to account for preferred peptide neighbors (1x coverage).
     block_design.num_coverage = num_coverage
@@ -346,9 +348,8 @@ def run_ace_generate(
         verbose=verbose
     )
 
-    # Step 6. Assign plate and well IDs
-    if assign_well_ids:
-        block_assignment.assign_well_ids(num_plate_wells=num_plate_wells)
+    # Step 5. Assign plate and well IDs
+    block_assignment.assign_well_ids(plate_size=plate_size)
     
     return block_assignment, block_design
 
@@ -356,7 +357,7 @@ def run_ace_generate(
 def run_ace_deconvolve(
         df_readout: pd.DataFrame,
         block_assignment: BlockAssignment,
-        mode,
+        statistical_deconvolution_method,
         statistical_min_peptide_activity: float,
         empirical_min_coverage: int,
         empirical_min_spot_count: int,
@@ -367,61 +368,73 @@ def run_ace_deconvolve(
 
     Parameters
     ----------
-    df_readout      :   pd.DataFrame with the following columns:
-                        'pool_id'
-                        'spot_count'
-    df_assignment   :   pd.DataFrame with the following columns:
-                        'coverage_id'
-                        'pool_id'
-                        'peptide_id'
+    df_readout              :   pd.DataFrame with the following columns:
+                                'pool_id'
+                                'spot_count'
+    block_assignment        :   BlockAssignment object.
 
     Returns
     -------
-
+    deconvolution_result    :   DeconvolutionResult object.
     """
-    if mode == DeconvolveModes.EMPIRICAL:
-        df_readout = df_readout[df_readout['spot_count'] >= empirical_min_spot_count]
-        hit_pool_ids = list(df_readout['pool_id'].unique())
-        return empirical_deconvolve(
-            hit_pool_ids=hit_pool_ids,
-            df_assignment=block_assignment.to_dataframe(),
-            min_coverage=empirical_min_coverage
-        )
-    elif mode == DeconvolveModes.EM or mode == DeconvolveModes.LASSO:
-        golfy_design, peptide_indices = block_assignment.to_golfy_design()
-        spot_counts = {}
-        for _, row in df_readout.iterrows():
-            spot_counts[int(row['pool_id'])] = int(row['spot_count'])
-        golfy_spot_counts = convert_to_golfy_spotcounts(
-            spot_counts=spot_counts,
-            block_assignment=block_assignment
-        )
-        golfy_deconvolve_result = deconvolve(
-            s=golfy_design,
-            spot_counts=golfy_spot_counts,
-            method=mode,
-            min_peptide_activity=statistical_min_peptide_activity,
-            verbose=verbose
-        )
-        deconvolution_result = DeconvolutionResult()
-        peptide_idx = 0
-        for peptide_activity in golfy_deconvolve_result.activity_per_peptide:
-            peptide_id = peptide_indices[peptide_idx]
-            peptide_sequence = block_assignment.get_peptide_sequence(peptide_id=peptide_id)
-            if peptide_idx in golfy_deconvolve_result.high_confidence_hits:
-                label = DeconvolutionLabels.CONFIDENT_HIT
-            else:
-                label = DeconvolutionLabels.NOT_A_HIT
-            deconvolution_result.add_peptide(
-                peptide_id=peptide_id,
-                peptide_sequence=peptide_sequence,
-                peptide_activity_level=peptide_activity,
-                label=label,
-                pool_ids=[]
-            )
-            peptide_idx += 1
-        return deconvolution_result
-    else:
-        logger.error('Unknown mode: %s' % mode)
-        exit(1)
+    # Step 1. Perform empirical deconvolution
+    df_readout_ = df_readout[df_readout['spot_count'] >= empirical_min_spot_count]
+    hit_pool_ids = list(df_readout_['pool_id'].unique())
+    empirical_deconvolution_result = empirical_deconvolve(
+        hit_pool_ids=hit_pool_ids,
+        df_assignment=block_assignment.to_dataframe(),
+        min_coverage=empirical_min_coverage
+    )
 
+    # Step 2. Perform statistical deconvolution
+    golfy_design, peptide_indices = block_assignment.to_golfy_design()
+    spot_counts = {}
+    for _, row in df_readout.iterrows():
+        spot_counts[int(row['pool_id'])] = int(row['spot_count'])
+    golfy_spot_counts = convert_to_golfy_spotcounts(
+        spot_counts=spot_counts,
+        block_assignment=block_assignment
+    )
+    golfy_deconvolve_result = deconvolve(
+        s=golfy_design,
+        spot_counts=golfy_spot_counts,
+        method=statistical_deconvolution_method,
+        min_peptide_activity=statistical_min_peptide_activity,
+        verbose=verbose
+    )
+    statistical_deconvolution_result = DeconvolutionResult()
+    peptide_idx = 0
+    for peptide_activity in golfy_deconvolve_result.activity_per_peptide:
+        peptide_id = peptide_indices[peptide_idx]
+        peptide_sequence = block_assignment.get_peptide_sequence(peptide_id=peptide_id)
+        if peptide_idx in golfy_deconvolve_result.high_confidence_hits:
+            label = DeconvolutionLabels.CONFIDENT_HIT
+        else:
+            label = DeconvolutionLabels.NOT_A_HIT
+        statistical_deconvolution_result.add_peptide(
+            peptide_id=peptide_id,
+            peptide_sequence=peptide_sequence,
+            estimated_peptide_spot_count=peptide_activity,
+            label=label,
+            hit_pool_ids=[]
+        )
+        peptide_idx += 1
+
+    # Step 3. Merge empirical and statistical deconvolution results
+    df_empirical = empirical_deconvolution_result.to_dataframe()
+    df_empirical.drop(columns=['estimated_peptide_spot_count'], inplace=True)
+    df_statistical = statistical_deconvolution_result.to_dataframe()
+    df_statistical.drop(columns=['peptide_sequence', 'hit_pool_ids', 'hit_pools_count', 'deconvolution_result'], inplace=True)
+    df_merged = df_empirical.merge(df_statistical, on='peptide_id')
+
+    merged_deconvolution_result = DeconvolutionResult()
+    for index, row in df_merged.iterrows():
+        merged_deconvolution_result.add_peptide(
+            peptide_id=row['peptide_id'],
+            peptide_sequence=row['peptide_sequence'],
+            estimated_peptide_spot_count=row['estimated_peptide_spot_count'],
+            label=row['deconvolution_result'],
+            hit_pool_ids=row['hit_pool_ids'].split(';')
+        )
+
+    return merged_deconvolution_result

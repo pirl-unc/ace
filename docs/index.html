@@ -210,6 +210,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
       </ul>
   </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Notes</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link">Developer Notes</a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -235,32 +250,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 
 <section id="ace-configurator-for-elispot" class="level1">
-<h1><strong>ACE Configurator for ELISpot</strong></h1>
+<h1>ACE Configurator for ELISpot</h1>
 <p><strong>Source code</strong>: <a href="https://github.com/pirl-unc/ace">link</a></p>
 <p><strong>License</strong>: Apache 2.0 License</p>
-<p><strong>Latest Stable Version</strong>: <code>0.0.79.0</code></p>
-<p><strong>Updated date</strong>: July 20, 2023</p>
+<p><strong>Latest Stable Version</strong>: <code>0.1.0.5</code></p>
+<p><strong>Updated date</strong>: September 11, 2023</p>
 <p><code>ACE</code> is a python library and command-line software for:</p>
 <ol type="1">
 <li>Generation of ELISpot assignments.</li>
 <li>Deconvolution of hit peptides from ELISpot results.</li>
-<li>Verification of optimality of an ELISpot assignment.</li>
 </ol>
 <section id="installation" class="level2">
-<h2 class="anchored" data-anchor-id="installation"><strong>Installation</strong></h2>
+<h2 class="anchored" data-anchor-id="installation">01. Installation</h2>
 <p>Please first download the latest stable release of <code>ACE</code> from <a href="https://github.com/pirl-unc/ace/releases">here</a></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install ace-<span class="op">&lt;</span>version<span class="op">&gt;</span>.tar.gz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="dependencies" class="level2">
-<h2 class="anchored" data-anchor-id="dependencies">Dependencies</h2>
+<h2 class="anchored" data-anchor-id="dependencies">02. Dependencies</h2>
 <ul>
-<li><a href="https://github.com/pirl-unc/golfy">golfy&gt;=2.3.0</a></li>
+<li>pandas (&gt;=1.5.2)</li>
+<li>numpy (&gt;=1.23.1)</li>
+<li><a href="https://github.com/pirl-unc/golfy">golfy&gt;=2.5.0</a></li>
 <li><a href="https://developers.google.com/optimization/install">ortools&gt;= 9.3.10497</a></li>
 <li>torch</li>
-<li>transformers==4.30.2</li>
-<li>pandas&gt;=1.5.2</li>
-<li>numpy&gt;=1.23.1</li>
+<li>transformers (==4.30.2)</li>
+<li>scikit-learn</li>
 <li>openpyxl</li>
+<li>levenshtein</li>
 </ul>
 </section>
 <section id="command-line-interface" class="level2">
@@ -274,9 +290,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">ACE</span> sub-commands.</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">generate</span>            Generates an ELISpot experiment configuration.</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">deconvolve</span>          Deconvolve hit peptide IDs given read-outs from an ELISpot experiment.</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="ex">verify</span>              Verifies whether an ELISpot configuration satisfies all ACE constraints.</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="ex">verify</span>              Verifies whether an ELISpot assignment satisfies all ACE constraints.</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">optional</span> arguments:</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--version,</span> <span class="at">-v</span>         show program<span class="st">'s version number and exit</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>ACE includes the following commands:</strong></p>
@@ -288,7 +304,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="citation" class="level2">
 <h2 class="anchored" data-anchor-id="citation"><strong>Citation</strong></h2>
-<p>If you use <code>ACE</code> in a publication, please cite our paper describing <code>ACE</code>:</p>
+<p>If you use <code>ACE</code> in a publication, please cite our <a href="https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1">preprint</a> describing <code>ACE</code>.</p>
 
 
 </section>

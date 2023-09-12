@@ -19,7 +19,6 @@ The purpose of this python3 script is to implement the BlockDesign dataclass.
 import copy
 import math
 import random
-
 import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -40,9 +39,15 @@ class BlockDesign:
     num_peptides_per_pool: int
     num_coverage: int
     max_peptides_per_block: int
-    allow_extra_pools: bool = False
+    plate_size: int
+    max_iterations: int = 0             # golfy
+    init_strategy: str = ''             # golfy
+    allow_extra_pools: bool = False     # golfy
+    sequence_similarity_threshold: float = 0.0
+    sequence_similarity_function: str = ''
+    cluster_peptides: bool = False
+    preferred_peptide_pairs: PreferredPeptidePairs = field(default_factory=list)
     disallowed_peptide_pairs: PeptidePairs = field(default_factory=list)
-    preferred_peptide_pairs: PeptidePairs = field(default_factory=list)
     __dummy_peptide_ids: List[PeptideId] = field(default_factory=list, repr=False)
     __peptides_dict: Dict[str, str] = field(default_factory=dict, repr=False)
 
@@ -68,6 +73,51 @@ class BlockDesign:
         for peptide_id, peptide_sequence in self.peptides:
             peptide_ids.append(peptide_id)
         return peptide_ids
+
+    @property
+    def metadata_dataframe(self) -> pd.DataFrame:
+        data = {
+            'num_peptides': [self.num_peptides],
+            'num_peptides_per_pool': [self.num_peptides_per_pool],
+            'num_coverage': [self.num_coverage],
+            'plate_size': [self.plate_size],
+            'maximum_iterations': [self.max_iterations],
+            'initialization_strategy': [self.init_strategy],
+            'allow_extra_pools': [self.allow_extra_pools],
+            'cluster_peptides': [self.cluster_peptides],
+            'sequence_similarity_function': [self.sequence_similarity_function],
+            'sequence_similarity_threshold': [self.sequence_similarity_threshold],
+            'max_peptides_per_block': [self.max_peptides_per_block]
+        }
+        return pd.DataFrame(data)
+
+    @property
+    def peptides_dataframe(self) -> pd.DataFrame:
+        data = {
+            'peptide_id': [],
+            'peptide_sequence': []
+        }
+        for peptide in self.peptides:
+            data['peptide_id'].append(peptide[0])
+            data['peptide_sequence'].append(peptide[1])
+        return pd.DataFrame(data)
+
+    @property
+    def preferred_peptide_pairs_dataframe(self) -> pd.DataFrame:
+        data = {
+            'peptide_1_id': [],
+            'peptide_1_sequence': [],
+            'peptide_2_id': [],
+            'peptide_2_sequence': [],
+            'similarity_score': []
+        }
+        for preferred_peptide_pair in self.preferred_peptide_pairs:
+            data['peptide_1_id'].append(preferred_peptide_pair[0])
+            data['peptide_1_sequence'].append(self.get_peptide_sequence(peptide_id=preferred_peptide_pair[0]))
+            data['peptide_2_id'].append(preferred_peptide_pair[1])
+            data['peptide_2_sequence'].append(self.get_peptide_sequence(peptide_id=preferred_peptide_pair[1]))
+            data['similarity_score'].append(preferred_peptide_pair[2])
+        return pd.DataFrame(data)
 
     def __post_init__(self):
         # Step 1. Make sure the number of peptides is bigger than the number of peptides per pool.
@@ -221,27 +271,6 @@ class BlockDesign:
 
         return block_assignment
 
-    def to_dataframe(self) -> pd.DataFrame:
-        peptides = []
-        for peptide_id, peptide_sequence in self.peptides:
-            peptides.append('%s|%s' % (peptide_id, peptide_sequence))
-        disallowed_peptide_pairs = []
-        for peptide_id_1, peptide_id_2, in self.disallowed_peptide_pairs:
-            disallowed_peptide_pairs.append('%s|%s' % (peptide_id_1, peptide_id_2))
-        preferred_peptide_pairs = []
-        for peptide_id_1, peptide_id_2, in self.preferred_peptide_pairs:
-            preferred_peptide_pairs.append('%s|%s' % (peptide_id_1, peptide_id_2))
-        data = {
-            'peptides': [';'.join(peptides)],
-            'num_peptides_per_pool': [self.num_peptides_per_pool],
-            'num_coverage': [self.num_coverage],
-            'allow_extra_pools': [self.allow_extra_pools],
-            'max_peptides_per_block': [self.max_peptides_per_block],
-            'disallowed_peptide_pairs': [';'.join(disallowed_peptide_pairs)],
-            'preferred_peptide_pairs': [';'.join(preferred_peptide_pairs)]
-        }
-        return pd.DataFrame(data)
-
     @staticmethod
     def compute_num_total_pools(
             num_peptides: int,
@@ -388,6 +417,12 @@ class BlockDesign:
                     peptides=peptides,
                     num_peptides_per_pool=num_peptides_per_pool,
                     num_coverage=block_design.num_coverage,
+                    cluster_peptides=block_design.cluster_peptides,
+                    plate_size=block_design.plate_size,
+                    max_iterations=block_design.max_iterations,
+                    init_strategy=block_design.init_strategy,
+                    sequence_similarity_threshold=block_design.sequence_similarity_threshold,
+                    sequence_similarity_function=block_design.sequence_similarity_function,
                     max_peptides_per_block=optimal_num_peptides_per_design,
                     disallowed_peptide_pairs=block_design.disallowed_peptide_pairs,
                     preferred_peptide_pairs=block_design.preferred_peptide_pairs
@@ -401,53 +436,66 @@ class BlockDesign:
 
     @staticmethod
     def read_excel_file(
-            excel_file: str,
-            sheet_name: str = 'block_design'
+            excel_file: str
     ) -> 'BlockDesign':
         """
         Reads an Excel file and returns a BlockDesign object.
 
         Parameters
         ----------
-        excel_file      :   Excel file.
-        sheet_name      :   Sheet name.
+        excel_file      :   Excel file. The following sheets are expected to exist:
+                            'peptides'
+                            'parameters'
+                            'preferred_peptide_pairs'
+                            'disallowed_peptide_pairs'
 
         Returns
         -------
         block_design    :   BlockDesign object.
         """
-        df = pd.read_excel(excel_file, sheet_name=sheet_name)
+        # Step 1. Read the sheets
+        df_peptides = pd.read_excel(excel_file, sheet_name='peptides')
+        df_parameters = pd.read_excel(excel_file, sheet_name='parameters')
+        df_preferred_peptide_pairs = pd.read_excel(excel_file, sheet_name='preferred_peptide_pairs')
+
+        # Step 2. Parse block design data
+        # Peptides
         peptides = []
-        disallowed_peptide_pairs = []
+        for index, row in df_peptides.iterrows():
+            peptides.append((row['peptide_id'], row['peptide_sequence']))
+
+        # Preferred peptide pairs
         preferred_peptide_pairs = []
-        for peptide in str(df['peptides'].values[0]).split(';'):
-            peptides.append((peptide.split('|')[0], peptide.split('|')[1]))
-        if not pd.isna(df['disallowed_peptide_pairs'].values[0]):
-            peptide_pairs = str(df['disallowed_peptide_pairs'].values[0]).split(';')
-            for peptide_pair in peptide_pairs:
-                if peptide_pair != '':
-                    peptide_id_1 = peptide_pair.split('|')[0]
-                    peptide_id_2 = peptide_pair.split('|')[1]
-                    disallowed_peptide_pairs.append((peptide_id_1, peptide_id_2))
-        if not pd.isna(df['preferred_peptide_pairs'].values[0]):
-            peptide_pairs = str(df['preferred_peptide_pairs'].values[0]).split(';')
-            for peptide_pair in peptide_pairs:
-                if peptide_pair != '':
-                    peptide_id_1 = peptide_pair.split('|')[0]
-                    peptide_id_2 = peptide_pair.split('|')[1]
-                    preferred_peptide_pairs.append((peptide_id_1, peptide_id_2))
-        num_peptides_per_pool = df['num_peptides_per_pool'].values[0]
-        num_coverage = df['num_coverage'].values[0]
-        max_peptides_per_block = df['max_peptides_per_block'].values[0]
-        allow_extra_pools = df['allow_extra_pools'].values[0]
+        for index, row in df_preferred_peptide_pairs.iterrows():
+            peptide_1_id = str(row['peptide_1_id'])
+            peptide_2_id = str(row['peptide_2_id'])
+            similarity_score = float(row['similarity_score'])
+            preferred_peptide_pairs.append((peptide_1_id, peptide_2_id, similarity_score))
+
+        # Parameters
+        num_peptides_per_pool = int(df_parameters['num_peptides_per_pool'].values[0])
+        num_coverage = int(df_parameters['num_coverage'].values[0])
+        allow_extra_pools = bool(df_parameters['allow_extra_pools'].values[0])
+        cluster_peptides = bool(df_parameters['cluster_peptides'].values[0])
+        plate_size = int(df_parameters['plate_size'].values[0])
+        max_iterations = int(df_parameters['maximum_iterations'].values[0])
+        init_strategy = str(df_parameters['initialization_strategy'].values[0])
+        sequence_similarity_function = str(df_parameters['sequence_similarity_function'].values[0])
+        sequence_similarity_threshold = float(df_parameters['sequence_similarity_threshold'].values[0])
+        max_peptides_per_block = int(df_parameters['max_peptides_per_block'].values[0])
         block_design = BlockDesign(
             peptides=peptides,
             num_peptides_per_pool=num_peptides_per_pool,
             num_coverage=num_coverage,
             allow_extra_pools=allow_extra_pools,
+            cluster_peptides=cluster_peptides,
+            plate_size=plate_size,
+            max_iterations=max_iterations,
+            init_strategy=init_strategy,
+            sequence_similarity_function=sequence_similarity_function,
+            sequence_similarity_threshold=sequence_similarity_threshold,
             max_peptides_per_block=max_peptides_per_block,
-            disallowed_peptide_pairs=disallowed_peptide_pairs,
+            disallowed_peptide_pairs=[],
             preferred_peptide_pairs=preferred_peptide_pairs
         )
         return block_design
-

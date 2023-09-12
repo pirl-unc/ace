@@ -62,6 +62,8 @@ def test_generate_sat_solver_assignment_with_preferred_peptide_pairs():
         num_peptides_per_pool=5,
         num_coverage=3,
         cluster_peptides=True,
+        sequence_similarity_function='euclidean',
+        sequence_similarity_threshold=0.7,
         trained_model_file=resources.path('acelib.resources.models', 'trained_model_w_data_augmentation_b3000.pt'),
         mode='cpsat_solver'
     )

@@ -19,6 +19,7 @@ requires = [
     "ortools>=9.3.10497",
     "torch",
     "transformers==4.30.2",
+    "scikit-learn",
     "openpyxl",
     "golfy>=2.5.0",
     "Levenshtein"
@@ -26,7 +27,7 @@ requires = [
 
 [project]
 name = "ace"
-version = "0.1.0.4"
+version = "0.1.0.5"
 requires-python = ">=3.7"
 keywords = [
     "elispot",

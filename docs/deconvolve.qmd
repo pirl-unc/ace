@@ -5,36 +5,76 @@ title: "deconvolve"
 This command deconvolves hit peptides from ELISpot results.
 
 ```bash
-usage: ace deconvolve [-h] 
-    --readout-file-type READOUT_FILE_TYPE 
-    --readout-files READOUT_FILES 
-    --configuration-csv-file CONFIGURATION_CSV_FILE 
-    --min-positive-spot-count MIN_POSITIVE_SPOT_COUNT 
-    --output-csv-file OUTPUT_CSV_FILE
+usage: ace deconvolve [-h]
+    --readout-file-type READOUT_FILE_TYPE
+    --readout-files READOUT_FILES
+    --assignment-excel-file ASSIGNMENT_EXCEL_FILE
+    --output-excel-file OUTPUT_EXCEL_FILE
+    [--statistical-deconvolution-method {em,lasso}]
+    [--min-spot-count MIN_SPOT_COUNT]
+    [--min-peptide-activity MIN_PEPTIDE_ACTIVITY]
+    [--verbose VERBOSE]
 ```
 
 | Required Parameter          | Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------ |
-| `--readout-file-type`       | ELISpot read-out file type (allowed options: pool_id, aid_plate_reader). |
-| `--readout-files`           | ELISpot read-out file(s).<br/><br/>If the readout-file-type is `pool_id`, then the expected columns of the CSV file are: `pool_id`, `spot_count`.<br/><br/>If the readout-file-type is `aid_plate_reader`, then the readout-files are the Excel files from the AID plate reader machine. If there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc. |
-| `--configuration-csv-file`  | ELISpot configuration CSV file. Expected columns: `pool_id`, `peptide_id`, `plate_id`, `well_id`. |
-| `--min-positive-spot-count` | Number of spots for a pool to be considered a positive hit.              |
-| `--output-csv-file`         | Output CSV file.                                                         |
+| `--readout-file-type`       | ELISpot readout file type (allowed options: pool_id, aid_plate_reader).  |
+| `--readout-files`           | ELISpot readout file(s). The expected columns are 'plate_id', 'well_id', and 'spot_count'. \
+If --readout-file-type is 'aid_plate_reader', then the readout-files are the Excel files from the AID plate reader machine. \
+If --readout-file type is 'aid_plate_reader' and there were pools in 2 or more plates, then supply the files in the following order: \
+plate 1 readout file, plate 2 readout file etc. |
+| `--assignment-excel-file`   | ELISpot assignment Excel file. Expected columns: 'peptide_id', 'peptide_sequence', 'plate_id', 'well_id' in a sheet named 'assignment'. |
+| `--output-excel-file`       | Output deconvolution Excel file.                                         |
+| `--min-positive-pool-spot-count` | Minimum spot count for a pool to be considered a positive pool.     |
+
+| Optional Parameter          | Description                                                              |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `--statistical-deconvolution-method` | Statistical deconvolution mode (default: em).                   |
+| `--min-peptide-activity` | Minimum estimated activity of a peptide to be considered for hit set. This value is used if when '--mode em' or '--mode lasso' (default: 1.0). |
+| `--verbose`              | If True, prints messages. Otherwise, messages are not printed (default: True). |
 
 ### Example
 
-Let's say you used the [generate](generate.qmd) command in `ACE` to generate an ELISpot configuration for pooling 10 
-peptides per pool for a total of 100 unique peptides. The configuration also repeated each peptide 3 times 
-(i.e. 3x coverage); you created `100peptides_10perpool_3x.csv`. You took this configuration and 
+Let's say you used the [generate](generate.qmd) command in `ACE` to generate an ELISpot configuration for pooling 5
+peptides per pool for a total of 25 unique peptides. The configuration also repeated each peptide 3 times
+(i.e. 3x coverage); you created [25peptides_5perpool_3x_configuration.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx). You took this configuration and
 successfully ran an ELISpot experiment. Now you want to deconvolve hit peptides. 
 Here we describe how you can achieve this using `ACE`.
 
+#### Any Reader
+
+You can supply a generic ELISpot results .xlsx file to `ACE`:
+
+[25peptides_5perpool_3x_pool-id_readout.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout.xlsx):
+
+| plate_id | well_id | spot_count |
+| -------- | -------- | ---------- |
+| 1 | A1 | 0 |
+| 1 | A2 | 300 |
+| ... | ... | ... |
+| 1 | B3 | 0 |
+
+Deconvolve hit peptides from your ELISpot experiment:
+
+```bash
+ace deconvolve \
+  --readout-file-type pool_id \
+  --readout-files ../test/data/25peptides_5perpool_3x_pool-id_readout.xlsx \
+  --assignment-excel-file ../test/data/25peptides_5perpool_3x_configuration.xlsx \
+  --min-positive-pool-spot-count 300 \
+  --output-excel-file outputs/25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx
+```
+
+Running the above command results in the following file:
+
+[25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx):
+
 #### AID Plate Reader
 
-If you used a plate reader from AID, we are able to automatically parse the `xlsx` file from 
+If you used a plate reader from AID, we are able to automatically parse the .xlsx file from
 the machine.
 
-`elispot_results.xlsx`:
+[25peptides_5perpool_3x_aid-plate-reader_readout.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout.xlsx):
 
 ![](resources/aid_plate_reader_xlsx_example.png)
 
@@ -43,49 +83,22 @@ Deconvolve hit peptides from your ELISpot experiment:
 ```bash
 ace deconvolve \
   --readout-file-type aid_plate_reader \
-  --readout-files /path/elispot_results.xlsx \
-  --configuration-csv-file /path/100peptides_10perpool_3x.csv \
-  --min-positive-spot-count 300 \
-  --output-csv-file ace_deconvolution_results.csv
+  --readout-files 25peptides_5perpool_3x_aid-plate-reader_readout.xlsx \
+  --assignment-excel-file ../test/data/25peptides_5perpool_3x_configuration.xlsx \
+  --min-positive-pool-spot-count 300 \
+  --output-excel-file 25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx
 ```
 
-#### Any Reader
+Running the above command results in the following file:
 
-You can alternatively supply a generic ELISpot results `csv` file to `ACE`:
-
-`elispot_results.csv`:
-
-| pool_id | spot_count |
-| ------- | ---------- |
-| pool_1 | 300 |
-| ... | ... |
-| pool_30 | 0 |
-
-Deconvolve hit peptides from your ELISpot experiment:
-
-```bash
-ace deconvolve \
-  --readout-file-type pool_id \
-  --readout-files /path/elispot_results.csv \
-  --configuration-csv-file /path/100peptides_10perpool_3x.csv \
-  --min-positive-spot-count 300 \
-  --output-csv-file ace_deconvolution_results.csv
-```
+[25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx):
 
 ### Deconvolution results
 
-Here is what `ACE` deconvolution results look like:
-
-| peptide_id | pool_ids | num_coverage | deconvolution_result |
-|------------| -------- |-------------|----------------------|
- peptide_7  | pool_5;pool_9;pool_13 | 3 | hit                  |
-| ...        | ... | ...         | ...                  |
-| peptide_9  | pool_1;pool_9;pool_14 | 3           | candidate_hit        |
-
-`ACE` deconvolution identifies two classes of peptides: `candidate_hit` and `hit`. 
-Peptides that have the label `hit` are confident hits (assuming no false positives) 
-because they were present in `num_coverage` (i.e. 3 in the above configuration) 
-number of different pools with at least one unique assignment of hit peptide-pool. 
+`ACE` deconvolution identifies two classes of peptides: `confident_hit` and `candidate_hit`.
+Peptides that have the label `confident_hit` are confident hits because they were
+present in `num_coverage` (i.e. 3 in the above configuration) number of different
+pools with at least one unique assignment of hit peptide-pool.
 On the other hand, peptides that have the label `candidate_hit` need further 
 validation (i.e. a second round of ELISpot) to determine whether it is indeed a 
 hit peptide.

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ACE - Python API</title>
+<title>ACE - Developer Notes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -132,7 +132,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">Python API</h1>
+      <h1 class="quarto-secondary-nav-title">Developer Notes</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -205,7 +205,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./python_api.html" class="sidebar-item-text sidebar-link active">Python API</a>
+  <a href="./python_api.html" class="sidebar-item-text sidebar-link">Python API</a>
   </div>
 </li>
       </ul>
@@ -220,7 +220,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link">Developer Notes</a>
+  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link active">Developer Notes</a>
   </div>
 </li>
       </ul>
@@ -235,7 +235,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Python API</h1>
+<h1 class="title d-none d-lg-block">Developer Notes</h1>
 </div>
 
 
@@ -249,293 +249,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<p>Here is a list of <code>ACE</code> classes and methods:</p>
-<table class="table">
-<thead>
-<tr class="header">
-<th>Class</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#aidplatereader">AIDPlateReader</a></td>
-<td>AID plate reader.</td>
-</tr>
-<tr class="even">
-<td><a href="#elispot">ELISpot</a></td>
-<td>An ELISpot.</td>
-</tr>
-</tbody>
-</table>
-<p><br></p>
-<section id="aidplatereader" class="level2">
-<h2 class="anchored" data-anchor-id="aidplatereader">AIDPlateReader</h2>
-<section id="load_readout_file" class="level3">
-<h3 class="anchored" data-anchor-id="load_readout_file">load_readout_file</h3>
-<p>Loads an AID plate reader readout file.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="at">@staticmethod</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>load_readout_file(</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    excel_file: <span class="bu">str</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    plate_id: <span class="bu">int</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> pd.DataFrame</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Input</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>excel_file</code></td>
-<td>AID plate reader results Excel file.</td>
-</tr>
-<tr class="even">
-<td><code>plate_id</code></td>
-<td>Plate ID (e.g.&nbsp;1).</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Output</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>df_counts</code></td>
-<td>DataFrame with the following columns: ‘plate_id’, ‘well_id’, ‘spot_count’.</td>
-</tr>
-</tbody>
-</table>
-<p><br></p>
-</section>
-</section>
-<section id="elispot" class="level2">
-<h2 class="anchored" data-anchor-id="elispot">ELISpot</h2>
-<section id="assign_well_ids" class="level3">
-<h3 class="anchored" data-anchor-id="assign_well_ids">assign_well_ids</h3>
-<p>Assign well IDs to an ELISpot experiment configuration.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">@staticmethod</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>assign_well_ids(</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    df_configuration: pd.DataFrame,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    plate_type: <span class="bu">str</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> pd.DataFrame</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Input</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>df_configuration</code></td>
-<td>DataFrame with the following columns: ‘pool_id’, ‘peptide_id’.</td>
-</tr>
-<tr class="even">
-<td><code>plate_type</code></td>
-<td>Plate type (allowed values: ‘96-well_plate’).</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Output</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>df_configuration</code></td>
-<td>DataFrame with the following columns: ‘pool_id’, ‘peptide_id’, ‘plate_id’, ‘well_id’.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="generate_configuration" class="level3">
-<h3 class="anchored" data-anchor-id="generate_configuration">generate_configuration</h3>
-<p>Generate an ELISpot experiment configuration.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>generate_configuration(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>, random_seed: <span class="bu">int</span>,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    disallowed_peptide_pairs: List[Tuple[<span class="bu">str</span>,<span class="bu">str</span>]] <span class="op">=</span> [],</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    enforced_peptide_pairs: List[Tuple[<span class="bu">str</span>,<span class="bu">str</span>]] <span class="op">=</span> []</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> pd.DataFrame</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Input</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>random_seed</code></td>
-<td>Random seed.</td>
-</tr>
-<tr class="even">
-<td><code>disallowed_peptide_pairs</code></td>
-<td>List of tuples (peptide ID, peptide ID).</td>
-</tr>
-<tr class="odd">
-<td><code>enforced_peptide_pairs</code></td>
-<td>List of tuples (peptide ID, peptide ID).</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 80%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Output</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>status</code></td>
-<td>Status (<code>cp_model.OPTIMAL</code>, <code>cp_model.FEASIBLE</code>, <code>cp_model.INFEASIBLE</code>, <code>cp_model.MODEL_INVALID</code> or <code>cp_model.UNKNOWN</code>).</td>
-</tr>
-<tr class="even">
-<td><code>df_configuration</code></td>
-<td>DataFrame with the following columns: ‘pool_id’, ‘peptide_id’.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="identify_hit_peptides" class="level3">
-<h3 class="anchored" data-anchor-id="identify_hit_peptides">identify_hit_peptides</h3>
-<p>Identify hit peptides.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">@staticmethod</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>identify_hit_peptides(</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    hit_pool_ids: List[<span class="bu">str</span>], </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    df_configuration: pd.DataFrame</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> pd.DataFrame:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<table class="table">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 77%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Input</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>hit_pool_ids</code></td>
-<td>List of hit pool IDs.</td>
-</tr>
-<tr class="even">
-<td><code>df_configuration</code></td>
-<td>DataFrame with the following columns: ‘pool_id’, ‘peptide_id’.</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 77%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Output</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>df_hits</code></td>
-<td>DataFrame with the following columns: ‘peptide_id’, ‘pool_ids’, ‘num_coverage’, ‘deconvolution_result’</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="verify_configuration" class="level3">
-<h3 class="anchored" data-anchor-id="verify_configuration">verify_configuration</h3>
-<p>Verify an ELIspot configuration.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@staticmethod</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>verify_configuration(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    df_configuration: pd.DataFrame,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    num_peptides_per_pool: <span class="bu">int</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    num_coverage: <span class="bu">int</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">bool</span>:</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Input</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>df_configuration</code></td>
-<td>DataFrame with the following columns: ‘pool_id’, ‘peptide_id’.</td>
-</tr>
-<tr class="even">
-<td><code>num_peptides_per_pool</code></td>
-<td>Number of peptides per pool.</td>
-</tr>
-<tr class="odd">
-<td><code>num_coverage</code></td>
-<td>Coverage.</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 74%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Output</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>is_optimal</code></td>
-<td>True if the ELIspot configuration meets the following criteria:<br>(1) Each peptide is in ‘num_coverage’ number of different pools.<br>(2) Each peptide is in exactly one unique combination of pool IDs.<br>(3) There is an optimal (minimal) number of pools.<br><br>False otherwise.</td>
-</tr>
-</tbody>
-</table>
+<p>The following command generates the standalone graphical user interface:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> gui/</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> eel ace_gui.py views <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--onedir</span> <span class="at">--noconsole</span> <span class="at">--clean</span> <span class="dt">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--icon</span> ace_gui.ico <span class="dt">\</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> ACE <span class="dt">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> tqdm <span class="dt">\</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> regex <span class="dt">\</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> filelock <span class="dt">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> requests <span class="dt">\</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> packaging <span class="dt">\</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> numpy <span class="dt">\</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">--copy-metadata</span> torch <span class="dt">\</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--add-data</span> <span class="st">"trained_model_w_data_augmentation_b3000.pt:."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
