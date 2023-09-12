@@ -27,20 +27,19 @@ install:
   - source activate test-environment
   - conda config --add channels bioconda
   - conda config --add channels conda-forge
-  - conda install -c conda-forge mamba
-  - mamba install pandas=1.5.2
-  - mamba install numpy=1.23.1
-  - mamba install pylint
-  - mamba install coveralls
-  - mamba install pytest
-  - mamba install pytest-cov
+  - conda install pandas
+  - conda install numpy
+  - conda install pylint
+  - conda install coveralls
+  - conda install pytest
+  - conda install pytest-cov
+  - conda install scikit-learn
   - python -m pip install --upgrade --user ortools
-  - mamba install openpyxl
-  - conda install pytorch torchvision -c pytorch
-  - pip install scikit-learn
+  - conda install openpyxl
+  - pip install pytorch
   - pip install transformers==4.30.2
-  - pip install Levenshtein
-  - pip install golfy>=2.3.0
+  - pip install levenshtein
+  - pip install golfy>=2.5.0
   - pip install . --verbose
 before_script:
   - bash lint.sh

@@ -52,9 +52,9 @@ def add_ace_verify_arg_parser(sub_parsers):
         required=True,
         help="ELISpot assignment Excel file. "
              "The following columns are expected to be present in a "
-             "sheet named 'block_assignment': 'coverage_id', 'pool_id', 'peptide_id'. "
+             "sheet named 'assignment': 'plate_id', 'well_id', 'peptide_id', 'peptide_sequence'. "
              "The following columns are expected to be present in a "
-             "sheet named 'block_design': ''."
+             "sheet named 'parameters': ''."
     )
     parser.set_defaults(which='verify')
     return sub_parsers
