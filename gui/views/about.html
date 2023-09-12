@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACE</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-icons-1.3.0/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="res/logo_ace_white_background.svg">
+    <script src="js/bootstrap.bundle.js"></script>
+    <script src="js/jquery-3.7.0.min.js"></script>
+    <script src="js/jszip.js"></script>
+    <script src="js/xlsx.full.min.js"></script>
+    <script src="js/read-excel-file.min.js"></script>
+    <script src="common.js"></script>
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="generate.js"></script>
+    <script>
+        $(function () {
+          $('[data-toggle="popover"]').popover()
+        })
+    </script>
+</head>
+
+<body style="background-color: var(--body-background-color);">
+<nav class="navbar navbar-expand-lg bg-light fixed-top" style="var(--navbar-color);">
+    <div class="container-fluid">
+        <ul class="navbar-nav mx-auto">
+            <a class="navbar-brand d-none d-md-block" href="index.html">
+                <img src="res/logo_ace_square.svg" alt="">
+            </a>
+            <li class="nav-item">
+                <a class="nav-link" href="generate.html">Generate</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="deconvolve.html">Deconvolve</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="about.html">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="faq.html">FAQ</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid mb-5 mt-10" id="div-input">
+    <div class="row justify-content-center mt-5">
+        <div class="col-6">
+            <h1 class="text-center">About ACE</h1>
+            <div class="container mt-5">
+                <p class="m-0 p-0" style="text-align: justify;">
+                    Software programs that aid experimental design, data collection, and subsequent analysis have been around since YEAR.
+                    They have been widely used to not only streamline efficiency but also to make the intractable possible in fields such as biology,
+                    astronomy, and physics. In the high-throughput ELISpot space, computational methods such as [link rickard, strom] have been used to
+                    design combinatorially optimized pools of peptides to facilitate epitope screening of thousands of candidate peptides.
+                    While shown to be optimized in its approach in [Strandberg], we noticed highly variable performance given different equivalent designs.
+                    Using deep learning methods to cluster similar peptides, ACE increases assay efficiency while simultaneously
+                    lowering variance in a number of real world-datasets. A visual explanation of the ACE method is shown below:
+                </p>
+                <div class="row mt-5">
+                    <img src="res/ace_figure.png" alt="ACE figure">
+                </div>
+                <h3 class="mt-5">Generate</h3>
+                <p></p>
+                <h3 class="mt-5">Deconvolve</h3>
+                <p class="mt-5 mb-0 mx-0 p-0" style="text-align: justify;">The full preprint can be found <a href="https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1" style="color: #ee2a7b;">here</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
