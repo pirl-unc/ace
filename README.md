@@ -11,11 +11,16 @@ of pool spot counts for identification of immunogenic peptides.
 
 ### 01-1. Standalone Graphical User Interface (Recommended)
 
-| Operating System | Link | Version           |
-|------------------| ---- |-------------------|
-| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-mac.zip) | v0.1.0.7 (latest) | 
-| Windows 11       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows11.zip) | v0.1.0.7 (latest) |
+Please note that the ACE GUI software will take a long time to load (~30 seconds :coffee:). 
+We also recommend that you have [Google Chrome](https://www.google.com/chrome/) installed on your machine.
 
+| Operating System | Link                                                                                                     | Version           |
+|------------------|----------------------------------------------------------------------------------------------------------|-------------------|
+| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-mac.zip)       | v0.1.0.7 (latest) | 
+| Windows 11       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows11.zip) | v0.1.0.7 (latest) |
+| Windows 10       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows10.zip) | v0.1.0.7 (latest) |
+
+For Windows versions, first unzip the file and look for an application file called `ACE` inside the unzipped foler.
 Previous versions of ACE are available [here](https://github.com/pirl-unc/ace/releases).
 
 ### 01-2. Python Package 
