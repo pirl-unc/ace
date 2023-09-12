@@ -54,20 +54,33 @@
             <h1 class="text-center">About ACE</h1>
             <div class="container mt-5">
                 <p class="m-0 p-0" style="text-align: justify;">
-                    Software programs that aid experimental design, data collection, and subsequent analysis have been around since YEAR.
-                    They have been widely used to not only streamline efficiency but also to make the intractable possible in fields such as biology,
-                    astronomy, and physics. In the high-throughput ELISpot space, computational methods such as [link rickard, strom] have been used to
-                    design combinatorially optimized pools of peptides to facilitate epitope screening of thousands of candidate peptides.
-                    While shown to be optimized in its approach in [Strandberg], we noticed highly variable performance given different equivalent designs.
-                    Using deep learning methods to cluster similar peptides, ACE increases assay efficiency while simultaneously
-                    lowering variance in a number of real world-datasets. A visual explanation of the ACE method is shown below:
+                    Software programs have been used to streamline efficiency and make the intractable possible in fields such as biology,
+                    astronomy, and physics since the mid 1900s, with a notable example being the use of the SDS910 in particle physics experiments.
+                    In the high-throughput ELISpot space, computational methods have been used to design combinatorially optimized pools of peptides
+                    to facilitate epitope screening of thousands of candidate peptides. ACE is a novel method that uses deep learning methods to
+                    cluster similar peptides, increasing assay efficiency while simultaneously lowering variance in a number of real-world datasets.
+                    A visual explanation of the ACE method is shown below:
                 </p>
                 <div class="row mt-5">
                     <img src="res/ace_figure.png" alt="ACE figure">
                 </div>
                 <h3 class="mt-5">Generate</h3>
-                <p></p>
+                <p style="text-align: justify;">
+                    ACE’s ‘generate’ function is used to assign peptides to pools. It requires several parameters such as the total number of peptides,
+                    number of desired peptides per pool, and number of technical replicates (coverage). ACE starts from a randomly mapped assignment
+                    and then attempts to heuristically transform the random design into a valid partially-balanced-incomplete block design (PBIBD) by
+                    iteratively swapping peptides which violate non-overlap constraints. If peptide sequences are supplied, ACE uses its fine-tuned
+                    ESM-2 model to compute pairwise similarities between the peptide sequences and groups the pairs that have a similarity greater
+                    than the threshold specified. The pooled ELISpot design generation outputs a tabular spreadsheet with peptide IDs, peptide sequences
+                    well as plate and well IDs for usability at the bench-side .</p>
                 <h3 class="mt-5">Deconvolve</h3>
+                <p style="text-align: justify;">
+                    ACE provides two methods for positive peptide identification. The first method is empirical deconvolution of peptides using pool-level
+                    positivity criteria to identify peptides from the union of positive pools. ACE supports various ‘empirical rules’ for determining immunogenicity
+                    and accepts a user-supplied minimum threshold for a pool to be considered positive. The second method offered by ACE is statistical deconvolution
+                    that allows the direct inference of peptide-level activities from pooled spot count values. ACE implements the Expectation Maximization algorithm
+                    for deconvolution as well as a Lasso regression method which we selected for its propensity to identify sparse vector solutions.
+                </p>
                 <p class="mt-5 mb-0 mx-0 p-0" style="text-align: justify;">The full preprint can be found <a href="https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1" style="color: #ee2a7b;">here</a>.</p>
             </div>
         </div>
