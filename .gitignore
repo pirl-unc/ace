@@ -3,7 +3,7 @@ dist/
 data/
 build/
 __pycache__/
-src/ace.egg-info/
+src/ace_elispot.egg-info/
 notebooks/*.pt
 examples/outputs/*.xlsx
 *.pyc

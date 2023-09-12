@@ -29,6 +29,7 @@ pip install ace-<version>.tar.gz
 
 #### Dependencies
 
+* python3 (>= 3.10)
 * pandas (>=1.5.2)
 * numpy (>=1.23.1)
 * ortools (9.3.10497)
