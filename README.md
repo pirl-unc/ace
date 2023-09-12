@@ -13,8 +13,8 @@ of pool spot counts for identification of immunogenic peptides.
 
 | Operating System | Link | Version           |
 |------------------| ---- |-------------------|
-| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.4/ace-0.1.0.4.tar.gz) | v0.1.0.5 (latest) | 
-| Windows          | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.4/ace-0.1.0.4.tar.gz) | v0.1.0.5 (latest) |
+| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-mac.zip) | v0.1.0.7 (latest) | 
+| Windows 11       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows11.zip) | v0.1.0.7 (latest) |
 
 Previous versions of ACE are available [here](https://github.com/pirl-unc/ace/releases).
 
