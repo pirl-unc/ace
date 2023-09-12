@@ -20,11 +20,17 @@ Previous versions of ACE are available [here](https://github.com/pirl-unc/ace/re
 
 ### 01-2. Python Package 
 
-ACE is also available as a python package. Download the latest stable release version from [here](https://github.com/pirl-unc/ace/releases).<br/>
+ACE is available on [PyPI](https://pypi.org/project/ace-elispot/)
+
+```
+pip install ace-elispot
+```
+
+You can also download a specific version of ACE from [here](https://github.com/pirl-unc/ace/releases).<br/>
 Subsequently install the ACE package using pip:
 
 ```
-pip install ace-<version>.tar.gz
+pip install ace-elispot-<version>.tar.gz
 ```
 
 #### Dependencies

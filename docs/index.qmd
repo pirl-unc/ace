@@ -8,7 +8,7 @@ title: "Getting Started"
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.1.0.6`
+**Latest Stable Version**: `0.1.0.7`
 
 **Updated date**: September 11, 2023
 
