@@ -7,7 +7,7 @@ The following command generates the standalone graphical user interface (on Mac)
 ```bash
 cd gui/
 python -m eel ace_gui.py views \
-    --onedir --noconsole --clean \
+    --onefile --noconsole --clean \
     --icon ace_gui.ico \
     --name ACE \
     --copy-metadata tqdm \
