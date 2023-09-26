@@ -16,9 +16,8 @@ We also recommend that you have [Google Chrome](https://www.google.com/chrome/) 
 
 | Operating System | Link                                                                                                     | Version           |
 |------------------|----------------------------------------------------------------------------------------------------------|-------------------|
-| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-mac.zip)       | v0.1.0.7 (latest) | 
-| Windows 11       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows11.zip) | v0.1.0.7 (latest) |
-| Windows 10       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.7/ace-elispot-0.1.0.7-windows10.zip) | v0.1.0.7 (latest) |
+| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.8/ace-elispot-0.1.0.8-mac.zip)       | v0.1.0.8 (latest) | 
+| Windows 10       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.0.8/ace-elispot-0.1.0.8-windows10.zip) | v0.1.0.8 (latest) |
 
 For Windows versions, first unzip the file and look for an application file called `ACE` inside the unzipped foler.
 Previous versions of ACE are available [here](https://github.com/pirl-unc/ace/releases).
