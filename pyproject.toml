@@ -27,7 +27,7 @@ requires = [
 
 [project]
 name = "ace-elispot"
-version = "0.1.0.7"
+version = "0.1.0.8"
 description = "ELISpot configuration generation and pool spot count deconvolution"
 requires-python = ">=3.10"
 readme = "README.md"

@@ -360,7 +360,7 @@ def run_ace_deconvolve(
         statistical_deconvolution_method,
         statistical_min_peptide_activity: float,
         empirical_min_coverage: int,
-        empirical_min_spot_count: int,
+        empirical_min_spot_count: float,
         verbose: bool = True
 ) -> DeconvolutionResult:
     """

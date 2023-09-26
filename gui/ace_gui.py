@@ -174,13 +174,13 @@ def deconvolve(assignments,
     for readout in readouts:
         data['plate_id'].append(readout['plate_id'])
         data['well_id'].append(readout['well_id'])
-        data['spot_count'].append(int(readout['spot_count']))
+        data['spot_count'].append(float(readout['spot_count']))
         data['pool_id'].append(pool_ids_dict['%s-%s' % (readout['plate_id'], readout['well_id'])])
     df_readout = pd.DataFrame(data)
 
     # Step 3. Perform empirical deconvolution
     min_coverage = int(min_coverage)
-    min_spot_count = int(min_spot_count)
+    min_spot_count = float(min_spot_count)
     deconvolution_result = run_ace_deconvolve(
         df_readout=df_readout,
         block_assignment=block_assignment,
