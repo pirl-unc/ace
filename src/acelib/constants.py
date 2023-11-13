@@ -59,12 +59,16 @@ class GenerateModes:
     ]
 
 
-class DeconvolveModes:
+class DeconvolutionMethods:
     EM = 'em'
     LASSO = 'lasso'
+    CONSTRAINED_EM = 'cem'
+    EMPIRICAL = 'empirical'
     ALL = [
+        CONSTRAINED_EM,
         EM,
-        LASSO
+        LASSO,
+        EMPIRICAL
     ]
 
 

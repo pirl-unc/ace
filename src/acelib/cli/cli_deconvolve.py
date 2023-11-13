@@ -79,8 +79,8 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
              "in a sheet named 'block_assignment'. "
     )
     parser_required.add_argument(
-        "--min-positive-pool-spot-count",
-        dest="min_positive_pool_spot_count",
+        "--min-pool-spot-count",
+        dest="min_pool_spot_count",
         type=int,
         required=True,
         help="Minimum spot count for a pool to be considered a positive pool."
@@ -96,23 +96,22 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--statistical-deconvolution-method",
-        dest="statistical_deconvolution_method",
+        "--method",
+        dest="method",
         type=str,
-        default=DeconvolveModes.EM,
-        choices=DeconvolveModes.ALL,
+        default=DeconvolutionMethods.CONSTRAINED_EM,
+        choices=DeconvolutionMethods.ALL,
         required=False,
-        help="Statistical deconvolution mode (default: %s)." % DeconvolveModes.EM
+        help="Deconvolution method (default: %s)." % DeconvolutionMethods.CONSTRAINED_EM
     )
-    parser_optional.add_argument(
-        "--min-peptide-activity",
-        dest="min_peptide_activity",
-        type=float,
-        default=DECONVOLVE_MIN_PEPTIDE_ACTIVITY,
-        required=False,
-        help="Minimum estimated activity of a peptide to be considered for hit set. "
-             "This value is used if when '--mode em' or '--mode lasso' (default: %f)." % DECONVOLVE_MIN_PEPTIDE_ACTIVITY
-    )
+    # parser_optional.add_argument(
+    #     "--min-peptide-spot-count",
+    #     dest="min_peptide_spot_count",
+    #     type=float,
+    #     default=DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT,
+    #     required=False,
+    #     help="Minimum estimated spot count for a peptide to be considered a hit (default: %f)." % DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT
+    # )
     parser_optional.add_argument(
         "--verbose",
         dest="verbose",
@@ -185,10 +184,9 @@ def run_ace_deconvolve_from_parsed_args(args):
     deconvolution_result = run_ace_deconvolve(
         df_readout=df_readout,
         block_assignment=block_assignment,
-        statistical_deconvolution_method=args.statistical_deconvolution_method,
-        statistical_min_peptide_activity=args.min_peptide_activity,
-        empirical_min_coverage=block_design.num_coverage,
-        empirical_min_spot_count=args.min_positive_pool_spot_count,
+        method=args.method,
+        min_coverage=block_design.num_coverage,
+        min_pool_spot_count=args.min_pool_spot_count,
         verbose=args.verbose
     )
 
