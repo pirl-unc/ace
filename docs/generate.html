@@ -185,7 +185,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./identify.html" class="sidebar-item-text sidebar-link">identify</a>
+  <a href="./deconvolve.html" class="sidebar-item-text sidebar-link">deconvolve</a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -206,6 +206,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./python_api.html" class="sidebar-item-text sidebar-link">Python API</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Notes</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link">Developer Notes</a>
   </div>
 </li>
       </ul>
@@ -235,24 +250,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 
 <p>This command generates an ELISpot experiment configuration.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace generate [-h] </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">(</span><span class="ex">--num-peptides</span> NUM_PEPTIDES <span class="kw">|</span> <span class="ex">--peptides-csv-file</span> PEPTIDES_CSV_FILE<span class="kw">)</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--num-peptides-per-pool</span> NUM_PEPTIDES_PER_POOL</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--num-coverage</span> NUM_COVERAGE</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--output-csv-file</span> OUTPUT_CSV_FILE</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--mode</span> <span class="dt">{golfy</span><span class="op">,</span><span class="dt">sat_solver}</span>]</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--assign-well-ids</span> ASSIGN_WELL_IDS]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--plate-type</span> PLATE_TYPE]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--random-seed</span> RANDOM_SEED]</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--golfy-max-iters</span> GOLFY_MAX_ITERS]</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--golfy-init-mode</span> <span class="dt">{greedy</span><span class="op">,</span><span class="dt">random}</span>]</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--num-processes</span> NUM_PROCESSES]</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">[--num-peptides-per-batch</span> NUM_PEPTIDES_PER_BATCH]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace generate [-h]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">(</span><span class="ex">--num-peptides</span> NUM_PEPTIDES <span class="kw">|</span> <span class="ex">--peptides-file</span> PEPTIDES_FILE<span class="kw">)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--num-peptides-per-pool</span> NUM_PEPTIDES_PER_POOL</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--num-coverage</span> NUM_COVERAGE</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--output-excel-file</span> OUTPUT_EXCEL_FILE</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--plate-size</span> PLATE_SIZE]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--mode</span> <span class="dt">{golfy</span><span class="op">,</span><span class="dt">cpsat_solver}</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--sequence-similarity-threshold</span> SEQUENCE_SIMILARITY_THRESHOLD]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--sequence-similarity-function</span> <span class="dt">{cosine</span><span class="op">,</span><span class="dt">euclidean</span><span class="op">,</span><span class="dt">levenshtein}</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--cluster-peptides</span> CLUSTER_PEPTIDES]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--golfy-random-seed</span> GOLFY_RANDOM_SEED]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--golfy-max-iters</span> GOLFY_MAX_ITERS]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--golfy-strategy</span> <span class="dt">{greedy</span><span class="op">,</span><span class="dt">random</span><span class="op">,</span><span class="dt">valid</span><span class="op">,</span><span class="dt">singleton</span><span class="op">,</span><span class="dt">repeat}</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--golfy-allow-extra-pools</span> <span class="dt">{True</span><span class="op">,</span><span class="dt">False}</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--cpsat-solver-num-processes</span> CPSAT_SOLVER_NUM_PROCESSES]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--cpsat-solver-shuffle-iters</span> CPSAT_SOLVER_SHUFFLE_ITERS]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--cpsat-solver-max-peptides-per-block</span> CPSAT_SOLVER_MAX_PEPTIDES_PER_BLOCK]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--cpsat-solver-max-peptides-per-pool</span> CPSAT_SOLVER_MAX_PEPTIDES_PER_POOL]</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--verbose</span> VERBOSE]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <table class="table">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 72%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Required Parameter</th>
@@ -265,8 +282,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <td>Total number of peptides.</td>
 </tr>
 <tr class="even">
-<td><code>--peptides-csv-file</code></td>
-<td>Peptides CSV file with the following expected columns: <code>peptide_id</code>, <code>peptide_sequence</code>. Please note that only either this parameter or <code>--num-peptides</code> can be supplied.</td>
+<td><code>--peptides-file</code></td>
+<td>Peptides file (.csv or .xlsx) with the following expected columns: <code>peptide_id</code>, <code>peptide_sequence</code>. Please note that only either this parameter or <code>--num-peptides</code> can be supplied. An example .xlsx file can be found <a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptide_sequences.xlsx">here</a></td>
 </tr>
 <tr class="odd">
 <td><code>--num-peptides-per-pool</code></td>
@@ -274,11 +291,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 <tr class="even">
 <td><code>--num-coverage</code></td>
-<td>Coverage (i.e.&nbsp;number of peptide replicates; recommended: 3).</td>
+<td>Coverage (i.e.&nbsp;number of peptide replicates).</td>
 </tr>
 <tr class="odd">
-<td><code>--output-csv-file</code></td>
-<td>Output CSV file.</td>
+<td><code>--output-excel-file</code></td>
+<td>Output Excel (.xlsx) file.</td>
 </tr>
 </tbody>
 </table>
@@ -295,20 +312,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>--mode</code></td>
-<td>Configuration generation mode (default: golfy).</td>
+<td><code>--plate-size</code></td>
+<td>Number of wells on plate. Allowed values: 24, 48, 96, 384 (default: 96).</td>
 </tr>
 <tr class="even">
-<td><code>--assign-well-ids</code></td>
-<td>If true, assigns plate and well IDs for each pool ID (default: true).</td>
+<td><code>--mode</code></td>
+<td>Configuration generation mode. Allowed values: golfy, cpsat_solver (default: golfy).</td>
 </tr>
 <tr class="odd">
-<td><code>--plate-type</code></td>
-<td>Plate type. Allowed values: <code>96-well_plate</code> (default: <code>96-well_plate</code>).</td>
+<td><code>--sequence-similarity-threshold</code></td>
+<td>Sequence similarity threshold (default: 0.7). A higher threshold leads to more stringent peptide pairing.</td>
 </tr>
 <tr class="even">
-<td><code>--random-seed</code></td>
-<td>Random seed (default: 1).</td>
+<td><code>--sequence-similarity-function</code></td>
+<td>Sequence similarity function. Allowed values: cosine, euclidean, levenshtein (default: euclidean).</td>
+</tr>
+<tr class="odd">
+<td><code>--cluster-peptides</code></td>
+<td>Cluster peptides if set to true (default: true).</td>
+</tr>
+<tr class="even">
+<td><code>--verbose</code></td>
+<td>If True, prints messages. Otherwise, messages are not printed (default: True).</td>
 </tr>
 </tbody>
 </table>
@@ -326,16 +351,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>--golfy-max-iters</code></td>
-<td>Number of maximum iterations for golfy (default: 1000).</td>
+<td><code>--golfy-random-seed</code></td>
+<td>Random seed for golfy (default: 42).</td>
 </tr>
 <tr class="even">
-<td><code>--golfy-init-mode</code></td>
-<td>Initialization mode for golfy (default: greedy).</td>
+<td><code>--golfy-max-iters</code></td>
+<td>Number of maximum iterations for golfy (default: 2000).</td>
+</tr>
+<tr class="odd">
+<td><code>--golfy-strategy</code></td>
+<td>Strategy for golfy. Allowed value (default: greedy).</td>
+</tr>
+<tr class="even">
+<td><code>--golfy-allow-extra-pools</code></td>
+<td>Allow extra pools for golfy (default: False).</td>
 </tr>
 </tbody>
 </table>
-<p><br>The following optional parameters apply when <code>--mode sat_solver</code></p>
+<p><br>The following optional parameters apply when <code>--mode cpsat_solver</code></p>
 <table class="table">
 <colgroup>
 <col style="width: 27%">
@@ -349,102 +382,37 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>--num-processes</code></td>
-<td>Number of processes (default: 4).</td>
+<td><code>--cpsat-solver-num-processes</code></td>
+<td>Number of processes for CP-SAT solver (default: 2).</td>
 </tr>
 <tr class="even">
-<td><code>--num-peptides-per-batch</code></td>
-<td>Number of peptides per batch (default: 100). The SAT-solver divides peptides into the specified number of peptides if the total number of peptides is bigger than the specified number (e.g.&nbsp;220 peptides are divided into 2 batches of 100 peptides and 1 batch of 20 peptides if <code>--num-peptides-per-batch</code> is 100).</td>
+<td><code>--cpsat-solver-shuffle-iters</code></td>
+<td>Number of iterations to shuffle pool IDs to minimize number of non-unique pool assignment violations for CP-SAT solver (default: 1000).</td>
+</tr>
+<tr class="odd">
+<td><code>--cpsat-solver-max-peptides-per-block</code></td>
+<td>Maximum number of peptides per block (default: 100).<br>
+The CPSAT-solver divides peptides into the specified number of peptides if the total number of peptides is bigger than the specified number<br>
+(e.g.&nbsp;220 peptides are divided into 2 blocks of 100 peptides and 1 block of 20 peptides if –max-peptides-per-block is 100).<br>
+Increasing this number from the current default value will likely make the computation intractable so it is recommended that you keep this at 100.</td>
+</tr>
+<tr class="even">
+<td><code>--cpsat-solver-max-peptides-per-pool</code></td>
+<td>Maximum number of peptides per pool (default: 10). Increasing this number from the current default value will likely make the computation intractable so it is recommended that you keep this at 10.</td>
 </tr>
 </tbody>
 </table>
-<section id="quick-example" class="level3">
-<h3 class="anchored" data-anchor-id="quick-example">Quick example</h3>
-<p>In the example below, you want to generate an ELISpot configuration that pools 10 peptides per pool (i.e.&nbsp;well) for a total of 100 unique peptides. You also want to repeat each peptide 3 times (i.e.&nbsp;3x coverage); each peptide will appear in 3 different pools.</p>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<p>In the example below, you want to generate an ELISpot configuration that pools 5 peptides per pool (i.e.&nbsp;well) for a total of 25 unique peptides specified in a file named <a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptide_sequences.xlsx">25peptide_sequences.xlsx</a>. You also want to repeat each peptide 3 times (i.e.&nbsp;3x coverage); each peptide will appear in 3 different pools.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ace</span> generate <span class="dt">\</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--num-peptides</span> 100 <span class="dt">\</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--num-peptides-per-pool</span> 10 <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--peptides-file</span> 25peptide_sequences.xlsx <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--num-peptides-per-pool</span> 5 <span class="dt">\</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--num-coverage</span> 3 <span class="dt">\</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-csv-file</span> 100peptides_10perpool_3x.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The output CSV file <a href="">100peptides_10perpool_3x.csv</a> looks like the following:</p>
-<table class="table">
-<thead>
-<tr class="header">
-<th>coverage_id</th>
-<th>pool_id</th>
-<th>peptide_id</th>
-<th>plate_id</th>
-<th>well_id</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>coverage_1</td>
-<td>pool_1</td>
-<td>peptide_1</td>
-<td>1</td>
-<td>A1</td>
-</tr>
-<tr class="even">
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-</tr>
-<tr class="odd">
-<td>coverage_3</td>
-<td>pool_30</td>
-<td>peptide_100</td>
-<td>1</td>
-<td>B12</td>
-</tr>
-</tbody>
-</table>
-<p>Please note that we have generated several ELISpot configurations that are readily available for download <a href="">here</a>.</p>
-</section>
-<section id="peptides-csv-file" class="level3">
-<h3 class="anchored" data-anchor-id="peptides-csv-file">Peptides CSV file</h3>
-<p>To account for sequence similarity, please specify <code>--peptides-csv-file</code>. The CSV file should look like the following:</p>
-<table class="table">
-<thead>
-<tr class="header">
-<th>peptide_id</th>
-<th>peptide_sequence</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>peptide_1</td>
-<td>SIINFEKL</td>
-</tr>
-<tr class="even">
-<td>…</td>
-<td>…</td>
-</tr>
-<tr class="odd">
-<td>peptide_100</td>
-<td>SYINFEKL</td>
-</tr>
-</tbody>
-</table>
-<p>Please note that each <code>peptide_id</code> should be of the following format:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">peptide_</span><span class="op">&lt;</span>integer<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="how-does-ace-generate-an-elispot-configuration" class="level3">
-<h3 class="anchored" data-anchor-id="how-does-ace-generate-an-elispot-configuration">How does <code>ACE</code> generate an ELISpot configuration?</h3>
-<p>Owing to the inherent computational complexity of searching for a configuration that assigns a unique combination of pool IDs to each peptide, there is a practical upper limit to systematically exploring the search space. For usability purposes, our method employs a two-tiered approach where we first perform a random search with local optimization (<code>golfy</code>). If this approach does not lead to an optimal configuration and if the input parameters are within pratical limits (see below), we perform a systematic search (<code>SAT solver</code>). Based on internal testing, the following table shows which approach is used depending on the input parameters:</p>
-<p><img src="resources/ace_parameter_heuristic.png" class="img-fluid"></p>
-<section id="golfy" class="level4">
-<h4 class="anchored" data-anchor-id="golfy">golfy</h4>
-<p>If <code>--num-peptides-per-pool</code> is greater than 10 or if <code>--num-coverage</code> is greater than 3, we perform local optimization on a randomly generated assignment of peptides to pools. If an optimal configuration (i.e.&nbsp;minimum number of necessary pools) cannot be found in this approach, then additional pools are added to the configuration to ensure that each peptide is assigned to a unique combination of pools.</p>
-</section>
-<section id="sat-solver" class="level4">
-<h4 class="anchored" data-anchor-id="sat-solver">SAT solver</h4>
-<p>If <code>--num-peptides-per-pool</code> is equal to or less than 10 and if <code>--num-coverage</code> is equal to or less than 3, we run a SAT solver to systematically search for an optimal configuration (i.e.&nbsp;minimum number of necessary pools). If <code>--num-peptides</code> or the number of unique peptides in <code>--peptides-csv-file</code> exceeds 100, the <code>SAT solver</code> approach divides the peptides list into groups of 100 to linearly scale the computation time of configuration generation to the number of peptides.</p>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-excel-file</span> 25peptides_5perpool_3x_configuration.xlsx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Running the above example will result in the following output file: <a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx">25peptides_5perpool_3x_configuration.xlsx</a></p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

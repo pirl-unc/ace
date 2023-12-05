@@ -1,0 +1,39 @@
+---
+title: "Developer Notes"
+---
+
+The following command generates the standalone graphical user interface (on Mac):
+
+```bash
+cd gui/
+python -m eel ace_gui.py views \
+    --onefile --noconsole --clean \
+    --icon ace_gui.ico \
+    --name ACE \
+    --copy-metadata tqdm \
+    --copy-metadata regex \
+    --copy-metadata filelock \
+    --copy-metadata requests \
+    --copy-metadata packaging \
+    --copy-metadata numpy \
+    --copy-metadata torch \
+    --add-data "trained_model_w_data_augmentation_b3000.pt:."
+```
+
+The following command generates the standalone graphical user interface (on Windows):
+
+```bash
+cd gui/
+python -m eel ace_gui.py views \
+    --onedir --clean \
+    --icon ace_gui.ico \
+    --name ACE \
+    --copy-metadata tqdm \
+    --copy-metadata regex \
+    --copy-metadata filelock \
+    --copy-metadata requests \
+    --copy-metadata packaging \
+    --copy-metadata numpy \
+    --copy-metadata torch \
+    --add-data "trained_model_w_data_augmentation_b3000.pt;."
+```

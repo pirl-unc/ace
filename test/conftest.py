@@ -38,15 +38,11 @@ def sat_solver_assignment_25pep5per3x() -> BlockAssignment:
         num_peptides_per_pool=5,
         num_coverage=3,
         cluster_peptides=False,
+        sequence_similarity_threshold=0.7,
+        sequence_similarity_function='euclidean',
         trained_model_file='',
         mode='cpsat_solver',
         golfy_random_seed=1
-    )
-    block_design = BlockDesign(
-        peptides=peptides,
-        num_peptides_per_pool=5,
-        num_coverage=3,
-        max_peptides_per_block=25
     )
     is_optimal = block_assignment.is_optimal(
         num_coverage=3,

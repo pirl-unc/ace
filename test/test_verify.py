@@ -5,7 +5,7 @@ from acelib.block_design import BlockDesign
 
 
 def test_verify():
-    excel_file = get_data_path(name='25peptides_5perpool_3x_noseqsim_sat-solver.xlsx')
+    excel_file = get_data_path(name='25peptides_5perpool_3x_configuration.xlsx')
     block_assignment = BlockAssignment.read_excel_file(
         excel_file=excel_file
     )
@@ -16,5 +16,5 @@ def test_verify():
         num_coverage=block_design.num_coverage,
         num_peptides_per_pool=block_design.num_peptides_per_pool
     )
-    assert is_optimal, "'25peptides_5perpool_3x_noseqsim_sat-solver.xlsx' " \
+    assert is_optimal, "'25peptides_5perpool_3x_configuration.xlsx' " \
                        "is an optimal ELISpot assignment."

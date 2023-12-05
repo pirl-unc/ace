@@ -35,11 +35,13 @@ PlateId = int
 PoolId = int
 SpotCount = int
 WellId = str
+SimilarityScore = float
 
 Assignments = Mapping[CoverageId, Mapping[PoolId, Iterable[Tuple[PeptideId, PeptideSequence]]]]
 HitPeptides = Iterable[Tuple[PeptideId, PeptideSequence, PeptideActivityLevel, DeconvolutionLabel, Iterable[PoolId]]]
 Peptides = Iterable[Tuple[PeptideId, PeptideSequence]]
 PeptideIndices = Mapping[PeptideIndex, PeptideId]
 PeptidePairs = Iterable[Tuple[PeptideId, PeptideId]]
+PreferredPeptidePairs = Iterable[Tuple[PeptideId, PeptideId, SimilarityScore]]
 PlateReadoutObservations = Iterable[Tuple[PlateId, WellId, SpotCount]]
 SpotCounts = Mapping[PoolId, SpotCount]

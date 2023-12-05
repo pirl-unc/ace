@@ -19,15 +19,18 @@ requires = [
     "ortools>=9.3.10497",
     "torch",
     "transformers==4.30.2",
+    "scikit-learn",
     "openpyxl",
     "golfy>=2.5.0",
     "Levenshtein"
 ]
 
 [project]
-name = "ace"
-version = "0.1.0.4"
-requires-python = ">=3.7"
+name = "ace-elispot"
+version = "0.1.1.0"
+description = "ELISpot configuration generation and pool spot count deconvolution"
+requires-python = ">=3.10"
+readme = "README.md"
 keywords = [
     "elispot",
     "assay optimization",
@@ -52,3 +55,6 @@ acelib = ["resources/models/*.pt"]
 [project.scripts]
 ace = "acelib.cli.cli_main:run"
 
+[project.urls]
+"Homepage" = "https://github.com/pirl-unc/ace"
+"Bug Tracker" = "https://github.com/pirl-unc/ace"

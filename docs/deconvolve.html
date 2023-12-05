@@ -197,7 +197,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">API</a>
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Notes</a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -205,7 +205,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./python_api.html" class="sidebar-item-text sidebar-link">Python API</a>
+  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link">Developer Notes</a>
   </div>
 </li>
       </ul>
@@ -235,12 +235,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 
 <p>This command deconvolves hit peptides from ELISpot results.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace deconvolve [-h] </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--readout-file-type</span> READOUT_FILE_TYPE </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--readout-files</span> READOUT_FILES </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--configuration-csv-file</span> CONFIGURATION_CSV_FILE </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--min-positive-spot-count</span> MIN_POSITIVE_SPOT_COUNT </span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--output-csv-file</span> OUTPUT_CSV_FILE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace deconvolve [-h]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--readout-file-type</span> READOUT_FILE_TYPE</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--readout-files</span> READOUT_FILES</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--assignment-excel-file</span> ASSIGNMENT_EXCEL_FILE</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--output-excel-file</span> OUTPUT_EXCEL_FILE</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--statistical-deconvolution-method</span> <span class="dt">{em</span><span class="op">,</span><span class="dt">lasso}</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--min-spot-count</span> MIN_SPOT_COUNT]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--min-peptide-activity</span> MIN_PEPTIDE_ACTIVITY]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--verbose</span> VERBOSE]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <table class="table">
 <colgroup>
 <col style="width: 27%">
@@ -255,117 +258,122 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <tbody>
 <tr class="odd">
 <td><code>--readout-file-type</code></td>
-<td>ELISpot read-out file type (allowed options: pool_id, aid_plate_reader).</td>
+<td>ELISpot readout file type (allowed options: pool_id, aid_plate_reader).</td>
 </tr>
 <tr class="even">
 <td><code>--readout-files</code></td>
-<td>ELISpot read-out file(s).<br><br>If the readout-file-type is <code>pool_id</code>, then the expected columns of the CSV file are: <code>pool_id</code>, <code>spot_count</code>.<br><br>If the readout-file-type is <code>aid_plate_reader</code>, then the readout-files are the Excel files from the AID plate reader machine. If there were pools in 2 or more plates, then supply the files in the following order: plate 1 readout file, plate 2 readout file etc.</td>
+<td>ELISpot readout file(s). The expected columns are ‘plate_id’, ‘well_id’, and ‘spot_count’.<br>
+If –readout-file-type is ‘aid_plate_reader’, then the readout-files are the Excel files from the AID plate reader machine.<br>
+If –readout-file type is ‘aid_plate_reader’ and there were pools in 2 or more plates, then supply the files in the following order:<br>
+plate 1 readout file, plate 2 readout file etc.</td>
 </tr>
 <tr class="odd">
-<td><code>--configuration-csv-file</code></td>
-<td>ELISpot configuration CSV file. Expected columns: <code>pool_id</code>, <code>peptide_id</code>, <code>plate_id</code>, <code>well_id</code>.</td>
+<td><code>--assignment-excel-file</code></td>
+<td>ELISpot assignment Excel file. Expected columns: ‘peptide_id’, ‘peptide_sequence’, ‘plate_id’, ‘well_id’ in a sheet named ‘assignment’.</td>
 </tr>
 <tr class="even">
-<td><code>--min-positive-spot-count</code></td>
-<td>Number of spots for a pool to be considered a positive hit.</td>
+<td><code>--output-excel-file</code></td>
+<td>Output deconvolution Excel file.</td>
 </tr>
 <tr class="odd">
-<td><code>--output-csv-file</code></td>
-<td>Output CSV file.</td>
+<td><code>--min-positive-pool-spot-count</code></td>
+<td>Minimum spot count for a pool to be considered a positive pool.</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 72%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Optional Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>--statistical-deconvolution-method</code></td>
+<td>Statistical deconvolution mode (default: em).</td>
+</tr>
+<tr class="even">
+<td><code>--min-peptide-activity</code></td>
+<td>Minimum estimated activity of a peptide to be considered for hit set. This value is used if when ‘–mode em’ or ‘–mode lasso’ (default: 1.0).</td>
+</tr>
+<tr class="odd">
+<td><code>--verbose</code></td>
+<td>If True, prints messages. Otherwise, messages are not printed (default: True).</td>
 </tr>
 </tbody>
 </table>
 <section id="example" class="level3">
 <h3 class="anchored" data-anchor-id="example">Example</h3>
-<p>Let’s say you used the <a href="./generate.html">generate</a> command in <code>ACE</code> to generate an ELISpot configuration for pooling 10 peptides per pool for a total of 100 unique peptides. The configuration also repeated each peptide 3 times (i.e.&nbsp;3x coverage); you created <code>100peptides_10perpool_3x.csv</code>. You took this configuration and successfully ran an ELISpot experiment. Now you want to deconvolve hit peptides. Here we describe how you can achieve this using <code>ACE</code>.</p>
-<section id="aid-plate-reader" class="level4">
-<h4 class="anchored" data-anchor-id="aid-plate-reader">AID Plate Reader</h4>
-<p>If you used a plate reader from AID, we are able to automatically parse the <code>xlsx</code> file from the machine.</p>
-<p><code>elispot_results.xlsx</code>:</p>
-<p><img src="resources/aid_plate_reader_xlsx_example.png" class="img-fluid"></p>
-<p>Deconvolve hit peptides from your ELISpot experiment:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ace</span> deconvolve <span class="dt">\</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-file-type</span> aid_plate_reader <span class="dt">\</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-files</span> /path/elispot_results.xlsx <span class="dt">\</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configuration-csv-file</span> /path/100peptides_10perpool_3x.csv <span class="dt">\</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--min-positive-spot-count</span> 300 <span class="dt">\</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-csv-file</span> ace_deconvolution_results.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
+<p>Let’s say you used the <a href="./generate.html">generate</a> command in <code>ACE</code> to generate an ELISpot configuration for pooling 5 peptides per pool for a total of 25 unique peptides. The configuration also repeated each peptide 3 times (i.e.&nbsp;3x coverage); you created <a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx">25peptides_5perpool_3x_configuration.xlsx</a>. You took this configuration and successfully ran an ELISpot experiment. Now you want to deconvolve hit peptides. Here we describe how you can achieve this using <code>ACE</code>.</p>
 <section id="any-reader" class="level4">
 <h4 class="anchored" data-anchor-id="any-reader">Any Reader</h4>
-<p>You can alternatively supply a generic ELISpot results <code>csv</code> file to <code>ACE</code>:</p>
-<p><code>elispot_results.csv</code>:</p>
+<p>You can supply a generic ELISpot results .xlsx file to <code>ACE</code>:</p>
+<p><a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout.xlsx">25peptides_5perpool_3x_pool-id_readout.xlsx</a>:</p>
 <table class="table">
 <thead>
 <tr class="header">
-<th>pool_id</th>
+<th>plate_id</th>
+<th>well_id</th>
 <th>spot_count</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>pool_1</td>
-<td>300</td>
+<td>1</td>
+<td>A1</td>
+<td>0</td>
 </tr>
 <tr class="even">
+<td>1</td>
+<td>A2</td>
+<td>300</td>
+</tr>
+<tr class="odd">
+<td>…</td>
 <td>…</td>
 <td>…</td>
 </tr>
-<tr class="odd">
-<td>pool_30</td>
+<tr class="even">
+<td>1</td>
+<td>B3</td>
 <td>0</td>
 </tr>
 </tbody>
 </table>
 <p>Deconvolve hit peptides from your ELISpot experiment:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ace</span> deconvolve <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-file-type</span> pool_id <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-files</span> ../test/data/25peptides_5perpool_3x_pool-id_readout.xlsx <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--assignment-excel-file</span> ../test/data/25peptides_5perpool_3x_configuration.xlsx <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--min-positive-pool-spot-count</span> 300 <span class="dt">\</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-excel-file</span> outputs/25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Running the above command results in the following file:</p>
+<p><a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx">25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx</a>:</p>
+</section>
+<section id="aid-plate-reader" class="level4">
+<h4 class="anchored" data-anchor-id="aid-plate-reader">AID Plate Reader</h4>
+<p>If you used a plate reader from AID, we are able to automatically parse the .xlsx file from the machine.</p>
+<p><a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout.xlsx">25peptides_5perpool_3x_aid-plate-reader_readout.xlsx</a>:</p>
+<p><img src="resources/aid_plate_reader_xlsx_example.png" class="img-fluid"></p>
+<p>Deconvolve hit peptides from your ELISpot experiment:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ace</span> deconvolve <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-file-type</span> pool_id <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-files</span> /path/elispot_results.csv <span class="dt">\</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configuration-csv-file</span> /path/100peptides_10perpool_3x.csv <span class="dt">\</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--min-positive-spot-count</span> 300 <span class="dt">\</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-csv-file</span> ace_deconvolution_results.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-file-type</span> aid_plate_reader <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--readout-files</span> 25peptides_5perpool_3x_aid-plate-reader_readout.xlsx <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--assignment-excel-file</span> ../test/data/25peptides_5perpool_3x_configuration.xlsx <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--min-positive-pool-spot-count</span> 300 <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output-excel-file</span> 25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Running the above command results in the following file:</p>
+<p><a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx">25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx</a>:</p>
 </section>
 </section>
 <section id="deconvolution-results" class="level3">
 <h3 class="anchored" data-anchor-id="deconvolution-results">Deconvolution results</h3>
-<p>Here is what <code>ACE</code> deconvolution results look like:</p>
-<table class="table">
-<colgroup>
-<col style="width: 21%">
-<col style="width: 14%">
-<col style="width: 23%">
-<col style="width: 40%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>peptide_id</th>
-<th>pool_ids</th>
-<th>num_coverage</th>
-<th>deconvolution_result</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>peptide_7</td>
-<td>pool_5;pool_9;pool_13</td>
-<td>3</td>
-<td>hit</td>
-</tr>
-<tr class="even">
-<td>…</td>
-<td>…</td>
-<td>…</td>
-<td>…</td>
-</tr>
-<tr class="odd">
-<td>peptide_9</td>
-<td>pool_1;pool_9;pool_14</td>
-<td>3</td>
-<td>candidate_hit</td>
-</tr>
-</tbody>
-</table>
-<p><code>ACE</code> deconvolution identifies two classes of peptides: <code>candidate_hit</code> and <code>hit</code>. Peptides that have the label <code>hit</code> are confident hits (assuming no false positives) because they were present in <code>num_coverage</code> (i.e.&nbsp;3 in the above configuration) number of different pools with at least one unique assignment of hit peptide-pool. On the other hand, peptides that have the label <code>candidate_hit</code> need further validation (i.e.&nbsp;a second round of ELISpot) to determine whether it is indeed a hit peptide.</p>
+<p><code>ACE</code> deconvolution identifies two classes of peptides: <code>confident_hit</code> and <code>candidate_hit</code>. Peptides that have the label <code>confident_hit</code> are confident hits because they were present in <code>num_coverage</code> (i.e.&nbsp;3 in the above configuration) number of different pools with at least one unique assignment of hit peptide-pool. On the other hand, peptides that have the label <code>candidate_hit</code> need further validation (i.e.&nbsp;a second round of ELISpot) to determine whether it is indeed a hit peptide.</p>
 
 
 </section>

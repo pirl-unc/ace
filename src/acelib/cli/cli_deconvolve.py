@@ -75,11 +75,15 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         type=str,
         required=True,
         help="ELISpot assignment Excel file. "
-             "Expected columns: 'pool_id', 'peptide_id', 'peptide_sequence' "
+             "Expected columns: 'peptide_id', 'peptide_sequence', 'plate_id', 'well_id' "
              "in a sheet named 'block_assignment'. "
-             "Expected columns: ''. "
-             "Please note that if --read-out-file-type is aid_plate_reader, "
-             "then the configuration must have these additional columns: 'plate_id', 'well_id'."
+    )
+    parser_required.add_argument(
+        "--min-pool-spot-count",
+        dest="min_pool_spot_count",
+        type=int,
+        required=True,
+        help="Minimum spot count for a pool to be considered a positive pool."
     )
     parser_required.add_argument(
         "--output-excel-file",
@@ -92,31 +96,22 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
     parser_optional.add_argument(
-        "--mode",
-        dest="mode",
+        "--method",
+        dest="method",
         type=str,
-        default=DeconvolveModes.EMPIRICAL,
-        choices=DeconvolveModes.ALL,
+        default=DeconvolutionMethods.CONSTRAINED_EM,
+        choices=DeconvolutionMethods.ALL,
         required=False,
-        help="Deconvolution mode (default: %s)." % DeconvolveModes.EMPIRICAL
+        help="Deconvolution method (default: %s)." % DeconvolutionMethods.CONSTRAINED_EM
     )
-    parser_optional.add_argument(
-        "--min-spot-count",
-        dest="min_spot_count",
-        type=int,
-        default=300,
-        required=False,
-        help="Number of spots for a pool to be considered a positive hit."
-    )
-    parser_optional.add_argument(
-        "--min-peptide-activity",
-        dest="min_peptide_activity",
-        type=float,
-        default=DECONVOLVE_MIN_PEPTIDE_ACTIVITY,
-        required=False,
-        help="Minimum estimated activity of a peptide to be considered for hit set. "
-             "This value is used if when '--mode em' or '--mode lasso' (default: %f)." % DECONVOLVE_MIN_PEPTIDE_ACTIVITY
-    )
+    # parser_optional.add_argument(
+    #     "--min-peptide-spot-count",
+    #     dest="min_peptide_spot_count",
+    #     type=float,
+    #     default=DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT,
+    #     required=False,
+    #     help="Minimum estimated spot count for a peptide to be considered a hit (default: %f)." % DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT
+    # )
     parser_optional.add_argument(
         "--verbose",
         dest="verbose",
@@ -140,27 +135,26 @@ def run_ace_deconvolve_from_parsed_args(args):
                 readout_file_type
                 readout_files
                 assignment_excel_file
-                min_positive_spot_count
+                min_positive_pool_spot_count
                 output_excel_file
-                mode
+                statistical_deconvolution_method
     """
     # Step 1. Load the original block assignment and design data
     block_assignment = BlockAssignment.read_excel_file(excel_file=args.assignment_excel_file)
     block_design = BlockDesign.read_excel_file(excel_file=args.assignment_excel_file)
 
     # Step 2. Load the readout data
+    df_assignment = block_assignment.to_dataframe()
     if args.readout_file_type == ReadoutFileTypes.POOL_IDS:
-        df_readout = pd.read_excel(args.readout_files[0])
+        file_name, file_extension = os.path.splitext(args.readout_files[0])
+        if file_extension == '.xlsx':
+            df_readout = pd.read_excel(args.readout_files[0])
+        elif file_extension == '.csv':
+            df_readout = pd.read_csv(args.readout_files[0])
+        else:
+            logger.error("--readout-files must be either a .CSV or .XLSX file. Expected headers: 'plate_id', 'well_id', and 'spot_count'.")
+            exit(1)
     elif args.readout_file_type == ReadoutFileTypes.AID_PLATE_READER:
-        df_assignment = block_assignment.to_dataframe()
-        if 'plate_id' not in df_assignment.columns.values.tolist():
-            logger.error("The column 'plate_id' must be present in the Excel assignment file "
-                         "if you supply AID plate reader XLSX readout file(s) for deconvolution.")
-            exit(1)
-        if 'well_id' not in df_assignment.columns.values.tolist():
-            logger.error("The column 'well_id' must be present in the Excel assignment file "
-                         "if you supply AID plate reader XLSX readout file(s) for deconvolution.")
-            exit(1)
         plate_readouts = []
         plate_id = 1
         for file in args.readout_files:
@@ -172,20 +166,55 @@ def run_ace_deconvolve_from_parsed_args(args):
         plate_readout = PlateReadout.merge(plate_readouts=plate_readouts)
         df_readout = pd.merge(df_assignment, plate_readout.to_dataframe(), on=['plate_id', 'well_id'])
 
-    # Step 3. Perform deconvolution
+    # Step 3. Get pool IDs
+    pool_ids = []
+    well_ids_dict = {}  # key   = <pool_id>
+                        # value = <plate_id>-<well_id>
+    for index, row in df_readout.iterrows():
+        curr_plate_id = row['plate_id']
+        curr_well_id = row['well_id']
+        curr_pool_id = df_assignment.loc[
+            (df_assignment['plate_id'] == curr_plate_id) &
+            (df_assignment['well_id'] == curr_well_id),'pool_id'].values[0]
+        pool_ids.append(curr_pool_id)
+        well_ids_dict[curr_pool_id] = '%s-%s' % (curr_plate_id, curr_well_id)
+    df_readout['pool_id'] = pool_ids
+
+    # Step 4. Perform deconvolution
     deconvolution_result = run_ace_deconvolve(
         df_readout=df_readout,
         block_assignment=block_assignment,
-        mode=args.mode,
-        statistical_min_peptide_activity=args.min_peptide_activity,
-        empirical_min_coverage=block_design.num_coverage,
-        empirical_min_spot_count=args.min_spot_count,
+        method=args.method,
+        min_coverage=block_design.num_coverage,
+        min_pool_spot_count=args.min_pool_spot_count,
         verbose=args.verbose
     )
 
-    # Step 4. Write to an Excel file
-    deconvolution_result.to_dataframe().to_excel(
+    # Step 5. Convert pool IDs to well IDs
+    data = {
+        'peptide_id': [],
+        'peptide_sequence': [],
+        'estimated_peptide_spot_count': [],
+        'hit_well_ids': [],
+        'hit_well_ids_count': [],
+        'deconvolution_result': []
+    }
+    for index, row in deconvolution_result.to_dataframe().iterrows():
+        well_ids = []
+        for curr_pool_id in row['hit_pool_ids'].split(';'):
+            if curr_pool_id != '':
+                well_ids.append(well_ids_dict[int(curr_pool_id)])
+        data['peptide_id'].append(row['peptide_id'])
+        data['peptide_sequence'].append(row['peptide_sequence'])
+        data['estimated_peptide_spot_count'].append(row['estimated_peptide_spot_count'])
+        data['hit_well_ids'].append(','.join(well_ids))
+        data['hit_well_ids_count'].append(len(well_ids))
+        data['deconvolution_result'].append(row['deconvolution_result'])
+    df_results = pd.DataFrame(data)
+
+    # Step 5. Write to an Excel file
+    df_results.to_excel(
         args.output_excel_file,
-        sheet_name='deconvolved',
+        sheet_name='deconvolution_results',
         index=False
     )

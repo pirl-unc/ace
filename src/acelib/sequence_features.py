@@ -21,9 +21,9 @@ import numpy as np
 import pandas as pd
 import torch.nn as nn
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
 from .logger import get_logger
 import Levenshtein as levenshtein
+
 
 logger = get_logger(__name__)
 

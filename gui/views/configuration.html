@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACE</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="res/logo_ace_white_background.svg">
+    <script src="js/bootstrap.bundle.js"></script>
+    <script type="text/javascript" src="generate.js"></script>
+    <script src="js/read-excel-file.min.js"></script>
+</head>
+
+<body style="background-color: var(--body-background-color);">
+<nav class="navbar navbar-expand-lg bg-light fixed-top" style="var(--navbar-color);">
+    <div class="container-fluid">
+        <ul class="navbar-nav mx-auto">
+            <a class="navbar-brand d-none d-md-block" href="index.html">
+                <img src="res/logo_ace_square.svg" alt="">
+            </a>
+            <li class="nav-item">
+                <a class="nav-link" href="generate.html">Generate</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="deconvolve.html">Deconvolve</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">FAQ</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="container-fluid mb-5 mt-10" id="generate-processing">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <h1 class="text-center">Please wait while ACE generates<br/>your ELISpot configuration</h1>
+            <h3 class="text-center"><i>(This could take a while...)</i></h3>
+            <div class="dot-pulse mt-5"></div>
+            <h3 class="mt-5">Input Parameters</h3>
+            <div class="container border shadow-sm p-3 bg-white rounded mt-1">
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Number of peptides</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-num-peptides">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Number of peptides per pool</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-num-peptides-per-pool">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Coverage (number of technical replicates)</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-num-coverage">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Assign plate/well IDs</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-plate-size">96 wells</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Cluster peptides?</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-cluster-peptides">yes</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Sequence similarity function</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-sequence-similarity-fxn">Euclidean</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Sequence similarity threshold</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-sequence-similarity-threshold">0.8</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Maximum number of iterations</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-max-iters">2000</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Initialization strategy</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-init-strategy">greedy</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Allow extra pools</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="processing-allow-extra">no</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid mb-5 mt-10" id="generate-output" style="display: none;">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <h1 class="text-center">Your ELISpot Configuration</h1>
+            <div class="container border shadow-sm p-3 bg-white rounded mt-5">
+                <button class="btn btn-primary" style="float: right;" onclick="saveToCsvFile()">Save</button>
+                <h3 class="p-0 m-0">Peptide-Pool Assignment</h3>
+                <div class="col-md-12 mt-3" style="width:100%;overflow:auto; max-height:20rem;">
+                    <table class="table table-bordered table-hover mb-0" id="assignment-table">
+                        <thead>
+                        <tr>
+                            <th class="text-center col-1">#</th>
+                            <th class="text-center col-2">Peptide ID</th>
+                            <th class="text-center col-4">Peptide Sequence</th>
+                            <th class="text-center col-2">Pool ID</th>
+                            <th class="text-center col-1">Plate ID</th>
+                            <th class="text-center col-2">Well ID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">NVYPFRVPR</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A1</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">2</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">2</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">YHDAAIEAH</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">2</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A2</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">3</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">3</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">WTPAIFMCH</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">3</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A3</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">4</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">4</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">QVNMPMCHM</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">4</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A4</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">5</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">5</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">ESFDSEETS</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">5</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A5</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">6</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">6</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">VGQSSFCMM</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">6</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A6</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">7</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">7</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">VIVQLTVTF</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">7</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A7</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">8</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">8</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto" style="font-family:monospace;">SSLYQCYLC</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">8</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">1</p>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <p class="text-center my-auto">A8</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container border shadow-sm p-3 bg-white rounded mt-5">
+                <h3>Input Parameters</h3>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Number of peptides</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-num-peptides">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Number of peptides per pool</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-num-peptides-per-pool">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Coverage (number of technical replicates)</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-num-coverage">0</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Assign plate/well IDs</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-plate-size">96 wells</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Cluster peptides?</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-cluster-peptides">yes</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Sequence similarity function</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-sequence-similarity-fxn">Euclidean</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Sequence similarity threshold</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-sequence-similarity-threshold">0.8</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Maximum number of iterations</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-max-iters">2000</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Initialization strategy</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-init-strategy">greedy</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="my-0">Allow extra pools</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="my-0" id="output-allow-extra">no</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

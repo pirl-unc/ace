@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACE</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-icons-1.3.0/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="res/logo_ace_white_background.svg">
+    <script src="js/bootstrap.bundle.js"></script>
+    <script src="js/jquery-3.7.0.min.js"></script>
+    <script src="js/jszip.js"></script>
+    <script src="js/xlsx.full.min.js"></script>
+    <script src="js/read-excel-file.min.js"></script>
+    <script src="common.js"></script>
+    <script type="text/javascript" src="generate.js"></script>
+    <script>
+        $(function () {
+          $('[data-toggle="popover"]').popover()
+        })
+    </script>
+</head>
+
+<body style="background-color: var(--body-background-color);">
+<nav class="navbar navbar-expand-lg bg-light fixed-top" style="var(--navbar-color);">
+    <div class="container-fluid">
+        <ul class="navbar-nav mx-auto">
+            <a class="navbar-brand d-none d-md-block" href="index.html">
+                <img src="res/logo_ace_square.svg" alt="">
+            </a>
+            <li class="nav-item">
+                <a class="nav-link" href="generate.html">Generate</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="deconvolve.html">Deconvolve</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="about.html">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="faq.html">FAQ</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid mb-5 mt-10" id="div-input">
+    <div class="row justify-content-center mt-5">
+        <div class="col-6">
+            <h1 class="text-center">About ACE</h1>
+            <div class="container mt-5">
+                <p class="m-0 p-0" style="text-align: justify;">
+                    Software programs have been used to streamline efficiency and make the intractable possible in fields such as biology,
+                    astronomy, and physics since the mid 1900s, with a notable example being the use of the SDS910 in particle physics experiments.
+                    In the high-throughput ELISpot space, computational methods have been used to design combinatorially optimized pools of peptides
+                    to facilitate epitope screening of thousands of candidate peptides. ACE is a novel method that uses deep learning methods to
+                    cluster similar peptides, increasing assay efficiency while simultaneously lowering variance in a number of real-world datasets.
+                    A visual explanation of the ACE method is shown below:
+                </p>
+                <div class="row mt-5">
+                    <img src="res/ace_figure.png" alt="ACE figure">
+                </div>
+                <h3 class="mt-5">Generate</h3>
+                <p style="text-align: justify;">
+                    ACE’s ‘generate’ function is used to assign peptides to pools. It requires several parameters such as the total number of peptides,
+                    number of desired peptides per pool, and number of technical replicates (coverage). ACE starts from a randomly mapped assignment
+                    and then attempts to heuristically transform the random design into a valid partially-balanced-incomplete block design (PBIBD) by
+                    iteratively swapping peptides which violate non-overlap constraints. If peptide sequences are supplied, ACE uses its fine-tuned
+                    ESM-2 model to compute pairwise similarities between the peptide sequences and groups the pairs that have a similarity greater
+                    than the threshold specified. The pooled ELISpot design generation outputs a tabular spreadsheet with peptide IDs, peptide sequences
+                    well as plate and well IDs for usability at the bench-side .</p>
+                <h3 class="mt-5">Deconvolve</h3>
+                <p style="text-align: justify;">
+                    ACE provides two methods for positive peptide identification. The first method is empirical deconvolution of peptides using pool-level
+                    positivity criteria to identify peptides from the union of positive pools. ACE supports various ‘empirical rules’ for determining immunogenicity
+                    and accepts a user-supplied minimum threshold for a pool to be considered positive. The second method offered by ACE is statistical deconvolution
+                    that allows the direct inference of peptide-level activities from pooled spot count values. ACE implements the Expectation Maximization algorithm
+                    for deconvolution as well as a Lasso regression method which we selected for its propensity to identify sparse vector solutions.
+                </p>
+                <p class="mt-5 mb-0 mx-0 p-0" style="text-align: justify;">The full preprint can be found <a href="https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1" style="color: #ee2a7b;">here</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

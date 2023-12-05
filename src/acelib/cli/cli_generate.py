@@ -69,10 +69,10 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Total number of peptides."
     )
     parser_required_mutually_exclusive.add_argument(
-        "--peptides-excel-file",
-        dest="peptides_excel_file",
+        "--peptides-file",
+        dest="peptides_file",
         type=str,
-        help="Peptides Excel file with the following columns: "
+        help="Peptides CSV or Excel file with the following columns: "
              "'peptide_id', 'peptide_sequence'. Please note that only "
              "either this parameter or '--num-peptides' can be supplied."
     )
@@ -96,11 +96,20 @@ def add_ace_generate_arg_parser(sub_parsers):
         dest="output_excel_file",
         type=str,
         required=True,
-        help="Output assignment Excel file."
+        help="Output Excel (.xlsx) file."
     )
 
     # Optional arguments
     parser_optional = parser.add_argument_group('optional arguments')
+    parser_optional.add_argument(
+        "--plate-size",
+        dest="plate_size",
+        type=int,
+        default=PlateWells.WELLS_96,
+        required=False,
+        help="Number of wells on plate. Allowed values: %s (default: %i)." %
+             (', '.join([str(i) for i in PlateWells.ALL]), PlateWells.WELLS_96)
+    )
     parser_optional.add_argument(
         "--mode",
         dest="mode",
@@ -108,24 +117,8 @@ def add_ace_generate_arg_parser(sub_parsers):
         default=GenerateModes.GOLFY,
         choices=GenerateModes.ALL,
         required=False,
-        help="Configuration generation mode (default: %s)." % GenerateModes.GOLFY
-    )
-    parser_optional.add_argument(
-        "--assign-well-ids",
-        dest="assign_well_ids",
-        type=bool,
-        default=True,
-        required=False,
-        help="If true, assigns plate and well IDs for each pool ID (default: true)."
-    )
-    parser_optional.add_argument(
-        "--num-plate-wells",
-        dest="num_plate_wells",
-        type=int,
-        default=PlateWells.WELLS_96,
-        required=False,
-        help="Number of wells on plate. Allowed values: %s (default: %s)." %
-             (', '.join([str(i) for i in PlateWells.ALL]), PlateWells.WELLS_96)
+        help="Configuration generation mode. Allowed values: %s (default: %s)." %
+             (', '.join(GenerateModes.ALL), GenerateModes.GOLFY)
     )
     parser_optional.add_argument(
         "--sequence-similarity-threshold",
@@ -143,7 +136,8 @@ def add_ace_generate_arg_parser(sub_parsers):
         default=GENERATE_SEQUENCE_SIMILARITY_FUNCTION,
         required=False,
         choices=SequenceSimilarityFunctions.ALL,
-        help="Sequence similarity function (default: %s)." % GENERATE_SEQUENCE_SIMILARITY_FUNCTION
+        help="Sequence similarity function. Allowed values: %s (default: %s)." %
+             (', '.join(SequenceSimilarityFunctions.ALL), GENERATE_SEQUENCE_SIMILARITY_FUNCTION)
     )
     parser_optional.add_argument(
         "--cluster-peptides",
@@ -154,6 +148,7 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Cluster peptides if set to true (default: true)."
     )
 
+    # Golfy optional parameters
     parser_optional_golfy = parser.add_argument_group("optional arguments (applies when '--mode golfy')")
     parser_optional_golfy.add_argument(
         "--golfy-random-seed",
@@ -178,7 +173,7 @@ def add_ace_generate_arg_parser(sub_parsers):
         default=GENERATE_GOLFY_STRATEGY,
         choices=GolfyStrategies.ALL,
         required=False,
-        help="Strategy for golfy (default: %s)." % GENERATE_GOLFY_STRATEGY
+        help="Strategy for golfy. Allowed value (default: %s)." % GENERATE_GOLFY_STRATEGY
     )
     parser_optional_golfy.add_argument(
         "--golfy-allow-extra-pools",
@@ -190,6 +185,7 @@ def add_ace_generate_arg_parser(sub_parsers):
         help="Allow extra pools for golfy (default: %r)." % GENERATE_GOLFY_ALLOW_EXTRA_POOLS
     )
 
+    # CP-SAT solver optional parameters
     parser_optional_sat_solver = parser.add_argument_group("optional arguments (applies when '--mode cpsat_solver')")
     parser_optional_sat_solver.add_argument(
         "--cpsat-solver-num-processes",
@@ -257,14 +253,13 @@ def run_ace_generate_from_parsed_args(args):
     args    :   argparse.ArgumentParser object
                 with the following variables:
                 num_peptides
-                peptides_excel_file
+                peptides_file
                 design_csv_file
                 num_peptides_per_pool
                 num_coverage
                 output_excel_file
                 mode
-                assign_well_ids
-                num_plate_wells
+                plate_size
                 sequence_similarity_function
                 sequence_similarity_threshold
                 golfy_random_seed
@@ -278,8 +273,15 @@ def run_ace_generate_from_parsed_args(args):
                 verbose
     """
     # Step 1. Load peptide data
-    if args.peptides_excel_file is not None:
-        peptides = convert_dataframe_to_peptides(df_peptides=pd.read_excel(args.peptides_excel_file))
+    if args.peptides_file is not None:
+        file_name, file_extension = os.path.splitext(args.peptides_file)
+        if file_extension == '.xlsx':
+            peptides = convert_dataframe_to_peptides(df_peptides=pd.read_excel(args.peptides_file))
+        elif file_extension == '.csv':
+            peptides = convert_dataframe_to_peptides(df_peptides=pd.read_csv(args.peptides_file))
+        else:
+            logger.error("--peptides-file must be either a .CSV or .XLSX file. Expected headers: 'peptide_id' and 'peptide_sequence'.")
+            exit(1)
         cluster_peptides = args.cluster_peptides
     else:
         peptides = []
@@ -310,16 +312,19 @@ def run_ace_generate_from_parsed_args(args):
         cpsat_solver_shuffle_iters=args.cpsat_solver_shuffle_iters,
         cpsat_solver_max_peptides_per_block=args.cpsat_solver_max_peptides_per_block,
         cpsat_solver_max_peptides_per_pool=args.cpsat_solver_max_peptides_per_pool,
-        assign_well_ids=args.assign_well_ids,
-        num_plate_wells=args.num_plate_wells,
+        plate_size=args.plate_size,
         verbose=args.verbose
     )
 
     # Step 4. Write design and assignment to an Excel file
-    df_design = block_design.to_dataframe()
     df_assignment = block_assignment.to_dataframe()
-    writer = pd.ExcelWriter(args.output_excel_file, engine='openpyxl')
-    df_design.to_excel(writer, sheet_name='block_design', index=False)
-    df_assignment.to_excel(writer, sheet_name='block_assignment', index=False)
-    writer.save()
+    df_assignment_bench_ready = block_assignment.to_bench_ready_dataframe()
+    df_assignment.drop('coverage_id', axis=1, inplace=True)
+    df_assignment.drop('pool_id', axis=1, inplace=True)
+    with pd.ExcelWriter(args.output_excel_file, engine='openpyxl') as writer:
+        df_assignment.to_excel(writer, sheet_name='assignment', index=False)
+        df_assignment_bench_ready.to_excel(writer, sheet_name='assignment_bench_ready', index=False)
+        block_design.peptides_dataframe.to_excel(writer, sheet_name='peptides', index=False)
+        block_design.preferred_peptide_pairs_dataframe.to_excel(writer, sheet_name='preferred_peptide_pairs', index=False)
+        block_design.metadata_dataframe.to_excel(writer, sheet_name='parameters', index=False)
 

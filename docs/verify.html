@@ -186,7 +186,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./identify.html" class="sidebar-item-text sidebar-link">identify</a>
+  <a href="./deconvolve.html" class="sidebar-item-text sidebar-link">deconvolve</a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -207,6 +207,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./python_api.html" class="sidebar-item-text sidebar-link">Python API</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Notes</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./developer_notes.html" class="sidebar-item-text sidebar-link">Developer Notes</a>
   </div>
 </li>
       </ul>
@@ -240,12 +255,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><p>The configuration has the minimum number of necessary pools: <span class="math display">\[ n_{pools} = \frac{n_{peptides}}{n_{peptides\;per\;pool}} \cdot n_{coverage} \]</span></p></li>
 <li><p>Each peptide belongs to a unique combination of pool (well) IDs.</p></li>
 <li><p>Each peptide belongs to <span class="math inline">\(n_{coverage}\)</span> different pool (well) IDs.</p></li>
-<li><p>All peptide pairs that are similar (above a certain threshold based on a sequence similarity criterion) are pooled together in exactly one pool.</p></li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace verify [-h] </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--configuration-csv-file</span> CONFIGURATION_CSV_FILE </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--num-peptides-per-pool</span> NUM_PEPTIDES_PER_POOL </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--num-coverage</span> NUM_COVERAGE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ace verify [-h] <span class="at">--assignment-excel-file</span> ASSIGNMENT_EXCEL_FILE</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">required</span> arguments:</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--assignment-excel-file</span> ASSIGNMENT_EXCEL_FILE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <table class="table">
 <colgroup>
 <col style="width: 23%">
@@ -259,21 +273,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>--configuration-csv-file</code></td>
-<td>ELISpot configuration CSV file. Expected columns: <code>coverage_id</code>, <code>pool_id</code>, <code>peptide_id</code>.</td>
-</tr>
-<tr class="even">
-<td><code>--num-peptides-per-pool</code></td>
-<td>Number of peptides per pool.</td>
-</tr>
-<tr class="odd">
-<td><code>--num-coverage</code></td>
-<td>Total coverage (i.e.&nbsp;number of peptide replicates).</td>
+<td><code>--assignment-excel-file</code></td>
+<td>ELISpot assignment Excel file. The following columns are expected to be present in a sheet named ‘assignment’: ‘plate_id’, ‘well_id’, ‘peptide_id’, ‘peptide_sequence’. The following columns are expected to be present in a sheet named ‘parameters’: ‘num_coverage’, ‘num_peptides_per_pool’.</td>
 </tr>
 </tbody>
 </table>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ace</span> verify <span class="at">--assignment-excel-file</span> 25peptides_5perpool_3x_configuration.xlsx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>An example configuration file can be found below:</p>
+<p><a href="https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx">25peptides_5perpool_3x_configuration.xlsx</a></p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

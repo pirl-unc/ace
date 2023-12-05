@@ -5,103 +5,79 @@ title: "generate"
 This command generates an ELISpot experiment configuration.
 
 ```bash
-usage: ace generate [-h] 
-  (--num-peptides NUM_PEPTIDES | --peptides-csv-file PEPTIDES_CSV_FILE)
-  --num-peptides-per-pool NUM_PEPTIDES_PER_POOL
-  --num-coverage NUM_COVERAGE
-  --output-csv-file OUTPUT_CSV_FILE
-  [--mode {golfy,sat_solver}]
-  [--assign-well-ids ASSIGN_WELL_IDS]
-  [--plate-type PLATE_TYPE]
-  [--random-seed RANDOM_SEED]
-  [--golfy-max-iters GOLFY_MAX_ITERS]
-  [--golfy-init-mode {greedy,random}]
-  [--num-processes NUM_PROCESSES]
-  [--num-peptides-per-batch NUM_PEPTIDES_PER_BATCH]
+usage: ace generate [-h]
+    (--num-peptides NUM_PEPTIDES | --peptides-file PEPTIDES_FILE)
+    --num-peptides-per-pool NUM_PEPTIDES_PER_POOL
+    --num-coverage NUM_COVERAGE
+    --output-excel-file OUTPUT_EXCEL_FILE
+    [--plate-size PLATE_SIZE]
+    [--mode {golfy,cpsat_solver}]
+    [--sequence-similarity-threshold SEQUENCE_SIMILARITY_THRESHOLD]
+    [--sequence-similarity-function {cosine,euclidean,levenshtein}]
+    [--cluster-peptides CLUSTER_PEPTIDES]
+    [--golfy-random-seed GOLFY_RANDOM_SEED]
+    [--golfy-max-iters GOLFY_MAX_ITERS]
+    [--golfy-strategy {greedy,random,valid,singleton,repeat}]
+    [--golfy-allow-extra-pools {True,False}]
+    [--cpsat-solver-num-processes CPSAT_SOLVER_NUM_PROCESSES]
+    [--cpsat-solver-shuffle-iters CPSAT_SOLVER_SHUFFLE_ITERS]
+    [--cpsat-solver-max-peptides-per-block CPSAT_SOLVER_MAX_PEPTIDES_PER_BLOCK]
+    [--cpsat-solver-max-peptides-per-pool CPSAT_SOLVER_MAX_PEPTIDES_PER_POOL]
+    [--verbose VERBOSE]
 ```
 
 | Required Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
 | `--num-peptides`           | Total number of peptides.                                              |
-| `--peptides-csv-file`      | Peptides CSV file with the following expected columns: `peptide_id`, `peptide_sequence`. Please note that only either this parameter or `--num-peptides` can be supplied. |
+| `--peptides-file`          | Peptides file (.csv or .xlsx) with the following expected columns: `peptide_id`, `peptide_sequence`. Please note that only either this parameter or `--num-peptides` can be supplied. An example .xlsx file can be found [here](https://github.com/pirl-unc/ace/blob/main/test/data/25peptide_sequences.xlsx)|
 | `--num-peptides-per-pool`  | Number of peptides per pool                                            |
-| `--num-coverage`           | Coverage (i.e. number of peptide replicates; recommended: 3).          |
-| `--output-csv-file`        | Output CSV file.                                                       |
+| `--num-coverage`           | Coverage (i.e. number of peptide replicates).                          |
+| `--output-excel-file`      | Output Excel (.xlsx) file.                                             |
 
 | Optional Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
-| `--mode`                   | Configuration generation mode (default: golfy).                        |
-| `--assign-well-ids`        | If true, assigns plate and well IDs for each pool ID (default: true).  |
-| `--plate-type`             | Plate type. Allowed values: `96-well_plate` (default: `96-well_plate`).|
-| `--random-seed`            | Random seed (default: 1).                                              |
+| `--plate-size`             | Number of wells on plate. Allowed values: 24, 48, 96, 384 (default: 96). |
+| `--mode`                   | Configuration generation mode. Allowed values: golfy, cpsat_solver (default: golfy). |
+| `--sequence-similarity-threshold` | Sequence similarity threshold (default: 0.7). A higher threshold leads to more stringent peptide pairing. |
+| `--sequence-similarity-function`  | Sequence similarity function. Allowed values: cosine, euclidean, levenshtein (default: euclidean). |
+| `--cluster-peptides`       | Cluster peptides if set to true (default: true).                       |
+| `--verbose` | If True, prints messages. Otherwise, messages are not printed (default: True). |
 
 <br/>The following optional parameters apply when `--mode golfy`
 
 | Optional Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
-| `--golfy-max-iters`        | Number of maximum iterations for golfy (default: 1000).                |
-| `--golfy-init-mode`        | Initialization mode for golfy (default: greedy).                       |
+| `--golfy-random-seed`      | Random seed for golfy (default: 42).                                   |
+| `--golfy-max-iters`        | Number of maximum iterations for golfy (default: 2000).                |
+| `--golfy-strategy`         | Strategy for golfy. Allowed value (default: greedy).                   |
+| `--golfy-allow-extra-pools` | Allow extra pools for golfy (default: False).                         |
 
-<br/>The following optional parameters apply when `--mode sat_solver`
+<br/>The following optional parameters apply when `--mode cpsat_solver`
 
 | Optional Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
-| `--num-processes`          | Number of processes (default: 4).                                      |
-| `--num-peptides-per-batch` | Number of peptides per batch (default: 100). The SAT-solver divides peptides into the specified number of peptides if the total number of peptides is bigger than the specified number (e.g. 220 peptides are divided into 2 batches of 100 peptides and 1 batch of 20 peptides if `--num-peptides-per-batch` is 100). |
+| `--cpsat-solver-num-processes`    | Number of processes for CP-SAT solver (default: 2).             |
+| `--cpsat-solver-shuffle-iters`    | Number of iterations to shuffle pool IDs to minimize number of non-unique pool assignment violations for CP-SAT solver (default: 1000). |
+| `--cpsat-solver-max-peptides-per-block` | Maximum number of peptides per block (default: 100). \
+The CPSAT-solver divides peptides into the specified number of peptides if the total number of peptides is bigger than the specified number \
+(e.g. 220 peptides are divided into 2 blocks of 100 peptides and 1 block of 20 peptides if --max-peptides-per-block is 100). \
+Increasing this number from the current default value will likely make the computation intractable so it is recommended that you keep this at 100. |
+| `--cpsat-solver-max-peptides-per-pool` | Maximum number of peptides per pool (default: 10). Increasing this number from the current default value will likely make the computation intractable so it is recommended that you keep this at 10. |
 
-
-### Quick example
+### Example
 
 In the example below, you want to generate an ELISpot configuration that 
-pools 10 peptides per pool (i.e. well) for a total of 100 unique peptides. 
-You also want to repeat each peptide 3 times (i.e. 3x coverage); each peptide 
-will appear in 3 different pools.
+pools 5 peptides per pool (i.e. well) for a total of 25 unique peptides specified in a
+file named [25peptide_sequences.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptide_sequences.xlsx).
+You also want to repeat each peptide 3 times (i.e. 3x coverage); each peptide will appear in 3 different pools.
 
 ```bash
 ace generate \
-  --num-peptides 100 \
-  --num-peptides-per-pool 10 \
+  --peptides-file 25peptide_sequences.xlsx \
+  --num-peptides-per-pool 5 \
   --num-coverage 3 \
-  --output-csv-file 100peptides_10perpool_3x.csv
+  --output-excel-file 25peptides_5perpool_3x_configuration.xlsx
 ```
 
-The output CSV file [100peptides_10perpool_3x.csv]() looks like the following:
-
-| coverage_id | pool_id | peptide_id  | plate_id | well_id |
-|-------------|---------|-------------|----------|---------|
-| coverage_1  | pool_1  | peptide_1   | 1        | A1      |
-| ...         | ...     | ...         | ...      | ...     |
-| coverage_3  | pool_30 | peptide_100 | 1 | B12     |
-
-Please note that we have generated several ELISpot configurations that are readily 
-available for download [here]().
-
-### Peptides CSV file
-
-To account for sequence similarity, please specify `--peptides-csv-file`. The CSV file should look like the following:
-
-| peptide_id | peptide_sequence |
-| ---------- | ---------------- |
-| peptide_1  | SIINFEKL         |
-| ...        | ...              |
-| peptide_100 | SYINFEKL        |
-
-Please note that each `peptide_id` should be of the following format:
-
-```bash
-peptide_<integer>
-```
-
-### How does `ACE` generate an ELISpot configuration? 
-
-Owing to the inherent computational complexity of searching for a configuration that assigns a unique combination of pool IDs to each peptide, there is a practical upper limit to systematically exploring the search space. For usability purposes, our method employs a two-tiered approach where we first perform a random search with local optimization (`golfy`). If this approach does not lead to an optimal configuration and if the input parameters are within pratical limits (see below), we perform a systematic search (`SAT solver`). Based on internal testing, the following table shows which approach is used depending on the input parameters:
-
-![](resources/ace_parameter_heuristic.png)
-
-#### golfy
-
-If `--num-peptides-per-pool` is greater than 10 or if `--num-coverage` is greater than 3, we perform local optimization on a randomly generated assignment of peptides to pools. If an optimal configuration (i.e. minimum number of necessary pools) cannot be found in this approach, then additional pools are added to the configuration to ensure that each peptide is assigned to a unique combination of pools.
-
-#### SAT solver
-
-If `--num-peptides-per-pool` is equal to or less than 10 and if `--num-coverage` is equal to or less than 3, we run a SAT solver to systematically search for an optimal configuration (i.e. minimum number of necessary pools). If `--num-peptides` or the number of unique peptides in `--peptides-csv-file` exceeds 100, the `SAT solver` approach divides the peptides list into groups of 100 to linearly scale the computation time of configuration generation to the number of peptides.
+Running the above example will result in the following output file:
+[25peptides_5perpool_3x_configuration.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_configuration.xlsx)

@@ -88,13 +88,13 @@ class BlockAssignment:
             self.assignments[coverage][pool] = []
         self.assignments[coverage][pool].append((peptide_id, peptide_sequence))
 
-    def assign_well_ids(self, num_plate_wells: int):
+    def assign_well_ids(self, plate_size: int):
         """
         Assigns plate and well IDs to an ELISpot configuration.
 
         Parameters
         ----------
-        num_plate_wells     :   Number of wells on plate (allowed values: 24, 48, 96, 384).
+        plate_size     :   Number of wells on plate (allowed values: 24, 48, 96, 384).
         """
         # Step 1. Clear the current self.plate_ids
         self.plate_ids = {} # key = pool ID, value = (plate ID, well ID)
@@ -118,31 +118,31 @@ class BlockAssignment:
             return ['%s%s' % (i[0], i[1]) for i in list(product(row_prefixes, col_prefixes))]
 
         curr_plate_id = 1
-        if num_plate_wells == PlateWells.WELLS_24:
+        if plate_size == PlateWells.WELLS_24:
             curr_well_ids = get_24_well_ids()
-        elif num_plate_wells == PlateWells.WELLS_48:
+        elif plate_size == PlateWells.WELLS_48:
             curr_well_ids = get_48_well_ids()
-        elif num_plate_wells == PlateWells.WELLS_96:
+        elif plate_size == PlateWells.WELLS_96:
             curr_well_ids = get_96_well_ids()
-        elif num_plate_wells == PlateWells.WELLS_384:
+        elif plate_size == PlateWells.WELLS_384:
             curr_well_ids = get_384_well_ids()
         else:
-            logger.error('Unsupported number of wells: %i' % num_plate_wells)
+            logger.error('Unsupported number of wells: %i' % plate_size)
             exit(1)
 
         # Step 3. Assign well IDs
         for pool_id in sorted(self.to_dataframe()['pool_id'].unique()):
             if len(curr_well_ids) == 0:
-                if num_plate_wells == PlateWells.WELLS_24:
+                if plate_size == PlateWells.WELLS_24:
                     curr_well_ids = get_24_well_ids()
-                elif num_plate_wells == PlateWells.WELLS_48:
+                elif plate_size == PlateWells.WELLS_48:
                     curr_well_ids = get_48_well_ids()
-                elif num_plate_wells == PlateWells.WELLS_96:
+                elif plate_size == PlateWells.WELLS_96:
                     curr_well_ids = get_96_well_ids()
-                elif num_plate_wells == PlateWells.WELLS_384:
+                elif plate_size == PlateWells.WELLS_384:
                     curr_well_ids = get_384_well_ids()
                 else:
-                    logger.error('Unsupported number of wells: %i' % num_plate_wells)
+                    logger.error('Unsupported number of wells: %i' % plate_size)
                     exit(1)
                 curr_plate_id += 1
             curr_well_id = curr_well_ids[0]
@@ -223,6 +223,21 @@ class BlockAssignment:
         df = pd.DataFrame(data)
         df.sort_values(by=['peptide_id'], inplace=True)
         return df
+
+    def to_bench_ready_dataframe(self) -> pd.DataFrame:
+        data = {
+            'plate_id': [],
+            'well_id': [],
+            'peptide_ids': [],
+            'peptide_sequences': []
+        }
+        df_assignment = self.to_dataframe()
+        for name, group in df_assignment.groupby(['plate_id', 'well_id']):
+            data['plate_id'].append(name[0])
+            data['well_id'].append(name[1])
+            data['peptide_ids'].append(';'.join(group['peptide_id'].values.tolist()))
+            data['peptide_sequences'].append(';'.join(group['peptide_sequence'].values.tolist()))
+        return pd.DataFrame(data)
 
     def is_optimal(
             self,
@@ -526,7 +541,7 @@ class BlockAssignment:
     @staticmethod
     def read_excel_file(
             excel_file: str,
-            sheet_name: str = 'block_assignment'
+            sheet_name: str = 'assignment'
     ) -> 'BlockAssignment':
         """
         Reads an Excel file and returns a BlockAssignment object.
@@ -534,25 +549,43 @@ class BlockAssignment:
         Parameters
         ----------
         excel_file          :   Excel file.
-        sheet_name          :   Sheet name (default: 'block_assignment').
+        sheet_name          :   Sheet name (default: 'assignment').
 
         Returns
         -------
         block_assignment    :   BlockAssignment object.
         """
-        df = pd.read_excel(excel_file, sheet_name=sheet_name)
-        block_assignment = BlockAssignment()
+        df = pd.read_excel(excel_file, sheet_name=sheet_name, engine='openpyxl')
+
+        # Step 1. Generate coverage IDs
+        pool_idx = 1
+        plate_well_ids = {} # key   = <plate_id>-<well_id>
+                            # value = <pool_id>
         for index, row in df.iterrows():
+            curr_plate_well_id = '%s-%s' % (row['plate_id'], row['well_id'])
+            if curr_plate_well_id not in plate_well_ids.keys():
+                plate_well_ids[curr_plate_well_id] = pool_idx
+                pool_idx += 1
+
+        # Step 2. Add peptides
+        block_assignment = BlockAssignment()
+        coverage_ids = {}   # key   = <peptide_id>
+                            # value = count enumerated
+        for index, row in df.iterrows():
+            curr_peptide_id = row['peptide_id']
+            curr_peptide_sequence = row['peptide_sequence']
+            curr_plate_id = row['plate_id']
+            curr_well_id = row['well_id']
+            curr_pool_id = plate_well_ids['%s-%s' % (curr_plate_id, curr_well_id)]
+            curr_coverage_id = coverage_ids.get(curr_peptide_id, 0) + 1
+            coverage_ids[curr_peptide_id] = curr_coverage_id
             block_assignment.add_peptide(
-                coverage=row['coverage_id'],
-                pool=row['pool_id'],
-                peptide_id=row['peptide_id'],
-                peptide_sequence=row['peptide_sequence']
+                coverage=curr_coverage_id,
+                pool=curr_pool_id,
+                peptide_id=curr_peptide_id,
+                peptide_sequence=curr_peptide_sequence
             )
-            if 'plate_id' in row and 'well_id' in row:
-                plate_id = row['plate_id']
-                well_id = row['well_id']
-                block_assignment.plate_ids[row['pool_id']] = (plate_id, well_id)
+            block_assignment.plate_ids[curr_pool_id] = (curr_plate_id, curr_well_id)
         return block_assignment
 
     @staticmethod
@@ -681,7 +714,7 @@ def compute_transitive_neighbors(
 
     Parameters
     ----------
-    peptide_pairs       :   List of tuples (peptide ID, peptide ID).
+    peptide_pairs       :   List of tuples (peptide ID, peptide ID, score).
 
     Returns
     -------
@@ -689,7 +722,7 @@ def compute_transitive_neighbors(
     """
     # Step 1. Create a dictionary to store peptide relationships
     peptide_dict = {}
-    for peptide_id_1, peptide_id_2 in peptide_pairs:
+    for peptide_id_1, peptide_id_2, score in peptide_pairs:
         if peptide_id_1 not in peptide_dict:
             peptide_dict[peptide_id_1] = set()
         if peptide_id_2 not in peptide_dict:

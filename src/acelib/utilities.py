@@ -43,7 +43,7 @@ def get_open_port() -> int:
         try:
             s.bind(("127.0.0.1", i))
         except socket.error as e:
-             continue
+            continue
         s.close()
         port = i
         break

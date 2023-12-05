@@ -21,7 +21,6 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List
 from .block_assignment import BlockAssignment
-from .block_design import BlockDesign
 from .constants import DeconvolutionLabels
 from .logger import get_logger
 from .types import *
@@ -38,43 +37,44 @@ class DeconvolutionResult:
             self,
             peptide_id: str,
             peptide_sequence: str,
-            peptide_activity_level: float,
+            estimated_peptide_spot_count: float,
             label: str,
-            pool_ids: List[PoolId]
+            hit_pool_ids: List[PoolId]
     ):
         """
         Add a peptide.
 
         Parameters
         ----------
-        peptide_id              :   Peptide ID.
-        peptide_sequence        :   Peptide sequence.
-        deconvolution_label     :   Deconvolution label.
-        pool_ids                :   Pool IDs.
+        peptide_id                      :   Peptide ID.
+        peptide_sequence                :   Peptide sequence.
+        estimated_peptide_spot_count    :   Estimated peptide spot count.
+        label                           :   Deconvolution label.
+        hit_pool_ids                    :   Hit pool IDs.
         """
         self.hit_peptides.append(
             (peptide_id, 
              peptide_sequence, 
-             peptide_activity_level,
+             estimated_peptide_spot_count,
              label,
-             pool_ids)
+             hit_pool_ids)
         )
-        
+
     def to_dataframe(self):
         data = {
             'peptide_id': [],
             'peptide_sequence': [],
-            'peptide_activity_level': [],
-            'pool_ids': [],
-            'num_coverage': [],
+            'estimated_peptide_spot_count': [],
+            'hit_pool_ids': [],
+            'hit_pools_count': [],
             'deconvolution_result': []
         }
-        for peptide_id, peptide_sequence, peptide_activity, label, pool_ids in self.hit_peptides:
+        for peptide_id, peptide_sequence, peptide_spot_count, label, pool_ids in self.hit_peptides:
             data['peptide_id'].append(peptide_id)
             data['peptide_sequence'].append(peptide_sequence)
-            data['peptide_activity_level'].append(peptide_activity)
-            data['pool_ids'].append(';'.join([str(p) for p in pool_ids]))
-            data['num_coverage'].append(len(pool_ids))
+            data['estimated_peptide_spot_count'].append(peptide_spot_count)
+            data['hit_pool_ids'].append(';'.join([str(p) for p in pool_ids]))
+            data['hit_pools_count'].append(len(pool_ids))
             data['deconvolution_result'].append(label)
         df = pd.DataFrame(data)
         df.sort_values(by=['peptide_id'], inplace=True)
@@ -168,9 +168,9 @@ def empirical_deconvolve(
             deconvolution_result.add_peptide(
                 peptide_id=peptide_id,
                 peptide_sequence=peptide_sequence,
-                peptide_activity_level=row['num_coverage'],
+                estimated_peptide_spot_count=row['num_coverage'],
                 label=DeconvolutionLabels.NOT_A_HIT,
-                pool_ids=pool_ids
+                hit_pool_ids=pool_ids
             )
         return deconvolution_result
 
@@ -228,9 +228,9 @@ def empirical_deconvolve(
         deconvolution_result.add_peptide(
             peptide_id=row['peptide_id'],
             peptide_sequence=row['peptide_sequence'],
-            peptide_activity_level=len(pool_ids),
+            estimated_peptide_spot_count=len(pool_ids),
             label=row['deconvolution_label'],
-            pool_ids=pool_ids
+            hit_pool_ids=pool_ids
         )
     return deconvolution_result
 

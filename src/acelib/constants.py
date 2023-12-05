@@ -59,14 +59,16 @@ class GenerateModes:
     ]
 
 
-class DeconvolveModes:
-    EMPIRICAL = 'empirical'
+class DeconvolutionMethods:
     EM = 'em'
     LASSO = 'lasso'
+    CONSTRAINED_EM = 'cem'
+    EMPIRICAL = 'empirical'
     ALL = [
-        EMPIRICAL,
+        CONSTRAINED_EM,
         EM,
-        LASSO
+        LASSO,
+        EMPIRICAL
     ]
 
 
@@ -106,14 +108,10 @@ class DeconvolutionLabels:
 class GolfyStrategies:
     GREEDY = 'greedy'
     RANDOM = 'random'
-    VALID = 'valid'
-    SINGLETON = 'singleton'
     REPEAT = 'repeat'
     ALL = [
         GREEDY,
         RANDOM,
-        VALID,
-        SINGLETON,
         REPEAT
     ]
 
