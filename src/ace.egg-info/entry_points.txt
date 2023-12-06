@@ -1,0 +1,2 @@
+[console_scripts]
+ace = acelib.cli.cli_main:run

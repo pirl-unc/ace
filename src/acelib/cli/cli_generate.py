@@ -121,13 +121,12 @@ def add_ace_generate_arg_parser(sub_parsers):
              (', '.join(GenerateModes.ALL), GenerateModes.GOLFY)
     )
     parser_optional.add_argument(
-        "--sequence-similarity-threshold",
-        dest="sequence_similarity_threshold",
-        type=float,
-        default=GENERATE_SEQUENCE_SIMILARITY_THRESHOLD,
+        "--cluster-peptides",
+        dest="cluster_peptides",
+        type=bool,
+        default=True,
         required=False,
-        help="Sequence similarity threshold (default: %f). "
-             "A higher threshold leads to more stringent peptide pairing." % GENERATE_SEQUENCE_SIMILARITY_THRESHOLD
+        help="Cluster peptides if set to true (default: true)."
     )
     parser_optional.add_argument(
         "--sequence-similarity-function",
@@ -140,14 +139,14 @@ def add_ace_generate_arg_parser(sub_parsers):
              (', '.join(SequenceSimilarityFunctions.ALL), GENERATE_SEQUENCE_SIMILARITY_FUNCTION)
     )
     parser_optional.add_argument(
-        "--cluster-peptides",
-        dest="cluster_peptides",
-        type=bool,
-        default=True,
+        "--sequence-similarity-threshold",
+        dest="sequence_similarity_threshold",
+        type=float,
+        default=GENERATE_SEQUENCE_SIMILARITY_THRESHOLD,
         required=False,
-        help="Cluster peptides if set to true (default: true)."
+        help="Sequence similarity threshold (default: %f). "
+             "A higher threshold leads to more stringent peptide pairing." % GENERATE_SEQUENCE_SIMILARITY_THRESHOLD
     )
-
     # Golfy optional parameters
     parser_optional_golfy = parser.add_argument_group("optional arguments (applies when '--mode golfy')")
     parser_optional_golfy.add_argument(

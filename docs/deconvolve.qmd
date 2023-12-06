@@ -2,17 +2,16 @@
 title: "deconvolve"
 ---
 
-This command deconvolves hit peptides from ELISpot results.
+This command performs idnetification/deconvolution of hit peptides and their activities from pooled ELISpot readouts.
 
 ```bash
 usage: ace deconvolve [-h]
     --readout-file-type READOUT_FILE_TYPE
     --readout-files READOUT_FILES
     --assignment-excel-file ASSIGNMENT_EXCEL_FILE
+    --min-pool-spot-count MIN_POOL_SPOT_COUNT
     --output-excel-file OUTPUT_EXCEL_FILE
-    [--statistical-deconvolution-method {em,lasso}]
-    [--min-spot-count MIN_SPOT_COUNT]
-    [--min-peptide-activity MIN_PEPTIDE_ACTIVITY]
+    [--method {em,lasso, cem, empirical}]
     [--verbose VERBOSE]
 ```
 
@@ -23,14 +22,14 @@ usage: ace deconvolve [-h]
 If --readout-file-type is 'aid_plate_reader', then the readout-files are the Excel files from the AID plate reader machine. \
 If --readout-file type is 'aid_plate_reader' and there were pools in 2 or more plates, then supply the files in the following order: \
 plate 1 readout file, plate 2 readout file etc. |
-| `--assignment-excel-file`   | ELISpot assignment Excel file. Expected columns: 'peptide_id', 'peptide_sequence', 'plate_id', 'well_id' in a sheet named 'assignment'. |
+| `--assignment-excel-file`   | ELISpot assignment Excel file. Expected columns: 'peptide_id', 'peptide_sequence', 'plate_id', 'well_id' in a sheet named 'block_assignment'. |
+| `--min-pool-spot-count` | Minimum spot count for a pool to be considered a positive pool.     |
 | `--output-excel-file`       | Output deconvolution Excel file.                                         |
-| `--min-positive-pool-spot-count` | Minimum spot count for a pool to be considered a positive pool.     |
+
 
 | Optional Parameter          | Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------ |
-| `--statistical-deconvolution-method` | Statistical deconvolution mode (default: em).                   |
-| `--min-peptide-activity` | Minimum estimated activity of a peptide to be considered for hit set. This value is used if when '--mode em' or '--mode lasso' (default: 1.0). |
+| `--method` | Statistical deconvolution mode (default: constrained-em).           |        
 | `--verbose`              | If True, prints messages. Otherwise, messages are not printed (default: True). |
 
 ### Example

@@ -68,7 +68,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --version, -v         show program's version number and exit
+  -v, --version         show program version number and exit
 ```
 
 Read the full documentation on the python package at https://pirl-unc.github.io/ace/

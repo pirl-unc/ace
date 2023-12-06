@@ -2,7 +2,10 @@
 title: "Developer Notes"
 ---
 
-The following command generates the standalone graphical user interface (on Mac):
+Should you decide to recompile and generate graphical user interface from scratch instead of the direct download, we provide following commands for both MacOS and Windows:
+
+
+For Mac:
 
 ```bash
 cd gui/
@@ -20,7 +23,7 @@ python -m eel ace_gui.py views \
     --add-data "trained_model_w_data_augmentation_b3000.pt:."
 ```
 
-The following command generates the standalone graphical user interface (on Windows):
+For Windows:
 
 ```bash
 cd gui/

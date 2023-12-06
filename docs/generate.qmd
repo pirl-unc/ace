@@ -12,9 +12,9 @@ usage: ace generate [-h]
     --output-excel-file OUTPUT_EXCEL_FILE
     [--plate-size PLATE_SIZE]
     [--mode {golfy,cpsat_solver}]
-    [--sequence-similarity-threshold SEQUENCE_SIMILARITY_THRESHOLD]
-    [--sequence-similarity-function {cosine,euclidean,levenshtein}]
     [--cluster-peptides CLUSTER_PEPTIDES]
+    [--sequence-similarity-function {cosine,euclidean,levenshtein}]
+    [--sequence-similarity-threshold SEQUENCE_SIMILARITY_THRESHOLD]
     [--golfy-random-seed GOLFY_RANDOM_SEED]
     [--golfy-max-iters GOLFY_MAX_ITERS]
     [--golfy-strategy {greedy,random,valid,singleton,repeat}]
@@ -38,9 +38,9 @@ usage: ace generate [-h]
 | -------------------------- | ---------------------------------------------------------------------- |
 | `--plate-size`             | Number of wells on plate. Allowed values: 24, 48, 96, 384 (default: 96). |
 | `--mode`                   | Configuration generation mode. Allowed values: golfy, cpsat_solver (default: golfy). |
-| `--sequence-similarity-threshold` | Sequence similarity threshold (default: 0.7). A higher threshold leads to more stringent peptide pairing. |
-| `--sequence-similarity-function`  | Sequence similarity function. Allowed values: cosine, euclidean, levenshtein (default: euclidean). |
 | `--cluster-peptides`       | Cluster peptides if set to true (default: true).                       |
+| `--sequence-similarity-function`  | Sequence similarity function. Allowed values: cosine, euclidean, levenshtein (default: euclidean). |
+| `--sequence-similarity-threshold` | Sequence similarity threshold (default: 0.7). A higher threshold leads to more stringent peptide pairing. Values can range form 0.0 to 1.0.|
 | `--verbose` | If True, prints messages. Otherwise, messages are not printed (default: True). |
 
 <br/>The following optional parameters apply when `--mode golfy`

@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: ace
+Version: 0.0.8.1
+Keywords: elispot,assay optimization,immunological assay,deconvolution,high-throughput assay
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.7
