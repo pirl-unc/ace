@@ -104,14 +104,6 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         required=False,
         help="Deconvolution method (default: %s)." % DeconvolutionMethods.CONSTRAINED_EM
     )
-    # parser_optional.add_argument(
-    #     "--min-peptide-spot-count",
-    #     dest="min_peptide_spot_count",
-    #     type=float,
-    #     default=DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT,
-    #     required=False,
-    #     help="Minimum estimated spot count for a peptide to be considered a hit (default: %f)." % DECONVOLVE_MIN_PEPTIDE_SPOT_COUNT
-    # )
     parser_optional.add_argument(
         "--verbose",
         dest="verbose",

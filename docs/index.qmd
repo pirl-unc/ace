@@ -8,9 +8,9 @@ title: "Getting Started"
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.1.0.8`
+**Latest Stable Version**: `0.1.1.0`
 
-**Updated date**: September 26, 2023
+**Updated date**: December 7, 2023
 
 `ACE` is a python library and command-line software for:
 

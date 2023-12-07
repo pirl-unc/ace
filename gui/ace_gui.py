@@ -111,9 +111,9 @@ def deconvolve(assignments,
                                             'plate_id'
                                             'well_id'
                                             'spot_count'
-    statistical_deconvolution_method
-    min_coverage
-    min_spot_count
+    statistical_deconvolution_method    :   Statistical deconvolution method.
+    min_coverage                        :   Minimum coverage.
+    min_spot_count                      :   Minimum spot count.
 
     Returns
     -------
@@ -184,10 +184,9 @@ def deconvolve(assignments,
     deconvolution_result = run_ace_deconvolve(
         df_readout=df_readout,
         block_assignment=block_assignment,
-        statistical_deconvolution_method=statistical_deconvolution_method,
-        statistical_min_peptide_activity=1.0,
-        empirical_min_coverage=min_coverage,
-        empirical_min_spot_count=min_spot_count
+        method=statistical_deconvolution_method,
+        min_coverage=min_coverage,
+        min_pool_spot_count=min_spot_count
     )
 
     # Step 4. Convert pool IDs to well IDs

@@ -11,7 +11,7 @@ usage: ace deconvolve [-h]
     --assignment-excel-file ASSIGNMENT_EXCEL_FILE
     --min-pool-spot-count MIN_POOL_SPOT_COUNT
     --output-excel-file OUTPUT_EXCEL_FILE
-    [--method {em,lasso, cem, empirical}]
+    [--method {em,lasso,cem,empirical}]
     [--verbose VERBOSE]
 ```
 

@@ -4,8 +4,8 @@ var minPositiveSpotCount;
 var minPositiveSpotCountSaved;
 var minCoverage;
 var minCoverageSaved;
-var statisticalDeconvolutionMethod = 'em';
-var statisticalDeconvolutionMethodSaved = 'em';
+var statisticalDeconvolutionMethod = 'cem';
+var statisticalDeconvolutionMethodSaved = 'cem';
 var spotCountChart;
 var deconvolutionResults;
 var positiveWells;
@@ -19,6 +19,10 @@ function onChangeMinCoverage() {
 
 function onChangeMinPositivePoolSpotCount() {
     minPositiveSpotCount = document.getElementById('input-min-spot-count').value;
+}
+
+function onChangeStatisticalDeconvolutionMethod() {
+    statisticalDeconvolutionMethod = document.getElementById('input-statistical-deconvolution-mode').value;
 }
 
 function renderSpotCountsBarPlot(sort) {
@@ -214,7 +218,7 @@ function reset() {
     spotCounts = [];
     minPositiveSpotCount = 0;
     minCoverage = 0;
-    statisticalDeconvolutionMethod = 'em';
+    statisticalDeconvolutionMethod = 'cem';
     resetConfigFile();
     resetSpotCountsFile();
     clearConfigTable();
@@ -228,7 +232,7 @@ function loadExample() {
     reset();
     minPositiveSpotCount = 200;
     minCoverage = 3;
-    statisticalDeconvolutionMethod = 'em';
+    statisticalDeconvolutionMethod = 'cem';
     loadExampleAssignments();
     loadExampleSpotCounts();
     renderInputParamsDiv();

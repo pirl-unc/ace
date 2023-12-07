@@ -1,0 +1,63 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        activate-environment: test-env
+        python-version: "3.10"
+
+    - name: Install dependencies
+      shell: bash -l {0}
+      run: |
+        # Remove tmp files
+        sudo rm -rf /tmp/*
+
+        # Install conda packages
+        conda env list
+        conda info
+        conda config --add channels defaults
+        conda config --add channels bioconda
+        conda config --add channels conda-forge
+        conda config --set channel_priority strict
+        conda install -c anaconda scikit-learn
+        conda install -c anaconda openpyxl
+        pip install golfy>=2.5.0
+        pip install ortools>=9.3.10497
+        pip install levenshtein
+        pip install torch
+        pip install transformers==4.30.2        
+        conda install pylint
+        conda install coveralls
+        conda install pytest
+        conda install pytest-cov
+  
+        # Install ace
+        pip install . --verbose
+
+    - name: Run linter
+      shell: bash -l {0}
+      run: |
+        chmod +x lint.sh
+        bash lint.sh
+
+    - name: Run unit tests
+      shell: bash -l {0}
+      run: |
+        chmod +x unittest.sh
+        bash unittest.sh

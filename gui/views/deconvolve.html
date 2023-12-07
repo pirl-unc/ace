@@ -199,9 +199,11 @@
                         </button>
                     </div>
                 </div>
-                <select class="w-50 form-select mt-1" name="deconvolution-mode" id="input-statistical-deconvolution-mode">
+                <select class="w-50 form-select mt-1" name="deconvolution-mode" id="input-statistical-deconvolution-mode" onchange="onChangeStatisticalDeconvolutionMethod()">
+                    <option value="cem">Constrained Expectation Maximization</option>
                     <option value="em">Expectation Maximization</option>
                     <option value="lasso">LASSO</option>
+                    <option value="empirical">Empirical</option>
                 </select>
             </div>
             <div class="container d-flex justify-content-end px-0 mx-0 mt-3">
