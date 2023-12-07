@@ -4,7 +4,7 @@ ACE facilitates (1) generation of ELISpot configurations (peptide-pool assignmen
 using a deep learning approach to cluster similar peptides and (2) deconvolution 
 of pool spot counts for identification of immunogenic peptides.
 
-[![Build Status](https://app.travis-ci.com/pirl-unc/ace.svg?branch=main)](https://app.travis-ci.com/pirl-unc/ace)
+[![build](https://github.com/pirl-unc/ace/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/pirl-unc/ace/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## 01. Installation
