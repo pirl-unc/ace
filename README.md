@@ -76,4 +76,4 @@ Read the full documentation on the python package at https://pirl-unc.github.io/
 ## 03. Citation
 
 If you use ACE in a publication, please cite our 
-[preprint](https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1) describing ACE.
+[publication](https://doi.org/10.1093/bib/bbad495) describing ACE.
