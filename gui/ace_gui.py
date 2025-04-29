@@ -223,4 +223,5 @@ def find_port(port=1111):
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "True" # For Windows
     eel.start('index.html', size=(1920, 1080), port=get_open_port())

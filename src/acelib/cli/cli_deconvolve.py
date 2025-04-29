@@ -157,11 +157,12 @@ def run_ace_deconvolve_from_parsed_args(args):
             plate_id += 1
         plate_readout = PlateReadout.merge(plate_readouts=plate_readouts)
         df_readout = pd.merge(df_assignment, plate_readout.to_dataframe(), on=['plate_id', 'well_id'])
+    else:
+        raise Exception('Unsupported read-out file type: %s' % args.readout_file_type)
 
     # Step 3. Get pool IDs
     pool_ids = []
-    well_ids_dict = {}  # key   = <pool_id>
-                        # value = <plate_id>-<well_id>
+    well_ids_dict = {}  # key: <pool_id>, value: <plate_id>-<well_id>
     for index, row in df_readout.iterrows():
         curr_plate_id = row['plate_id']
         curr_well_id = row['well_id']

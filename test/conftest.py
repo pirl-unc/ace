@@ -1,10 +1,6 @@
-import pandas as pd
 import pytest
-from .data import get_data_path
 from acelib.block_assignment import BlockAssignment
-from acelib.block_design import BlockDesign
 from acelib.main import run_ace_generate
-from golfy import init, is_valid, optimize
 
 
 @pytest.fixture
@@ -65,10 +61,6 @@ def golfy_assignment_120pep12per3x() -> BlockAssignment:
         cluster_peptides=False,
         mode='golfy',
         golfy_random_seed=1
-    )
-    is_optimal = block_assignment.is_optimal(
-        num_coverage=3,
-        num_peptides_per_pool=12
     )
     return block_assignment
 

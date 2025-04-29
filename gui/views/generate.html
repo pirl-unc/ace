@@ -143,7 +143,7 @@
                 		<div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion-parent">
                             <div class="accordion-body">
                                 <p class="mb-0">Number of peptides</p>
-                                <input class="w-50 form-control mt-1" type="number" id="num-peptides" min="1" placeholder="e.g. 200" onkeyup="onChangePeptideCount()">
+                                <input class="w-50 form-control mt-1" type="number" id="num-peptides" min="1" placeholder="e.g. 200" oninput="onChangePeptideCount()">
                             </div>
                         </div>
                     </div>
@@ -159,25 +159,27 @@
                         </button>
                     </div>
                 </div>
-                <input class="w-50 form-control" type="number" id="num-peptides-per-pool" min="2" placeholder="e.g. 10" onkeyup="onChangePeptidesPerPool()">
-                <div class="row mt-3">
-                    <div class="col-12 d-flex align-items-center">
-                        <p class="mb-0">Number of Peptide Replicates (i.e. Coverage)</p>
-                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="This is the number of technical replicates that you have for each peptide">
-                            <i class="bi bi-question-circle"></i>
-                        </button>
+                <input class="w-50 form-control" type="number" id="num-peptides-per-pool" min="2" placeholder="e.g. 10" oninput="onChangePeptidesPerPool()">
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex align-items-center">
+                            <p class="mb-0">Number of Peptide Replicates (i.e. Coverage)</p>
+                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="This is the number of technical replicates that you have for each peptide">
+                                <i class="bi bi-question-circle"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <input class="w-50 form-control" type="number" id="num-coverage" min="2" placeholder="e.g. 3" onkeyup="onChangeCoverage()">
-                <div class="row mt-3">
-                    <div class="col-12 d-flex align-items-center">
-                        <p class="mb-0">Assign Plate / Well IDs</p>
-                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Specify the plate size that you will use for your ELISpot experiment">
-                            <i class="bi bi-question-circle"></i>
-                        </button>
+                </input>
+                <input class="w-50 form-control" type="number" id="num-coverage" min="2" placeholder="e.g. 3" oninput="onChangeCoverage()">
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex align-items-center">
+                            <p class="mb-0">Assign Plate / Well IDs</p>
+                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Specify the plate size that you will use for your ELISpot experiment">
+                                <i class="bi bi-question-circle"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <select class="w-50 form-select" name="num-wells" id="num-wells" onchange="onChangePlateSize()">
+                </input>
+                <select class="w-50 form-select" name="num-wells" id="num-wells" oninput="onChangePlateSize()">
                     <option value=24>24-well plate</option>
                     <option value=48>48-well plate</option>
                     <option value=96 selected>96-well plate</option>

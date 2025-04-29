@@ -13,23 +13,28 @@
 
 [build-system]
 requires = [
-    "setuptools>=40.8.0",
-    "pandas>=1.5.2",
-    "numpy>=1.23.1",
-    "ortools>=9.3.10497",
-    "torch",
+    "setuptools==72.1.0",
+    "numpy==1.26.4",
+    "pandas==2.2.3",
+    "scipy==1.15.2",
+    "scikit-learn==1.6.1",
+    "openpyxl==3.1.5",
+    "pyinstaller==6.13.0",
     "transformers==4.30.2",
-    "scikit-learn",
-    "openpyxl",
-    "golfy>=2.5.0",
-    "Levenshtein"
+    "eel==0.18.1",
+    "golfy==2.5.0",
+    "levenshtein==0.27.1",
+    "networkx==3.4.2",
+    "ortools==9.8.3296",
+    "torch==2.2.2",
+    "pillow==11.1.0"
 ]
 
 [project]
 name = "ace-elispot"
-version = "0.1.1.0"
+version = "0.1.2.0"
 description = "ELISpot configuration generation and pool spot count deconvolution"
-requires-python = ">=3.10"
+requires-python = "==3.10.13"
 readme = "README.md"
 keywords = [
     "elispot",

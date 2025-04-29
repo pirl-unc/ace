@@ -30,6 +30,7 @@ def test_deconvolve_golfy_assignment_25pep5per3x_em(golfy_assignment_25pep5per3x
     )
     df_deconvolution = deconvolution_result.to_dataframe()
     hit_peptide_ids = sorted(df_deconvolution.loc[df_deconvolution['deconvolution_result'] == DeconvolutionLabels.CONFIDENT_HIT, 'peptide_id'].values.tolist())
+    print(hit_peptide_ids)
     assert hit_peptide_ids == ground_truth_hit_peptide_ids, 'peptide_1 and peptide_10 are hits.'
 
 

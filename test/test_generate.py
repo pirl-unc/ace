@@ -1,13 +1,8 @@
 import pandas as pd
-import torch
 from .data import get_data_path
-from acelib.block_assignment import BlockAssignment
-from acelib.block_design import BlockDesign
-from acelib.main import run_ace_golfy, run_ace_sat_solver, run_ace_generate
+from acelib.main import run_ace_generate
 from acelib.utilities import convert_dataframe_to_peptides
 from importlib import resources
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-from acelib.sequence_features import AceNeuralEngine
 
 
 def test_generate_golfy_assignment_25pep5per3x(golfy_assignment_25pep5per3x):

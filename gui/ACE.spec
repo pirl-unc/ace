@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import copy_metadata
 
-datas = [('/Users/leework/miniconda3/envs/ace/lib/python3.10/site-packages/eel/eel.js', 'eel'), ('views', 'views'), ('trained_model_w_data_augmentation_b3000.pt', '.')]
+datas = [('/Users/leework/miniconda3/anaconda3/envs/ace/lib/python3.10/site-packages/eel/eel.js', 'eel'), ('views', 'views'), ('trained_model_w_data_augmentation_b3000.pt', '.')]
 datas += copy_metadata('tqdm')
 datas += copy_metadata('regex')
 datas += copy_metadata('filelock')
@@ -9,9 +9,6 @@ datas += copy_metadata('requests')
 datas += copy_metadata('packaging')
 datas += copy_metadata('numpy')
 datas += copy_metadata('torch')
-
-
-block_cipher = None
 
 
 a = Analysis(
@@ -24,18 +21,15 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.zipfiles,
     a.datas,
     [],
     name='ACE',

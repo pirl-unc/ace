@@ -35,13 +35,20 @@ jobs:
         conda config --add channels bioconda
         conda config --add channels conda-forge
         conda config --set channel_priority strict
-        conda install -c anaconda scikit-learn
-        conda install -c anaconda openpyxl
-        pip install golfy>=2.5.0
-        pip install ortools>=9.3.10497
-        pip install levenshtein
-        pip install torch
+        conda install -c anaconda numpy==1.26.4
+        conda install -c anaconda pandas==2.2.3
+        conda install -c anaconda scipy==1.15.2
+        conda install -c anaconda scikit-learn==1.6.1
+        conda install -c anaconda openpyxl==3.1.5
+        conda install -c anaconda networkx==3.4.2
+        conda install -c anaconda pillow==11.1.0
+        conda install -c conda-forge pyinstaller==6.13.0
         pip install transformers==4.30.2        
+        pip install eel==0.18.1
+        pip install golfy==2.5.0
+        pip install levenshtein==0.27.1
+        pip install ortools==9.8.3296
+        pip install torch==2.2.2
         conda install pylint
         conda install coveralls
         conda install pytest
