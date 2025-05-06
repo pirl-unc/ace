@@ -30,10 +30,9 @@ def init_arg_parser():
     """
     Initializes the input argument parser.
 
-    Returns
-    -------
-    An instance of argparse.ArgumentParser
-    An instance of argparse.ArgumentParser subparsers
+    Returns:
+        - An instance of argparse.ArgumentParser
+        - An instance of argparse.ArgumentParser subparsers
     """
     arg_parser = argparse.ArgumentParser(
         description="ACE Configurator for ELISpot."

@@ -10,7 +10,7 @@ usage: ace generate [-h]
     --num-peptides-per-pool NUM_PEPTIDES_PER_POOL
     --num-coverage NUM_COVERAGE
     --output-excel-file OUTPUT_EXCEL_FILE
-    [--plate-size PLATE_SIZE]
+    [--num-plate-wells {24,48,96,384}]
     [--mode {golfy,cpsat_solver}]
     [--cluster-peptides CLUSTER_PEPTIDES]
     [--sequence-similarity-function {cosine,euclidean,levenshtein}]
@@ -36,7 +36,7 @@ usage: ace generate [-h]
 
 | Optional Parameter         | Description                                                            |
 | -------------------------- | ---------------------------------------------------------------------- |
-| `--plate-size`             | Number of wells on plate. Allowed values: 24, 48, 96, 384 (default: 96). |
+| `--num-plate-wells`        | Number of wells on plate. Allowed values: 24, 48, 96, 384 (default: 96). |
 | `--mode`                   | Configuration generation mode. Allowed values: golfy, cpsat_solver (default: golfy). |
 | `--cluster-peptides`       | Cluster peptides if set to true (default: true).                       |
 | `--sequence-similarity-function`  | Sequence similarity function. Allowed values: cosine, euclidean, levenshtein (default: euclidean). |

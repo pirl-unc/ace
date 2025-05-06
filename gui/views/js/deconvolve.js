@@ -1,4 +1,13 @@
-var assignments;    // array of Assignment objects
+"use strict";
+
+/* -------------------------------
+ *  Constants & Global Variables
+ * ------------------------------- */
+const CHART_BACKGROUND_COLOR = 'rgb(238, 42, 123, 1)';
+const CHART_BORDER_COLOR = 'rgb(238, 42, 123)';
+const DEFAULT_DECONVOLUTION_METHOD = 'cem';
+
+let assignments;
 var spotCounts;     // list
 var minPositiveSpotCount;
 var minPositiveSpotCountSaved;
@@ -63,11 +72,9 @@ function renderSpotCountsBarPlot(sort) {
             }
           },
           scales: {
-            yAxes: [{
-              ticks: {
-                beginAtZero: true,
-              }
-            }]
+            y: {
+                beginAtZero: true
+            }
           },
         },
       });
@@ -126,7 +133,7 @@ function addSpotCountRow(plate_id, well_id, spot_count) {
 
 function loadExampleAssignments() {
     assignments = [];
-    let filePath = './res/25peptides_5perpool_3x_example_configuration.xlsx';
+    let filePath = '../res/25peptides_5perpool_3x_example_configuration.xlsx';
     fetch(filePath)
         .then(response => response.arrayBuffer())
         .then(data => {
@@ -150,7 +157,7 @@ function loadExampleAssignments() {
 
 function loadExampleSpotCounts() {
     spotCounts = [];
-    let filePath = './res/25peptides_5perpool_3x_example_spot_counts.xlsx';
+    let filePath = '../res/25peptides_5perpool_3x_example_spot_counts.xlsx';
     fetch(filePath)
         .then(response => response.arrayBuffer())
         .then(data => {
@@ -205,7 +212,6 @@ function clearSpotCountsTable() {
 }
 
 function hideInputSpotCountsBarPlot() {
-    sort = false;
     document.getElementById('div-chart').style.display = 'none';
 }
 
@@ -486,7 +492,8 @@ function deconvolve() {
         statisticalDeconvolutionMethodSaved = statisticalDeconvolutionMethod;
         positiveWells = [];
         for (var i = 0; i < spotCounts.length; i++) {
-            if (spotCounts[i].spot_count >= minPositiveSpotCount) {
+            const spotCount = parseFloat(spotCounts[i].spot_count);
+            if (spotCount >= minPositiveSpotCount) {
                 positiveWells.push(spotCounts[i]);
             }
         }
@@ -508,8 +515,8 @@ function renderOutputDiv(output) {
     const peptideIdsMap = new Map(Object.entries(output['peptide_id']));
     const peptideSequencesMap = new Map(Object.entries(output['peptide_sequence']));
     const peptideSpotCountMap = new Map(Object.entries(output['estimated_peptide_spot_count']));
-    const hitWellIdsMap = new Map(Object.entries(output['hit_well_ids']));
-    const hitWellIdsCountMap = new Map(Object.entries(output['hit_well_ids_count']));
+    const hitWellIdsMap = new Map(Object.entries(output['hit_plate_well_ids']));
+    const hitWellIdsCountMap = new Map(Object.entries(output['hit_pools_count']));
     const deconvolutionResultsMap = new Map(Object.entries(output['deconvolution_result']));
     deconvolutionResults = [];
     for (const [key, value] of peptideIdsMap.entries()) {
@@ -628,7 +635,7 @@ async function saveResultsFile() {
         var zip = new JSZip();
 
         // Step 1. Create deconvolution results CSV file
-        var csvRows1 = ["peptide_id,peptide_sequence,hit_well_ids,hit_well_ids_count,estimated_peptide_spot_count,deconvolution_result"];
+        var csvRows1 = ["peptide_id,peptide_sequence,hit_plate_well_ids,hit_plate_well_ids_count,estimated_peptide_spot_count,deconvolution_result"];
         for (var i = 0; i < deconvolutionResults.length; i++) {
             var values = [];
             values.push(deconvolutionResults[i].peptide_id);
@@ -658,7 +665,7 @@ async function saveResultsFile() {
         var csvHeader = [
             'min_positive_well_spot_count',
             'min_coverage',
-            'statistical_method'
+            'deconvolution_method'
         ]
         var csvRowContent = [
             minPositiveSpotCountSaved,
@@ -679,8 +686,8 @@ async function saveResultsFile() {
         var sheetData1 = [
             ['peptide_id',
              'peptide_sequence',
-             'hit_well_ids',
-             'hit_well_ids_count',
+             'hit_plate_well_ids',
+             'hit_plate_well_ids_count',
              'estimated_peptide_spot_count',
              'deconvolution_result']
         ];
@@ -713,7 +720,7 @@ async function saveResultsFile() {
         var sheetData3 = [
             ['min_positive_well_spot_count',
              'min_coverage',
-             'statistical_method'
+             'deconvolution_method'
             ],
             [
                 minPositiveSpotCountSaved,

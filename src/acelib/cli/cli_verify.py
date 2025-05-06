@@ -29,13 +29,11 @@ def add_ace_verify_arg_parser(sub_parsers):
     """
     Adds 'verify' parser.
 
-    Parameters
-    ----------
-    sub_parsers  :   argparse.ArgumentParser subparsers object.
+    Parameters:
+        sub_parsers  :   argparse.ArgumentParser subparsers object.
 
-    Returns
-    -------
-    argparse.ArgumentParser subparsers object.
+    Returns:
+        argparse.ArgumentParser subparsers object.
     """
     parser = sub_parsers.add_parser(
         'verify',
@@ -64,10 +62,9 @@ def run_ace_verify_from_parsed_args(args):
     """
     Runs ACE 'verify' command using parameters from parsed arguments.
 
-    Parameters
-    ----------
-    args    :   argparse.ArgumentParser with the following variables:
-                assignment_excel_file
+    Parameters:
+        args    :   argparse.ArgumentParser with the following variables:
+                    assignment_excel_file
     """
     block_assignment = BlockAssignment.read_excel_file(
         excel_file=args.assignment_excel_file

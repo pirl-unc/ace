@@ -7,18 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACE</title>
     <script type="text/javascript" src="/eel.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/bootstrap-icons-1.3.0/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="res/logo_ace_white_background.svg">
-    <script src="js/bootstrap.bundle.js"></script>
-    <script src="js/jquery-3.7.0.min.js"></script>
-    <script src="js/jszip.js"></script>
-    <script src="js/xlsx.full.min.js"></script>
-    <script src="js/Chart.bundle.min.js"></script>
-    <script src="js/read-excel-file.min.js"></script>
-    <script src="common.js"></script>
-    <script type="text/javascript" src="deconvolve.js"></script>
+    <link rel="stylesheet" href="../lib/bootstrap.css">
+    <link rel="stylesheet" href="../lib/bootstrap-icons-1.3.0/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/x-icon" href="../res/logo_ace_white_background.svg">
+    <script src="../lib/bootstrap.bundle.js"></script>
+    <script src="../lib/jquery-3.7.0.min.js"></script>
+    <script src="../lib/jszip.js"></script>
+    <script src="../lib/xlsx.full.min.js"></script>
+    <script src="../lib/Chart.bundle.min.js"></script>
+    <script src="../lib/read-excel-file.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script type="text/javascript" src="../js/deconvolve.js"></script>
     <script>
         $(function () {
           $('[data-toggle="popover"]').popover()
@@ -30,7 +30,7 @@
     <div class="container-fluid">
         <ul class="navbar-nav mx-auto">
             <a class="navbar-brand d-none d-md-block" href="index.html">
-                <img src="res/logo_ace_square.svg" alt="">
+                <img src="../res/logo_ace_square.svg" alt="">
             </a>
             <li class="nav-item">
                 <a class="nav-link" href="generate.html">Generate</a>
@@ -91,7 +91,7 @@
                     </div>
                     <div class="col-4">
                         <button class="btn btn-text" style="float: right;" onclick="downloadExampleConfigFile()">Download example file</button>
-                        <a id="download-example-config-file" href="res/25peptides_5perpool_3x_example_configuration.xlsx" download="25peptides_5perpool_3x_example_configuration.xlsx" style="display:none;"></a>
+                        <a id="download-example-config-file" href="../res/25peptides_5perpool_3x_example_configuration.xlsx" download="25peptides_5perpool_3x_example_configuration.xlsx" style="display:none;"></a>
                     </div>
                 </div>
                 <div class="form-group mt-1">
@@ -123,7 +123,7 @@
                     </div>
                     <div class="col-4">
                         <button class="btn btn-text" style="float: right;" onclick="downloadExampleSpotCountsFile()">Download example file</button>
-                        <a id="download-example-spotcounts-file" href="res/25peptides_5perpool_3x_example_spot_counts.xlsx" download="25peptides_5perpool_3x_example_spot_counts.xlsx" style="display:none;"></a>
+                        <a id="download-example-spotcounts-file" href="../res/25peptides_5perpool_3x_example_spot_counts.xlsx" download="25peptides_5perpool_3x_example_spot_counts.xlsx" style="display:none;"></a>
                     </div>
                 </div>
                 <div class="container d-flex align-items-center">

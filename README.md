@@ -16,8 +16,8 @@ We also recommend that you have [Google Chrome](https://www.google.com/chrome/) 
 
 | Operating System | Link                                                                                                     | Version           |
 |------------------|----------------------------------------------------------------------------------------------------------|-------------------|
-| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.1.0/ace-elispot-0.1.1.0-mac.zip)       | v0.1.1.0 (latest) | 
-| Windows 10       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.1.0/ace-elispot-0.1.1.0-windows10.zip) | v0.1.1.0 (latest) |
+| Mac              | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.2.0/ace-elispot-0.1.2.0-mac.zip)       | v0.1.2.0 (latest) | 
+| Windows 10       | [Download](https://github.com/pirl-unc/ace/releases/download/v0.1.2.0/ace-elispot-0.1.2.0-windows10.zip) | v0.1.2.0 (latest) |
 
 For Windows versions, first unzip the file and look for an application file called `ACE` inside the unzipped foler.
 Previous versions of ACE are available [here](https://github.com/pirl-unc/ace/releases).
@@ -39,16 +39,23 @@ pip install ace-elispot-<version>.tar.gz
 
 #### Dependencies
 
-* python3 (>= 3.10)
-* pandas (>=1.5.2)
-* numpy (>=1.23.1)
-* ortools (9.3.10497)
-* torch
-* transformers (==4.30.2)
-* scikit-learn
-* openpyxl
-* golfy (>=2.5.0) 
-* levenshtein
+- python==3.10.13
+- pip==25.0
+- numpy==1.26.4
+- pandas==2.2.3
+- scipy==1.15.2
+- scikit-learn==1.6.1
+- openpyxl=3.1.5
+- setuptools==72.1.0
+- pyinstaller==6.13.0
+- transformers=4.30.2
+- pillow==11.1.0
+- eel==0.18.1
+- golfy==2.5.0
+- levenshtein==0.27.1
+- networkx==3.4.2
+- ortools==9.8.3296
+- torch==2.2.2
 
 ## 02. Usage
 
@@ -75,5 +82,4 @@ Read the full documentation on the python package at https://pirl-unc.github.io/
 
 ## 03. Citation
 
-If you use ACE in a publication, please cite our 
-[publication](https://doi.org/10.1093/bib/bbad495) describing ACE.
+If you use ACE in a publication, please cite our [publication](https://doi.org/10.1093/bib/bbad495) describing ACE.

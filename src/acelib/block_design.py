@@ -16,18 +16,16 @@ The purpose of this python3 script is to implement the BlockDesign dataclass.
 """
 
 
-import copy
 import math
-import random
 import pandas as pd
-from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import combinations
 from ortools.sat.python import cp_model
-from typing import Dict, List, Type
+from typing import Dict, List, Tuple
 from .block_assignment import BlockAssignment
-from .types import *
+from .constants import GolfyStrategy, SequenceSimilarityFunction
 from .logger import get_logger
+from .peptide import Peptide
 
 
 logger = get_logger(__name__)
@@ -35,29 +33,38 @@ logger = get_logger(__name__)
 
 @dataclass
 class BlockDesign:
-    peptides: Peptides
     num_peptides_per_pool: int
     num_coverage: int
     max_peptides_per_block: int
-    plate_size: int
+    num_plate_wells: int
+    sequence_similarity_function: SequenceSimilarityFunction
+    init_strategy: GolfyStrategy        # golfy
     max_iterations: int = 0             # golfy
-    init_strategy: str = ''             # golfy
     allow_extra_pools: bool = False     # golfy
     sequence_similarity_threshold: float = 0.0
-    sequence_similarity_function: str = ''
     cluster_peptides: bool = False
-    preferred_peptide_pairs: PreferredPeptidePairs = field(default_factory=list)
-    disallowed_peptide_pairs: PeptidePairs = field(default_factory=list)
-    __dummy_peptide_ids: List[PeptideId] = field(default_factory=list, repr=False)
-    __peptides_dict: Dict[str, str] = field(default_factory=dict, repr=False)
+    peptides: List[Peptide] = field(default_factory=list)
+    preferred_peptide_pairs: List[Tuple[str,str,float]] = field(
+        default_factory=list,
+        metadata={"doc": "List of Tuple[peptide ID, peptide ID, score]."}
+    )
+    disallowed_peptide_pairs: List[Tuple[str,str]] = field(
+        default_factory=list,
+        metadata={"doc": "List of Tuple[peptide ID, peptide ID]."}
+    )
+    _dummy_peptide_ids: List[str] = field(default_factory=list, repr=False)
+    _peptides_dict: Dict[str,str] = field(
+        default_factory=dict, repr=False,
+        metadata={"doc": "Mapping from a peptide ID to its peptide sequence."}
+    )
 
     @property
-    def all_peptide_ids(self) -> List[PeptideId]:
-        return self.peptide_ids + self.__dummy_peptide_ids
+    def all_peptide_ids(self) -> List[str]:
+        return self.peptide_ids + self._dummy_peptide_ids
 
     @property
     def num_dummy_peptides(self) -> int:
-        return len(self.__dummy_peptide_ids)
+        return len(self._dummy_peptide_ids)
 
     @property
     def num_peptides(self) -> int:
@@ -68,10 +75,10 @@ class BlockDesign:
         return self.num_peptides + self.num_dummy_peptides
 
     @property
-    def peptide_ids(self) -> List[PeptideId]:
+    def peptide_ids(self) -> List[str]:
         peptide_ids = []
-        for peptide_id, peptide_sequence in self.peptides:
-            peptide_ids.append(peptide_id)
+        for peptide in self.peptides:
+            peptide_ids.append(peptide.id)
         return peptide_ids
 
     @property
@@ -80,7 +87,7 @@ class BlockDesign:
             'num_peptides': [self.num_peptides],
             'num_peptides_per_pool': [self.num_peptides_per_pool],
             'num_coverage': [self.num_coverage],
-            'plate_size': [self.plate_size],
+            'num_plate_wells': [self.num_plate_wells],
             'maximum_iterations': [self.max_iterations],
             'initialization_strategy': [self.init_strategy],
             'allow_extra_pools': [self.allow_extra_pools],
@@ -98,8 +105,8 @@ class BlockDesign:
             'peptide_sequence': []
         }
         for peptide in self.peptides:
-            data['peptide_id'].append(peptide[0])
-            data['peptide_sequence'].append(peptide[1])
+            data['peptide_id'].append(peptide.id)
+            data['peptide_sequence'].append(peptide.sequence)
         return pd.DataFrame(data)
 
     @property
@@ -122,8 +129,8 @@ class BlockDesign:
     def __post_init__(self):
         # Step 1. Make sure the number of peptides is bigger than the number of peptides per pool.
         if self.num_peptides < self.num_peptides_per_pool:
-            logger.error('Number of peptides per pool is bigger than the total number of peptides.')
-            exit(1)
+            raise Exception("Number of peptides per pool (n=%i) is bigger than the total number of peptides (n=%i)." %
+                            (self.num_peptides, self.num_peptides_per_pool))
 
         # Step 2. Add dummy peptide IDs
         num_dummy_peptides = self.max_peptides_per_block - self.num_peptides
@@ -133,15 +140,15 @@ class BlockDesign:
                 dummy_peptide_id_idx += 1
                 dummy_peptide_id = 'dummy_peptide_%i' % dummy_peptide_id_idx
                 if dummy_peptide_id not in self.peptide_ids:
-                    self.__dummy_peptide_ids.append(dummy_peptide_id)
+                    self._dummy_peptide_ids.append(dummy_peptide_id)
                     break
 
         # Step 3. Populate peptide dictionary
         for peptide in self.peptides:
-            self.__peptides_dict[peptide[0]] = peptide[1]
+            self._peptides_dict[peptide.id] = peptide.sequence
 
-    def get_peptide_sequence(self, peptide_id: PeptideId) -> PeptideSequence:
-        return self.__peptides_dict[peptide_id]
+    def get_peptide_sequence(self, peptide_id: str) -> str:
+        return self._peptides_dict[peptide_id]
 
     def generate(
             self,
@@ -150,17 +157,15 @@ class BlockDesign:
             verbose: bool = True
     ) -> BlockAssignment:
         """
-        Generates ELISpot block design assignments.
+        Generate an ELISpot block assignment.
 
-        Parameters
-        ----------
-        random_seed         :   Random seed.
-        num_processes       :   Number of processes.
-        verbose             :   If True, prints messages.
+        Parameters:
+            random_seed         :   Random seed.
+            num_processes       :   Number of processes.
+            verbose             :   If True, prints messages.
 
-        Returns
-        -------
-        block_assignment    :   BlockAssignment object.
+        Returns:
+            block_assignment    :   BlockAssignment object.
         """
         # Step 1. Calculate the number of pools per coverage
         num_pools_per_coverage = int(self.num_total_peptides / self.num_peptides_per_pool)
@@ -259,14 +264,14 @@ class BlockDesign:
                 curr_pool_id = int(curr_bool_variable_elements[1])
                 curr_peptide_id = str(curr_bool_variable_elements[2])
 
-                if curr_peptide_id not in self.__dummy_peptide_ids:
+                if curr_peptide_id not in self._dummy_peptide_ids:
                     curr_pool_id = (num_pools_per_coverage * curr_coverage_id) + curr_pool_id
                     curr_peptide_sequence = self.get_peptide_sequence(peptide_id=curr_peptide_id)
                     block_assignment.add_peptide(
-                        coverage=curr_coverage_id,
-                        pool=curr_pool_id,
                         peptide_id=curr_peptide_id,
-                        peptide_sequence=curr_peptide_sequence
+                        peptide_sequence=curr_peptide_sequence,
+                        pool_id=curr_pool_id,
+                        coverage_id=curr_coverage_id
                     )
 
         return block_assignment
@@ -279,18 +284,16 @@ class BlockDesign:
             num_coverage: int
     ) -> int:
         """
-        Computes the total number of pools (theoretical minimum).
+        Compute the total number of pools (theoretical minimum).
 
-        Parameters
-        ----------
-        num_peptides                :   Number of peptides.
-        num_peptides_per_design     :   Number of peptides per design.
-        num_peptides_per_pool       :   Number of peptides per pool.
-        num_coverage                :   Coverage.
+        Parameters:
+            num_peptides                :   Number of peptides.
+            num_peptides_per_design     :   Number of peptides per design.
+            num_peptides_per_pool       :   Number of peptides per pool.
+            num_coverage                :   Coverage.
 
-        Returns
-        -------
-        num_total_pools             :   Total number of pools.
+        Returns:
+            num_total_pools             :   Total number of pools.
         """
         num_total_pools = 0
         while True:
@@ -310,18 +313,16 @@ class BlockDesign:
         """
         Divide a block design into multiple computationally tractable designs.
 
-        Parameters
-        ----------
-        block_design            :   BlockDesign object.
-        max_peptides_per_block  :   Maximum number of peptides per block.
-        max_peptides_per_pool   :   Maximum number of peptides per pool.
-        verbose                 :   If True, prints messages.
+        Parameters:
+            block_design            :   BlockDesign object.
+            max_peptides_per_block  :   Maximum number of peptides per block.
+            max_peptides_per_pool   :   Maximum number of peptides per pool.
+            verbose                 :   If True, prints messages.
 
-        Returns
-        -------
-        block_designs           :   List of BlockDesign object lists
-                                    (block designs in the same list should be
-                                     merged into one).
+        Returns:
+            block_designs           :   List of BlockDesign object lists
+                                        (block designs in the same list should be
+                                         merged into one).
         """
         # Step 1. Divide the number of peptides per pool by two until each
         # one is less than or equal to max_peptides_per_pool
@@ -418,7 +419,7 @@ class BlockDesign:
                     num_peptides_per_pool=num_peptides_per_pool,
                     num_coverage=block_design.num_coverage,
                     cluster_peptides=block_design.cluster_peptides,
-                    plate_size=block_design.plate_size,
+                    num_plate_wells=block_design.num_plate_wells,
                     max_iterations=block_design.max_iterations,
                     init_strategy=block_design.init_strategy,
                     sequence_similarity_threshold=block_design.sequence_similarity_threshold,
@@ -439,19 +440,17 @@ class BlockDesign:
             excel_file: str
     ) -> 'BlockDesign':
         """
-        Reads an Excel file and returns a BlockDesign object.
+        Read an Excel file and return a BlockDesign object.
 
-        Parameters
-        ----------
-        excel_file      :   Excel file. The following sheets are expected to exist:
-                            'peptides'
-                            'parameters'
-                            'preferred_peptide_pairs'
-                            'disallowed_peptide_pairs'
+        Parameters:
+            excel_file      :   Excel file. The following sheets are expected to exist:
 
-        Returns
-        -------
-        block_design    :   BlockDesign object.
+                                    - 'peptides'
+                                    - 'parameters'
+                                    - 'preferred_peptide_pairs'
+
+        Returns:
+            block_design    :   BlockDesign object.
         """
         # Step 1. Read the sheets
         df_peptides = pd.read_excel(excel_file, sheet_name='peptides')
@@ -462,7 +461,8 @@ class BlockDesign:
         # Peptides
         peptides = []
         for index, row in df_peptides.iterrows():
-            peptides.append((row['peptide_id'], row['peptide_sequence']))
+            peptide = Peptide(id=row['peptide_id'], sequence=row['peptide_sequence'])
+            peptides.append(peptide)
 
         # Preferred peptide pairs
         preferred_peptide_pairs = []
@@ -477,7 +477,7 @@ class BlockDesign:
         num_coverage = int(df_parameters['num_coverage'].values[0])
         allow_extra_pools = bool(df_parameters['allow_extra_pools'].values[0])
         cluster_peptides = bool(df_parameters['cluster_peptides'].values[0])
-        plate_size = int(df_parameters['plate_size'].values[0])
+        num_plate_wells = int(df_parameters['num_plate_wells'].values[0])
         max_iterations = int(df_parameters['maximum_iterations'].values[0])
         init_strategy = str(df_parameters['initialization_strategy'].values[0])
         sequence_similarity_function = str(df_parameters['sequence_similarity_function'].values[0])
@@ -489,10 +489,10 @@ class BlockDesign:
             num_coverage=num_coverage,
             allow_extra_pools=allow_extra_pools,
             cluster_peptides=cluster_peptides,
-            plate_size=plate_size,
+            num_plate_wells=num_plate_wells,
             max_iterations=max_iterations,
-            init_strategy=init_strategy,
-            sequence_similarity_function=sequence_similarity_function,
+            init_strategy=GolfyStrategy(init_strategy),
+            sequence_similarity_function=SequenceSimilarityFunction(sequence_similarity_function),
             sequence_similarity_threshold=sequence_similarity_threshold,
             max_peptides_per_block=max_peptides_per_block,
             disallowed_peptide_pairs=[],

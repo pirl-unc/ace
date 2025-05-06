@@ -93,7 +93,7 @@ function expandSequencesAccordion() {
 function loadExamplePeptides() {
     peptides = [];
     clearTable();
-    let filePath = './res/25peptides_example.xlsx';
+    let filePath = '../res/25peptides_example.xlsx';
     fetch(filePath)
         .then(response => response.arrayBuffer())
         .then(data => {

@@ -8,9 +8,9 @@ title: "Getting Started"
 
 **License**: Apache 2.0 License
 
-**Latest Stable Version**: `0.1.1.0`
+**Latest Stable Version**: `0.1.2.0`
 
-**Updated date**: December 7, 2023
+**Updated date**: May 6, 2025
 
 `ACE` is a python library and command-line software for:
 
@@ -27,15 +27,23 @@ pip install ace-<version>.tar.gz
 
 ## 02. Dependencies
 
-* pandas (>=1.5.2)
-* numpy (>=1.23.1)
-* [golfy>=2.5.0](https://github.com/pirl-unc/golfy)
-* [ortools>= 9.3.10497](https://developers.google.com/optimization/install)
-* torch
-* transformers (==4.30.2)
-* scikit-learn
-* openpyxl
-* levenshtein
+- python==3.10.13
+- pip==25.0
+- numpy==1.26.4
+- pandas==2.2.3
+- scipy==1.15.2
+- scikit-learn==1.6.1
+- openpyxl=3.1.5
+- setuptools==72.1.0
+- pyinstaller==6.13.0
+- transformers=4.30.2
+- pillow==11.1.0
+- eel==0.18.1
+- golfy==2.5.0
+- levenshtein==0.27.1
+- networkx==3.4.2
+- ortools==9.8.3296
+- torch==2.2.2
 
 ## **Command Line Interface**
 
@@ -65,5 +73,5 @@ options:
 ## **Citation**
 
 If you use `ACE` in a publication, please cite our
-[preprint](https://www.biorxiv.org/content/10.1101/2023.09.02.554864v1) describing `ACE`.
+[publication](https://academic.oup.com/bib/article/25/1/bbad495/7510987) describing `ACE`.
 

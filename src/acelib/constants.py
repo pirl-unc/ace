@@ -17,7 +17,7 @@ The purpose of this python3 script is to define ACE constants.
 
 
 import pandas as pd
-from transformers import BertModel, BertTokenizer
+from enum import Enum, IntEnum
 
 
 _AMINO_ACID_PROPERTIES = pd.DataFrame(
@@ -50,79 +50,62 @@ _AMINO_ACID_PROPERTIES = pd.DataFrame(
 ROSTLAB_PROT_BERT = "Rostlab/prot_bert"
 
 
-class GenerateModes:
+class DeconvolutionMethod(Enum):
+    CONSTRAINED_EM = 'cem'
+    EM = 'em'
+    EMPIRICAL = 'empirical'
+    LASSO = 'lasso'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class DeconvolutionResult(Enum):
+    CONFIDENT_HIT = 'confident_hit'
+    CANDIDATE_HIT = 'candidate_hit'
+    NOT_A_HIT = 'not_a_hit'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class GenerateMode(Enum):
     GOLFY = 'golfy'
     CPSAT_SOLVER = 'cpsat_solver'
-    ALL = [
-        GOLFY,
-        CPSAT_SOLVER
-    ]
+
+    def __str__(self) -> str:
+        return self.value
 
 
-class DeconvolutionMethods:
-    EM = 'em'
-    LASSO = 'lasso'
-    CONSTRAINED_EM = 'cem'
-    EMPIRICAL = 'empirical'
-    ALL = [
-        CONSTRAINED_EM,
-        EM,
-        LASSO,
-        EMPIRICAL
-    ]
+class GolfyStrategy(Enum):
+    GREEDY = 'greedy'
+    RANDOM = 'random'
+    REPEAT = 'repeat'
+
+    def __str__(self) -> str:
+        return self.value
 
 
-class PlateWells:
+class NumPlateWells(IntEnum):
     WELLS_24 = 24
     WELLS_48 = 48
     WELLS_96 = 96
     WELLS_384 = 384
-    ALL = [
-        WELLS_24,
-        WELLS_48,
-        WELLS_96,
-        WELLS_384,
-    ]
 
 
-class ReadoutFileTypes:
+class ReadoutFileType(Enum):
     POOL_IDS = 'pool_id'
     AID_PLATE_READER = 'aid_plate_reader'
-    ALL = [
-        POOL_IDS,
-        AID_PLATE_READER
-    ]
+
+    def __str__(self) -> str:
+        return self.value
 
 
-class DeconvolutionLabels:
-    CONFIDENT_HIT = 'confident_hit'
-    CANDIDATE_HIT = 'candidate_hit'
-    NOT_A_HIT = 'not_a_hit'
-    ALL = [
-        CONFIDENT_HIT,
-        CANDIDATE_HIT,
-        NOT_A_HIT
-    ]
-
-
-class GolfyStrategies:
-    GREEDY = 'greedy'
-    RANDOM = 'random'
-    REPEAT = 'repeat'
-    ALL = [
-        GREEDY,
-        RANDOM,
-        REPEAT
-    ]
-
-
-class SequenceSimilarityFunctions:
+class SequenceSimilarityFunction(Enum):
     EUCLIDEAN = 'euclidean'
     COSINE = 'cosine'
     LEVENSHTEIN = 'levenshtein'
-    ALL = [
-        COSINE,
-        EUCLIDEAN,
-        LEVENSHTEIN
-    ]
+
+    def __str__(self) -> str:
+        return self.value
 

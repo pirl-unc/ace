@@ -16,14 +16,14 @@ The purpose of this python3 script is to implement utility functions.
 """
 
 
+import golfy
 import pandas as pd
-import math
 import random
 import socket
-from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List
+from .block_assignment import BlockAssignment
 from .logger import get_logger
-from .types import *
+from .peptide import Peptide
 
 
 logger = get_logger(__name__)
@@ -50,47 +50,55 @@ def get_open_port() -> int:
     return port
 
 
-def convert_peptides_to_dataframe(peptides: Peptides) -> pd.DataFrame:
+def convert_to_golfy_spot_counts(
+        spot_counts: Dict[int,int],
+        block_assignment: BlockAssignment
+) -> golfy.SpotCounts:
     """
-    Convert Peptides to pd.DataFrame.
+    Convert pool spot counts to golfy SpotCounts.
 
-    Parameters
-    ----------
-    peptides    :   Peptides.
+    Parameters:
+        spot_counts             :   A mapping of pool ID to the corresponding pool spot count.
+        block_assignment        :   BlockAssignment object.
 
-    Returns
-    -------
-    df_peptides :   pd.DataFrame with the following columns:
-                    'peptide_id'
-                    'peptide_sequence'
+    Returns:
+        golfy.SpotCounts        :   golfy.SpotCounts object.
     """
-    data = {
-        'peptide_id': [],
-        'peptide_sequence': []
-    }
-    for peptide_id, peptide_sequence in peptides:
-        data['peptide_id'].append(peptide_id)
-        data['peptide_sequence'].append(peptide_sequence)
-    return pd.DataFrame(data)
+    # spot_counts:
+    # {
+    #     coverage_id_1: {
+    #         pool_id_1: spot_count_1,
+    #         pool_id_2: spot_count_2,
+    #         ...
+    #     }
+    # }
+    golfy_spot_counts: Dict[int, Dict[int, int]] = {}
+    for pool_id, pool in block_assignment.pools.items():
+        coverage_id = pool.coverage_id - 1
+        golfy_pool_id = pool_id - 1
+        if coverage_id not in golfy_spot_counts:
+            golfy_spot_counts[coverage_id] = {}
+        if pool_id in spot_counts:
+            golfy_spot_counts[coverage_id][golfy_pool_id] = spot_counts[pool_id]
+    return golfy_spot_counts
 
 
-def convert_dataframe_to_peptides(df_peptides: pd.DataFrame) -> Peptides:
+def convert_dataframe_to_peptides(df_peptides: pd.DataFrame) -> List[Peptide]:
     """
     Convert pd.DataFrame to Peptides.
 
-    Parameters
-    ----------
-    df_peptides :   pd.DataFrame with the following columns:
-                    'peptide_id'
-                    'peptide_sequence'
+    Parameters:
+        df_peptides :   pd.DataFrame with the following columns:
+                            - 'peptide_id'
+                            - 'peptide_sequence'
 
-    Returns
-    -------
-    peptides    :   Peptides.
+    Returns:
+        peptides    :   List of Peptide objects.
     """
     peptides = []
     for index, value in df_peptides.iterrows():
-        peptides.append((value['peptide_id'], value['peptide_sequence']))
+        peptide = Peptide(id=str(value['peptide_id']), sequence=str(value['peptide_sequence']))
+        peptides.append(peptide)
     return peptides
 
 
@@ -102,13 +110,11 @@ def is_prime(num: int) -> bool:
     """
     Returns True if the supplied number is a prime number.
 
-    Parameters
-    ----------
-    num         :   Number (integer).
+    Parameters:
+        num         :   Number (integer).
 
-    Returns
-    -------
-    is_prime    :   True if the supplied number is a prime number.
+    Returns:
+        is_prime    :   True if the supplied number is a prime number.
     """
     for i in range(2, num):
         if (num % i) == 0:

@@ -1,4 +1,6 @@
-from pkg_resources import get_distribution
+from importlib.metadata import version, PackageNotFoundError
 
-
-__version__ = get_distribution('ace-elispot').version
+try:
+    __version__ = version("ace-elispot")
+except PackageNotFoundError:
+    __version__ = "unknown"

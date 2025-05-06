@@ -44,7 +44,7 @@ Here we describe how you can achieve this using `ACE`.
 
 You can supply a generic ELISpot results .xlsx file to `ACE`:
 
-[25peptides_5perpool_3x_pool-id_readout.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout.xlsx):
+[25peptides_5perpool_3x_readout_pool-ids.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_readout_pool-ids.xlsx):
 
 | plate_id | well_id | spot_count |
 | -------- | -------- | ---------- |
@@ -66,14 +66,14 @@ ace deconvolve \
 
 Running the above command results in the following file:
 
-[25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_pool-id_readout_deconvolved.xlsx):
+[25peptides_5perpool_3x_readout_pool-ids_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_readout_pool-ids_deconvolved.xlsx):
 
 #### AID Plate Reader
 
 If you used a plate reader from AID, we are able to automatically parse the .xlsx file from
 the machine.
 
-[25peptides_5perpool_3x_aid-plate-reader_readout.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout.xlsx):
+[25peptides_5perpool_3x_readout_aid-plate-reader.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_readout_aid-plate-reader.xlsx):
 
 ![](resources/aid_plate_reader_xlsx_example.png)
 
@@ -90,7 +90,7 @@ ace deconvolve \
 
 Running the above command results in the following file:
 
-[25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_aid-plate-reader_readout_deconvolved.xlsx):
+[25peptides_5perpool_3x_readout_aid-plate-reader_deconvolved.xlsx](https://github.com/pirl-unc/ace/blob/main/test/data/25peptides_5perpool_3x_readout_aid-plate-reader_deconvolved.xlsx):
 
 ### Deconvolution results
 

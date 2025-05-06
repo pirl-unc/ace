@@ -16,32 +16,31 @@ The purpose of this python3 script is to implement data types used in ACE.
 """
 
 
-import pandas as pd
-from typing import Iterable, Mapping, Tuple
+# from typing import Iterable, Mapping, Tuple
 
 
-CoverageId = int
-DeconvolutionLabel = str
-PeptideId = str
-PeptideIndex = int
-PeptideSequence = str
-PeptideActivityLevel = float
-MaxPeptidesPerBlock = int
-NumPeptides = int
-NumPeptidesPerPool = int
-NumCoverage = int
-PeptideSequenceSimilarityScore = float
-PlateId = int
-PoolId = int
-SpotCount = int
-WellId = str
-SimilarityScore = float
-
-Assignments = Mapping[CoverageId, Mapping[PoolId, Iterable[Tuple[PeptideId, PeptideSequence]]]]
-HitPeptides = Iterable[Tuple[PeptideId, PeptideSequence, PeptideActivityLevel, DeconvolutionLabel, Iterable[PoolId]]]
-Peptides = Iterable[Tuple[PeptideId, PeptideSequence]]
-PeptideIndices = Mapping[PeptideIndex, PeptideId]
-PeptidePairs = Iterable[Tuple[PeptideId, PeptideId]]
-PreferredPeptidePairs = Iterable[Tuple[PeptideId, PeptideId, SimilarityScore]]
-PlateReadoutObservations = Iterable[Tuple[PlateId, WellId, SpotCount]]
-SpotCounts = Mapping[PoolId, SpotCount]
+# CoverageId = int
+# DeconvolutionLabel = str
+# PeptideId = str
+# PeptideIndex = int
+# PeptideSequence = str
+# PeptideActivityLevel = float
+# MaxPeptidesPerBlock = int
+# NumPeptides = int
+# NumPeptidesPerPool = int
+# NumCoverage = int
+# PeptideSequenceSimilarityScore = float
+# PlateId = int
+# PoolId = int
+# SpotCount = int
+# WellId = str
+# SimilarityScore = float
+#
+# Assignments = Mapping[CoverageId, Mapping[PoolId, Iterable[Tuple[PeptideId, PeptideSequence]]]]
+# HitPeptides = Iterable[Tuple[PeptideId, PeptideSequence, PeptideActivityLevel, DeconvolutionLabel, Iterable[PoolId]]]
+# Peptides = Iterable[Tuple[PeptideId, PeptideSequence]]
+# PeptideIndices = Mapping[PeptideIndex, PeptideId]
+# PeptidePairs = Iterable[Tuple[PeptideId, PeptideId]]
+# PreferredPeptidePairs = Iterable[Tuple[PeptideId, PeptideId, SimilarityScore]]
+# PlateReadoutObservations = Iterable[Tuple[PlateId, WellId, SpotCount]]
+# SpotCounts = Mapping[PoolId, SpotCount]
