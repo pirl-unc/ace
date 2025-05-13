@@ -209,97 +209,101 @@
                     </div>
                 </div>
             </div>
-            <div class="accordion border shadow-sm bg-white rounded mt-3" id="accordion-advanced-params">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingAdvancedParams">
-                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvancedParams" aria-expanded="true" aria-controls="collapseAdvancedParams">
-                          <h3>3. Advanced Parameters</h3>
-                      </button>
-                    </h2>
-                    <div id="collapseAdvancedParams" class="accordion-collapse collapse" aria-labelledby="headingAdvancedParams" data-bs-parent="#accordion-advanced-params">
-                        <div class="accordion-body p-3">
-                            <div class="container p-0">
-                                <div class="row">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Cluster Peptides</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="If you specify 'yes', ACE will cluster similar peptides into the same pool">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
+            <div class="container" style="padding: 0;">
+                <div class="accordion border shadow-sm bg-white rounded mt-3 mx-auto" id="accordion-advanced-params">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingAdvancedParams">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvancedParams" aria-expanded="true" aria-controls="collapseAdvancedParams">
+                              <h3>3. Advanced Parameters</h3>
+                          </button>
+                        </h2>
+                        <div id="collapseAdvancedParams" class="accordion-collapse collapse" aria-labelledby="headingAdvancedParams" data-bs-parent="#accordion-advanced-params">
+                            <div class="accordion-body p-3">
+                                <div class="container p-0">
+                                    <div class="row">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Cluster Peptides</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="If you specify 'yes', ACE will cluster similar peptides into the same pool">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <select class="w-50 form-select" name="cluster-peptides" id="cluster-peptides">
-                                    <option value="yes" selected>Yes</option>
-                                    <option value="no">No</option>
-                                </select>
-                                <div class="row mt-3">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Sequence Similarity Function</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="The sequence similarity function to use to cluster peptides">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <select class="w-50 form-select" name="sequence-similarity-function" id="sequence-similarity-fxn">
-                                    <option value="euclidean" selected>Euclidean</option>
-                                    <option value="cosine">Cosine</option>
-                                </select>
-                                <div class="row mt-3">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Sequence Similarity Threshold</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Peptide sequence pairs that have a sequence similarity score higher than this threshold will be paired together in the same pool">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5">
-                                        <input type="range" class="form-range range-cust" min="0" max="1" step="0.05" id="sequence-similarity-threshold"
-                                               value="0.7" onchange="updateThresholdLabel(value)">
-                                    </div>
-                                    <div class="col-7">
-                                        <label for="sequence-similarity-threshold" id="threshold-label">0.7</label>
-                                    </div>
-                                </div>
-                                <div class="row mt-3">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Maximum Number of Iterations</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Maximum number of iterations to minimize the number of violations (i.e. co-occurrence of peptide pairs across replicates)">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <input class="w-50 form-control mt-1" type="number" id="num-iterations" value="2000">
-                                <div class="row mt-3">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Initialization Strategy</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="This strategy determines how the first-coverage peptide-pool assignments are determined. 'Greedy' ensures that similar peptide pairs are pooled together. 'Random' randomly assigns peptides to pools. 'Repeated' generates a repeated block design.">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <select class="w-50 form-select" name="strategy" id="strategy">
-                                    <option value="greedy" selected>Greedy</option>
-                                    <option value="random">Random</option>
-                                    <option value="repeat">Repeat</option>
-                                </select>
-                                <div class="row mt-3">
-                                    <div class="col-12 d-flex align-items-center">
-                                        <p class="mb-0">Allow Extra Pools</p>
-                                        <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="If you select 'yes', then ACE will allow extra pools to minimize the number of violations (i.e. co-occurrence of peptide pairs across replicates). If you select 'no', then ACE will generate an ELISpot configuration with the minimum number of pools for the first-round assay">
-                                            <i class="bi bi-question-circle"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                    <select class="w-50 form-select" name="allow-extra-pools" id="allow-extra-pools">
-                                        <option value="no" selected>No</option>
-                                        <option value="yes">Yes</option>
+                                    <select class="w-50 form-select" name="cluster-peptides" id="cluster-peptides">
+                                        <option value="yes" selected>Yes</option>
+                                        <option value="no">No</option>
                                     </select>
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Sequence Similarity Function</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="The sequence similarity function to use to cluster peptides">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <select class="w-50 form-select" name="sequence-similarity-function" id="sequence-similarity-fxn">
+                                        <option value="euclidean" selected>Euclidean</option>
+                                        <option value="cosine">Cosine</option>
+                                    </select>
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Sequence Similarity Threshold</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Peptide sequence pairs that have a sequence similarity score higher than this threshold will be paired together in the same pool">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <input type="range" class="form-range range-cust" min="0" max="1" step="0.05" id="sequence-similarity-threshold"
+                                                   value="0.7" onchange="updateThresholdLabel(value)">
+                                        </div>
+                                        <div class="col-7">
+                                            <label for="sequence-similarity-threshold" id="threshold-label">0.7</label>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Maximum Number of Iterations</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="Maximum number of iterations to minimize the number of violations (i.e. co-occurrence of peptide pairs across replicates)">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input class="w-50 form-control mt-1" type="number" id="num-iterations" value="2000">
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Initialization Strategy</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="This strategy determines how the first-coverage peptide-pool assignments are determined. 'Greedy' ensures that similar peptide pairs are pooled together. 'Random' randomly assigns peptides to pools. 'Repeated' generates a repeated block design.">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <select class="w-50 form-select" name="strategy" id="strategy">
+                                        <option value="greedy" selected>Greedy</option>
+                                        <option value="random">Random</option>
+                                        <option value="repeat">Repeat</option>
+                                    </select>
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex align-items-center">
+                                            <p class="mb-0">Allow Extra Pools</p>
+                                            <button type="button" class="btn btn-outline-primary rounded-circle" style="border: none;" data-bs-trigger="focus" data-toggle="popover" title="If you select 'yes', then ACE will allow extra pools to minimize the number of violations (i.e. co-occurrence of peptide pairs across replicates). If you select 'no', then ACE will generate an ELISpot configuration with the minimum number of pools for the first-round assay">
+                                                <i class="bi bi-question-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <select class="w-50 form-select" name="allow-extra-pools" id="allow-extra-pools">
+                                            <option value="no" selected>No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            <div class="container d-flex justify-content-end px-0 mx-0 mt-3 mb-5">
+            </div>
+            <div class="container d-flex justify-content-end px-0 mx-auto mt-3 mb-5">
                 <button class="btn btn-primary px-5" onclick="generate()">Generate Configuration</button>
             </div>
         </div>
@@ -311,8 +315,8 @@
             <h1 class="text-center">Please wait while ACE generates<br/>your ELISpot configuration</h1>
             <h3 class="text-center"><i>(This could take a while...)</i></h3>
             <div class="dot-pulse mt-5"></div>
-            <h3 class="mt-5">Input Parameters</h3>
             <div class="container border shadow-sm p-3 bg-white rounded mt-1">
+                <h3>Input Parameters</h3>
                 <div class="row">
                     <div class="col-6">
                         <p class="my-0">Number of peptides</p>
@@ -563,7 +567,7 @@
                     </div>
                 </div>
             </div>
-            <div class="container d-flex justify-content-end px-0 mx-0 mt-3 mb-5">
+            <div class="container d-flex justify-content-end px-0 mx-auto mt-3 mb-5">
                 <button class="btn btn-primary px-5" onclick="saveConfigurationFile()">Save Configuration</button>
             </div>
         </div>
