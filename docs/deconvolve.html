@@ -238,7 +238,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--min-pool-spot-count</span> MIN_POOL_SPOT_COUNT</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">--output-excel-file</span> OUTPUT_EXCEL_FILE</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--method</span> <span class="dt">{em</span><span class="op">,</span><span class="dt">lasso</span><span class="op">,</span><span class="dt">cem</span><span class="op">,</span><span class="dt">empirical}</span>]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--verbose</span> VERBOSE]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--background-spot-count</span> BACKGROUND_SPOT_COUNT]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">[--verbose</span> VERBOSE]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 27%">
@@ -290,9 +291,13 @@ plate 1 readout file, plate 2 readout file etc.</td>
 <tbody>
 <tr class="odd">
 <td><code>--method</code></td>
-<td>Statistical deconvolution mode (default: constrained-em).</td>
+<td>Statistical deconvolution mode (default: ‘cem’).</td>
 </tr>
 <tr class="even">
+<td><code>--background-spot-count</code></td>
+<td>Background spot count (default: ‘auto’). If ‘auto’, ACE automatically estimates the background spot count. The background spot count is used as negative control. Peptides with an estimated spot count less than or equal to the background spot count will be excluded as putative immunogenic hit peptides. Automatic estimation is applicable when the deconvolution method is constrained expectation-maximization (‘cem’).</td>
+</tr>
+<tr class="odd">
 <td><code>--verbose</code></td>
 <td>If True, prints messages. Otherwise, messages are not printed (default: True).</td>
 </tr>

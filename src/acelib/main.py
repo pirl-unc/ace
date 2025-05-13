@@ -19,6 +19,7 @@ The purpose of this python3 script is to implement the main API functions of ACE
 import numpy as np
 import torch
 from golfy import init, optimize
+from networkx.algorithms.traversal import dfs_tree
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from typing import List, Literal, Tuple, Union
 from .block_assignment import BlockAssignment
@@ -351,6 +352,7 @@ def run_ace_deconvolve(
         method: DeconvolutionMethod,
         min_coverage: int,
         min_pool_spot_count: float,
+        background_spot_count: Union[float, str] = "auto",
         verbose: bool = True
 ) -> DeconvolvedPeptideSet:
     """
@@ -365,6 +367,7 @@ def run_ace_deconvolve(
         method                  :   Deconvolution method.
         min_coverage            :   Minimum coverage.
         min_pool_spot_count     :   Minimum pool spot count.
+        background_spot_count   :   Background spot count (default: 'auto').
 
     Returns:
         hit_peptide_set         :   HitPeptideSet object.
@@ -394,18 +397,23 @@ def run_ace_deconvolve(
             block_assignment=block_assignment,
             method=method,
             min_peptide_spot_count=1.0,
+            min_coverage=min_coverage,
+            min_pool_spot_count=min_pool_spot_count,
             verbose=verbose
         )
         for deconvolved_peptide in deconvolved_peptide_set_statistical.deconvolved_peptides:
-            if deconvolved_peptide.estimated_spot_count <= 0.0:
-                deconvolved_peptide.result = DeconvolutionResult.NOT_A_HIT
+            if background_spot_count == 'auto':
+                if deconvolved_peptide.estimated_spot_count <= 0.0:
+                    deconvolved_peptide.result = DeconvolutionResult.NOT_A_HIT
+            else:
+                if deconvolved_peptide.estimated_spot_count <= background_spot_count:
+                    deconvolved_peptide.result = DeconvolutionResult.NOT_A_HIT
 
         # Merge deconvolution
         df_empirical = deconvolved_peptide_set_empirical.to_dataframe()
         df_empirical.drop(columns=['estimated_peptide_spot_count'], inplace=True)
         df_statistical = deconvolved_peptide_set_statistical.to_dataframe()
-        df_statistical.drop(columns=['peptide_sequence', 'hit_pool_ids', 'hit_pools_count', 'hit_pool_spot_counts', 'deconvolution_result'],
-                            inplace=True)
+        df_statistical = df_statistical[['peptide_id','estimated_peptide_spot_count']]
         df_merged = df_empirical.merge(df_statistical, on='peptide_id')
 
         # Prepare output
@@ -486,6 +494,8 @@ def run_ace_deconvolve(
             df_readout=df_readout_filtered,
             block_assignment=block_assignment_filtered,
             method=DeconvolutionMethod.EM,
+            min_coverage=min_coverage,
+            min_pool_spot_count=min_pool_spot_count,
             min_peptide_spot_count=1.0,
             verbose=verbose
         )
@@ -494,20 +504,20 @@ def run_ace_deconvolve(
         df_empirical = deconvolved_peptide_set_empirical_2.to_dataframe()
         df_empirical.drop(columns=['estimated_peptide_spot_count'], inplace=True)
         df_statistical = deconvolved_peptide_set_statistical.to_dataframe()
-        df_statistical.drop(columns=['peptide_sequence', 'hit_pool_ids', 'hit_pools_count', 'hit_pool_spot_counts', 'deconvolution_result'],
-                            inplace=True)
+        df_statistical = df_statistical[['peptide_id', 'estimated_peptide_spot_count']]
         df_merged = df_empirical.merge(df_statistical, on='peptide_id')
 
         # Compute background peptide spot count
-        peptide_spot_counts = {}
-        for deconvolved_peptide in deconvolved_peptide_set_statistical.deconvolved_peptides:
-            peptide_spot_counts[deconvolved_peptide.id] = deconvolved_peptide.estimated_spot_count
-        background_spot_count = compute_background_spot_count(
-            df_readout=df_readout,
-            block_assignment=block_assignment,
-            peptide_spot_counts=peptide_spot_counts,
-            hit_peptide_ids=hit_peptide_ids_empirical_2
-        )
+        if background_spot_count == 'auto':
+            peptide_spot_counts = {}
+            for deconvolved_peptide in deconvolved_peptide_set_statistical.deconvolved_peptides:
+                peptide_spot_counts[deconvolved_peptide.id] = deconvolved_peptide.estimated_spot_count
+            background_spot_count = compute_background_spot_count(
+                df_readout=df_readout,
+                block_assignment=block_assignment,
+                peptide_spot_counts=peptide_spot_counts,
+                hit_peptide_ids=hit_peptide_ids_empirical_2
+            )
 
         # Prepare output
         deconvolved_peptides = []

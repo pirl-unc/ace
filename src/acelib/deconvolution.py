@@ -194,6 +194,8 @@ def perform_statistical_deconvolution(
         block_assignment: BlockAssignment,
         method: DeconvolutionMethod,
         min_peptide_spot_count: float,
+        min_coverage: int,
+        min_pool_spot_count: float,
         verbose: bool = True
 ) -> DeconvolvedPeptideSet:
     """
@@ -204,6 +206,8 @@ def perform_statistical_deconvolution(
         block_assignment        :   BlockAssignment objects.
         method                  :   Deconvolution method.
         min_peptide_spot_count  :   Minimum peptide spot count.
+        min_coverage            :   Minimum coverage.
+        min_pool_spot_count     :   Minimum pool spot count.
         verbose                 :   If True, print logs.
 
     Returns:
@@ -237,6 +241,8 @@ def perform_statistical_deconvolution(
     deconvolved_peptide_set = DeconvolvedPeptideSet(
         deconvolution_method=method,
         min_peptide_spot_count=min_peptide_spot_count,
+        min_coverage=min_coverage,
+        min_pool_spot_count=min_pool_spot_count,
         pool_spot_counts=pool_spot_counts
     )
 

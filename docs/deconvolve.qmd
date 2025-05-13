@@ -12,6 +12,7 @@ usage: ace deconvolve [-h]
     --min-pool-spot-count MIN_POOL_SPOT_COUNT
     --output-excel-file OUTPUT_EXCEL_FILE
     [--method {em,lasso,cem,empirical}]
+    [--background-spot-count BACKGROUND_SPOT_COUNT]
     [--verbose VERBOSE]
 ```
 
@@ -29,7 +30,8 @@ plate 1 readout file, plate 2 readout file etc. |
 
 | Optional Parameter          | Description                                                              |
 | --------------------------- | ------------------------------------------------------------------------ |
-| `--method` | Statistical deconvolution mode (default: constrained-em).           |        
+| `--method` | Statistical deconvolution mode (default: 'cem').           |
+| `--background-spot-count` | Background spot count (default: 'auto'). If 'auto', ACE automatically estimates the background spot count. The background spot count is used as negative control. Peptides with an estimated spot count less than or equal to the background spot count will be excluded as putative immunogenic hit peptides. Automatic estimation is applicable when the deconvolution method is constrained expectation-maximization ('cem'). |
 | `--verbose`              | If True, prints messages. Otherwise, messages are not printed (default: True). |
 
 ### Example

@@ -107,6 +107,14 @@ def add_ace_deconvolve_arg_parser(sub_parsers):
         help="Deconvolution method (default: %s)." % DEFAULT_DECONVOLVE_METHOD
     )
     parser_optional.add_argument(
+        "--background-spot-count",
+        dest="background_spot_count",
+        type=str,
+        default=DEFAULT_DECONVOLVE_BACKGROUND_SPOT_COUNT,
+        required=False,
+        help="Background spot count (default: %s). Peptides with an estimated spot count less than or equal to the background spot count will be excluded as putative immunogenic hit peptides. Set this value to 'auto' to allow ACE to automatically estimate the background spot count. Automatic estimation is applicable when the deconvolution method is constrained expectation-maximization ('cem'). " % DEFAULT_DECONVOLVE_BACKGROUND_SPOT_COUNT
+    )
+    parser_optional.add_argument(
         "--verbose",
         dest="verbose",
         type=bool,
@@ -156,6 +164,13 @@ def run_ace_deconvolve_from_parsed_args(args):
     plate_readout.assign_pool_ids(block_assignment=block_assignment)
     df_readout = plate_readout.to_dataframe()
 
+    background_spot_count = args.background_spot_count
+    if background_spot_count != 'auto':
+        try:
+            background_spot_count = float(args.background_spot_count)
+        except ValueError:
+            raise Exception("Background spot count must be either 'auto' or a number (0 or higher).")
+
     # Step 4. Perform deconvolution
     deconvolved_peptide_set = run_ace_deconvolve(
         df_readout=df_readout,
@@ -163,6 +178,7 @@ def run_ace_deconvolve_from_parsed_args(args):
         method=DeconvolutionMethod(args.method),
         min_coverage=block_design.num_coverage,
         min_pool_spot_count=args.min_pool_spot_count,
+        background_spot_count=background_spot_count,
         verbose=args.verbose
     )
 

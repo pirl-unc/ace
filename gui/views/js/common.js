@@ -44,12 +44,27 @@ class PreferredPeptidePair {
 }
 
 class DeconvolutionResult {
-    constructor(peptide_id, peptide_sequence, hit_well_ids, hit_well_ids_count, peptide_spot_count, result) {
+    constructor(
+        peptide_id,
+        peptide_sequence,
+        hit_plate_well_ids,
+        hit_plate_well_ids_count,
+        hit_plate_well_spot_counts,
+        hit_plate_well_spot_counts_average,
+        hit_plate_well_spot_counts_standard_deviation,
+        hit_plate_well_spot_counts_variation_coefficient,
+        estimated_peptide_spot_count,
+        deconvolution_result
+    ) {
         this.peptide_id = peptide_id;
         this.peptide_sequence = peptide_sequence;
-        this.hit_well_ids = hit_well_ids;
-        this.hit_well_ids_count = hit_well_ids_count;
-        this.peptide_spot_count = peptide_spot_count;
-        this.result = result;
+        this.hit_plate_well_ids = hit_plate_well_ids;
+        this.hit_plate_well_ids_count = hit_plate_well_ids_count;
+        this.hit_plate_well_spot_counts = hit_plate_well_spot_counts;
+        this.hit_plate_well_spot_counts_average = hit_plate_well_spot_counts_average;
+        this.hit_plate_well_spot_counts_standard_deviation = hit_plate_well_spot_counts_standard_deviation;
+        this.hit_plate_well_spot_counts_variation_coefficient = hit_plate_well_spot_counts_variation_coefficient;
+        this.estimated_peptide_spot_count = estimated_peptide_spot_count;
+        this.deconvolution_result = deconvolution_result;
     }
 }

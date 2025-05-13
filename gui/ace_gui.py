@@ -101,7 +101,8 @@ def deconvolve(
         readouts,
         statistical_deconvolution_method,
         min_coverage,
-        min_spot_count
+        min_spot_count,
+        background_spot_count
 ):
     for assignment in assignments:
         assert 'peptide_id' in assignment.keys()
@@ -184,7 +185,6 @@ def deconvolve(
         data['spot_count'].append(float(readout['spot_count']))
         data['pool_id'].append(pool_id)
     df_readout = pd.DataFrame(data)
-    print(df_readout.head(n=5))
 
     # Step 6. Perform empirical deconvolution
     min_coverage = int(min_coverage)
@@ -194,9 +194,14 @@ def deconvolve(
         block_assignment=block_assignment,
         method=DeconvolutionMethod(statistical_deconvolution_method),
         min_coverage=min_coverage,
-        min_pool_spot_count=min_spot_count
+        min_pool_spot_count=min_spot_count,
+        background_spot_count=background_spot_count if background_spot_count == 'auto' else float(background_spot_count)
     )
-    return deconvolved_peptide_set.to_dataframe().to_dict()
+    output = {
+        'dataframe': deconvolved_peptide_set.to_dataframe().to_dict(),
+        'metadata': deconvolved_peptide_set.metadata_dataframe().to_dict()
+    }
+    return output
 
 
 def find_port(port=1111):

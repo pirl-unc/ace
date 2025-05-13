@@ -10,7 +10,6 @@
     /* bootstrap */
     --bs-success: #ee2a7b;
     @include rfs($tooltip-font-size, --#{$prefix}tooltip-font-size);
-
 }
 
 .w-40 { width: 40%; }

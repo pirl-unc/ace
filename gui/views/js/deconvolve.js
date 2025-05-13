@@ -13,6 +13,8 @@ var minPositiveSpotCount;
 var minPositiveSpotCountSaved;
 var minCoverage;
 var minCoverageSaved;
+var backgroundSpotCount = 'auto';
+var estimatedBackgroundSpotCount = '';
 var statisticalDeconvolutionMethod = 'cem';
 var statisticalDeconvolutionMethodSaved = 'cem';
 var spotCountChart;
@@ -24,6 +26,10 @@ function onLoadBody() {}
 
 function onChangeMinCoverage() {
     minCoverage = document.getElementById('input-min-coverage').value;
+}
+
+function onChangeBackgroundSpotCount() {
+    backgroundSpotCount = document.getElementById('input-background-spot-count').value;
 }
 
 function onChangeMinPositivePoolSpotCount() {
@@ -190,6 +196,7 @@ function renderInputParamsDiv() {
     } else {
         document.getElementById('input-min-coverage').value = minCoverage;
     }
+    document.getElementById('input-background-spot-count').value = backgroundSpotCount;
     document.getElementById('input-statistical-deconvolution-mode').value = statisticalDeconvolutionMethod;
 }
 
@@ -224,6 +231,7 @@ function reset() {
     spotCounts = [];
     minPositiveSpotCount = 0;
     minCoverage = 0;
+    backgroundSpotCount = 'auto';
     statisticalDeconvolutionMethod = 'cem';
     resetConfigFile();
     resetSpotCountsFile();
@@ -238,6 +246,7 @@ function loadExample() {
     reset();
     minPositiveSpotCount = 200;
     minCoverage = 3;
+    backgroundSpotCount = 'auto';
     statisticalDeconvolutionMethod = 'cem';
     loadExampleAssignments();
     loadExampleSpotCounts();
@@ -502,7 +511,8 @@ function deconvolve() {
             spotCounts,
             statisticalDeconvolutionMethod,
             minCoverage,
-            minPositiveSpotCount
+            minPositiveSpotCount,
+            backgroundSpotCount
         )(renderOutputDiv)
     }
 }
@@ -512,28 +522,45 @@ function renderOutputDiv(output) {
     document.getElementById('div-results').focus();
 
     // Save deconvolution results
-    const peptideIdsMap = new Map(Object.entries(output['peptide_id']));
-    const peptideSequencesMap = new Map(Object.entries(output['peptide_sequence']));
-    const peptideSpotCountMap = new Map(Object.entries(output['estimated_peptide_spot_count']));
-    const hitWellIdsMap = new Map(Object.entries(output['hit_plate_well_ids']));
-    const hitWellIdsCountMap = new Map(Object.entries(output['hit_pools_count']));
-    const deconvolutionResultsMap = new Map(Object.entries(output['deconvolution_result']));
+    estimatedBackgroundSpotCount = output['metadata']['background_spot_count'][0];
+
+    const peptideIdsMap = new Map(Object.entries(output['dataframe']['peptide_id']));
+    const peptideSequencesMap = new Map(Object.entries(output['dataframe']['peptide_sequence']));
+    const hitPlateWellIdsMap = new Map(Object.entries(output['dataframe']['hit_plate_well_ids']));
+    const hitPlateWellIdsCountMap = new Map(Object.entries(output['dataframe']['hit_plate_well_ids_count']));
+    const hitPlateWellSpotCountsMap = new Map(Object.entries(output['dataframe']['hit_plate_well_spot_counts']));
+    const hitPlateWellSpotCountAvgMap = new Map(Object.entries(output['dataframe']['hit_plate_well_spot_counts_average']));
+    const hitPlateWellSpotCountStdMap = new Map(Object.entries(output['dataframe']['hit_plate_well_spot_counts_standard_deviation']));
+    const hitPlateWellSpotCountVarCoeffMap = new Map(Object.entries(output['dataframe']['hit_plate_well_spot_counts_variation_coefficient']));
+    const estimatedPeptideSpotCountMap = new Map(Object.entries(output['dataframe']['estimated_peptide_spot_count']));
+    const deconvolutionResultsMap = new Map(Object.entries(output['dataframe']['deconvolution_result']));
+
     deconvolutionResults = [];
     for (const [key, value] of peptideIdsMap.entries()) {
         let currPeptideId = value;
         const currPeptideSequence = peptideSequencesMap.get(key);
-        const currPeptideSpotCount = peptideSpotCountMap.get(key);
-        const currWellIdsCount = hitWellIdsCountMap.get(key);
-        const currWellIds = hitWellIdsMap.get(key);
-        const currResult = deconvolutionResultsMap.get(key);
+        const currPlateWellIds = hitPlateWellIdsMap.get(key);
+        const currPlateWellIdsCount = hitPlateWellIdsCountMap.get(key);
+        const currPlateWellSpotCountsCount = hitPlateWellSpotCountsMap.get(key);
+        const currPlateWellSpotCountAvgCount = hitPlateWellSpotCountAvgMap.get(key);
+        const currPlateWellSpotCountStdCount = hitPlateWellSpotCountStdMap.get(key);
+        const currPlateWellSpotCountVarCoeffCount = hitPlateWellSpotCountVarCoeffMap.get(key);
+        const currEstimatedPeptideSpotCount = estimatedPeptideSpotCountMap.get(key);
+        const currDeconvolutionResult = deconvolutionResultsMap.get(key);
+
         var deconvolutionResult = new DeconvolutionResult(
             currPeptideId,
             currPeptideSequence,
-            currWellIds,
-            currWellIdsCount,
-            currPeptideSpotCount,
-            currResult
+            currPlateWellIds,
+            currPlateWellIdsCount,
+            currPlateWellSpotCountsCount,
+            currPlateWellSpotCountAvgCount,
+            currPlateWellSpotCountStdCount,
+            currPlateWellSpotCountVarCoeffCount,
+            currEstimatedPeptideSpotCount,
+            currDeconvolutionResult
         );
+
         deconvolutionResults.push(deconvolutionResult);
     }
 
@@ -580,52 +607,68 @@ function renderOutputDiv(output) {
     }
 
     // Add hit wells to table
+    console.log(estimatedBackgroundSpotCount);
+    document.getElementById('estimated-background-spot-count').textContent = "Background spot count: " + Math.round(estimatedBackgroundSpotCount);
+
     for (var i = 0; i < deconvolutionResults.length; i++) {
-        if (deconvolutionResults[i].result == 'confident_hit' || deconvolutionResults[i].result == 'candidate_hit') {
+        if (deconvolutionResults[i].deconvolution_result == 'confident_hit' || deconvolutionResults[i].deconvolution_result == 'candidate_hit') {
             rowCount = table.rows.length;
             var row = table.insertRow(rowCount);
 
             // Index
             var newCell	= row.insertCell(0);
             newCell.innerHTML = "<p class=\"text-center my-auto\">" + rowCount + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Peptide ID
             var newCell	= row.insertCell(1);
             newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].peptide_id + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Peptide sequence
             var newCell	= row.insertCell(2);
             newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].peptide_sequence + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Hit well IDs
             var newCell	= row.insertCell(3);
-            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].hit_well_ids + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].hit_plate_well_ids + "</p>";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Hit well IDs count
             var newCell	= row.insertCell(4);
-            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].hit_well_ids_count + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].hit_plate_well_ids_count + "</p>";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
+
+            // Hit well spot count average
+            var newCell = row.insertCell(5);
+            var roundedValue = Math.round(deconvolutionResults[i].hit_plate_well_spot_counts_average);
+            newCell.innerHTML = `<p class="text-center my-auto">${roundedValue}</p>`;
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
+
+            // Hit well spot count standard deviation
+            var newCell = row.insertCell(6);
+            var roundedValue = Math.round(deconvolutionResults[i].hit_plate_well_spot_counts_standard_deviation);
+            newCell.innerHTML = `<p class="text-center my-auto">${roundedValue}</p>`;
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Estimated peptide spot count
-            var newCell	= row.insertCell(5);
-            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].peptide_spot_count.toFixed(0) + "</p>";
-            newCell.style = "vertical-align: middle;";
+            var newCell	= row.insertCell(7);
+            newCell.innerHTML = "<p class=\"text-center my-auto\">" + deconvolutionResults[i].estimated_peptide_spot_count.toFixed(0) + "</p>";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
 
             // Deconvolution result
             var resultLabel = ''
-            if (deconvolutionResults[i].result == 'confident_hit') {
+            if (deconvolutionResults[i].deconvolution_result == 'confident_hit') {
                 resultLabel = 'confident hit';
-            } else {
+            } else if (deconvolutionResults[i].deconvolution_result == 'candidate_hit') {
                 resultLabel = 'candidate hit';
+            } else {
+                resultLabel = 'not a hit';
             }
-
-            var newCell	= row.insertCell(6);
+            var newCell	= row.insertCell(8);
             newCell.innerHTML = "<p class=\"text-center my-auto\">" + resultLabel + "</p>";
-            newCell.style = "vertical-align: middle;";
+            newCell.style = "vertical-align: middle; font-size: 0.854rem;";
         }
     }
 }
@@ -635,15 +678,48 @@ async function saveResultsFile() {
         var zip = new JSZip();
 
         // Step 1. Create deconvolution results CSV file
-        var csvRows1 = ["peptide_id,peptide_sequence,hit_plate_well_ids,hit_plate_well_ids_count,estimated_peptide_spot_count,deconvolution_result"];
+        let csvHeaderRow =
+            "peptide_id," +
+            "peptide_sequence," +
+            "hit_plate_well_ids," +
+            "hit_plate_well_ids_count," +
+            "hit_plate_well_spot_counts," +
+            "hit_plate_well_spot_counts_average," +
+            "hit_plate_well_spot_counts_standard_deviation," +
+            "hit_plate_well_spot_counts_variation_coefficient," +
+            "estimated_peptide_spot_count," +
+            "deconvolution_result,"
+
+        let headerRow = [];
+        for (let i = 1; i <= minCoverage; i++) {
+            headerRow.push(`hit_plate_well_spot_count_${i}`);
+        }
+
+        let csvRows1 = [];
+        csvRows1.push(csvHeaderRow + headerRow.join(','));
+
         for (var i = 0; i < deconvolutionResults.length; i++) {
             var values = [];
             values.push(deconvolutionResults[i].peptide_id);
             values.push(deconvolutionResults[i].peptide_sequence);
-            values.push(deconvolutionResults[i].hit_well_ids);
-            values.push(deconvolutionResults[i].hit_well_ids_count);
-            values.push(deconvolutionResults[i].peptide_spot_count);
-            values.push(deconvolutionResults[i].result);
+            values.push(deconvolutionResults[i].hit_plate_well_ids);
+            values.push(deconvolutionResults[i].hit_plate_well_ids_count);
+            values.push(deconvolutionResults[i].hit_plate_well_spot_counts);
+            values.push(deconvolutionResults[i].hit_plate_well_spot_counts_average);
+            values.push(deconvolutionResults[i].hit_plate_well_spot_counts_standard_deviation);
+            values.push(deconvolutionResults[i].hit_plate_well_spot_counts_variation_coefficient);
+            values.push(deconvolutionResults[i].estimated_peptide_spot_count);
+            values.push(deconvolutionResults[i].deconvolution_result);
+
+            const floatArray = deconvolutionResults[i].hit_plate_well_spot_counts.split(";").map(Number);
+            for (let i = 0; i < minCoverage; i++) {
+                if (i < floatArray.length) {
+                    values.push(floatArray[i]);
+                } else {
+                    values.push("");
+                }
+            }
+
             csvRows1.push(values.join(','));
         }
         let csvFile1Content = csvRows1.join('\n');
@@ -659,17 +735,21 @@ async function saveResultsFile() {
             csvRows2.push(values.join(','));
         }
         let csvFile2Content = csvRows2.join('\n');
-        zip.file("ace_elispot_positive_wells.csv", csvFile2Content);
+        zip.file("ace_elispot_deconvolution_positive_wells.csv", csvFile2Content);
 
         // Step 3. Create ELISpot configuration parameters CSV file
         var csvHeader = [
             'min_positive_well_spot_count',
             'min_coverage',
+            'input_background_spot_count',
+            'estimated_background_spot_count',
             'deconvolution_method'
         ]
         var csvRowContent = [
             minPositiveSpotCountSaved,
             minCoverageSaved,
+            backgroundSpotCount,
+            estimatedBackgroundSpotCount,
             statisticalDeconvolutionMethodSaved
         ]
         var csvRows3 = [
@@ -683,23 +763,49 @@ async function saveResultsFile() {
         var wb = XLSX.utils.book_new();
 
         // Sheet 1 - Deconvolution
-        var sheetData1 = [
-            ['peptide_id',
-             'peptide_sequence',
-             'hit_plate_well_ids',
-             'hit_plate_well_ids_count',
-             'estimated_peptide_spot_count',
-             'deconvolution_result']
+        let excelHeaderRow = [
+            'peptide_id',
+            'peptide_sequence',
+            'hit_plate_well_ids',
+            'hit_plate_well_ids_count',
+            'hit_plate_well_spot_counts',
+            'hit_plate_well_spot_counts_average',
+            'hit_plate_well_spot_counts_standard_deviation',
+            'hit_plate_well_spot_counts_variation_coefficient',
+            'estimated_peptide_spot_count',
+            'deconvolution_result'
         ];
+
+        for (let i = 1; i <= minCoverage; i++) {
+            excelHeaderRow.push(`hit_plate_well_spot_count_${i}`);
+        }
+
+        var sheetData1 = [excelHeaderRow];
+
         for (var i = 0; i < deconvolutionResults.length; i++) {
-            sheetData1.push([
+            let rowData = [
                 deconvolutionResults[i].peptide_id,
                 deconvolutionResults[i].peptide_sequence,
-                deconvolutionResults[i].hit_well_ids,
-                deconvolutionResults[i].hit_well_ids_count,
-                deconvolutionResults[i].peptide_spot_count,
-                deconvolutionResults[i].result
-            ]);
+                deconvolutionResults[i].hit_plate_well_ids,
+                deconvolutionResults[i].hit_plate_well_ids_count,
+                deconvolutionResults[i].hit_plate_well_spot_counts,
+                deconvolutionResults[i].hit_plate_well_spot_counts_average,
+                deconvolutionResults[i].hit_plate_well_spot_counts_standard_deviation,
+                deconvolutionResults[i].hit_plate_well_spot_counts_variation_coefficient,
+                deconvolutionResults[i].estimated_peptide_spot_count,
+                deconvolutionResults[i].deconvolution_result
+            ];
+
+            const floatArray = deconvolutionResults[i].hit_plate_well_spot_counts.split(";").map(Number);
+            for (let i = 0; i < minCoverage; i++) {
+                if (i < floatArray.length) {
+                    rowData.push(floatArray[i]);
+                } else {
+                    rowData.push("");
+                }
+            }
+
+            sheetData1.push(rowData);
         }
 
         // Sheet 2 - Positive wells
@@ -720,11 +826,15 @@ async function saveResultsFile() {
         var sheetData3 = [
             ['min_positive_well_spot_count',
              'min_coverage',
+             'input_background_spot_count',
+             'estimated_background_spot_count',
              'deconvolution_method'
             ],
             [
                 minPositiveSpotCountSaved,
                 minCoverageSaved,
+                backgroundSpotCount,
+                estimatedBackgroundSpotCount,
                 statisticalDeconvolutionMethodSaved
             ]
         ]
@@ -802,6 +912,11 @@ function isReady() {
     }
     if (minPositiveSpotCount == 0) {
         document.getElementById('alert-message').innerHTML = 'Minimum positive pool (well) cannot be zero. Please specify a non-zero minimum positive pool (well) spot count.'
+        new bootstrap.Modal(document.querySelector("#alert-modal")).show();
+        return false;
+    }
+    if (!(backgroundSpotCount == "auto" || (typeof Number(backgroundSpotCount) === "number" && backgroundSpotCount >= 0.0))) {
+        document.getElementById('alert-message').innerHTML = 'Background spot count must be either "auto" or a number (zero or higher).'
         new bootstrap.Modal(document.querySelector("#alert-modal")).show();
         return false;
     }

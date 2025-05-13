@@ -476,7 +476,7 @@ async function saveConfigurationFile() {
             csvRows1.push(values.join(','));
         }
         let csvFile1Content = csvRows1.join('\n');
-        zip.file("ace_elispot_assignment.csv", csvFile1Content);
+        zip.file("ace_elispot_configuration_assignment.csv", csvFile1Content);
 
         // Step 2. Create ELISpot configuration (bench-ready) CSV file
         var csvRows2 = ["plate_id,well_id,peptide_ids,peptide_sequences"];
@@ -489,7 +489,7 @@ async function saveConfigurationFile() {
             csvRows2.push(values.join(','));
         }
         let csvFile2Content = csvRows2.join('\n');
-        zip.file("ace_elispot_assignment_bench_ready.csv", csvFile2Content);
+        zip.file("ace_elispot_configuration_assignment_bench_ready.csv", csvFile2Content);
 
         // Step 3. Create ELISpot configuration parameters CSV file
         var csvHeader = [
@@ -525,7 +525,7 @@ async function saveConfigurationFile() {
             csvRowContent.join(',')
         ]
         let csvFile3Content = csvRows3.join('\n');
-        zip.file("ace_elispot_parameters.csv", csvFile3Content);
+        zip.file("ace_elispot_configuration_parameters.csv", csvFile3Content);
 
         // Step 4. Create ELISpot preferred peptide pairs CSV file
         var csvRows4 = ["peptide_1_id,peptide_1_sequence,peptide_2_id,peptide_2_sequence,similarity_score"];
@@ -539,7 +539,7 @@ async function saveConfigurationFile() {
             csvRows4.push(values.join(','));
         }
         let csvFile4Content = csvRows4.join('\n');
-        zip.file("ace_elispot_preferred_peptide_pairs.csv", csvFile4Content);
+        zip.file("ace_elispot_configuration_preferred_peptide_pairs.csv", csvFile4Content);
 
         // Step 5. Create ELISpot peptides CSV file
         var csvRows5 = ["peptide_id,peptide_sequence"];
@@ -550,7 +550,7 @@ async function saveConfigurationFile() {
             csvRows5.push(values.join(','));
         }
         let csvFile5Content = csvRows5.join('\n');
-        zip.file("ace_elispot_peptides.csv", csvFile5Content);
+        zip.file("ace_elispot_configuration_peptides.csv", csvFile5Content);
 
         // Step 6. Create ELISpot configuration XLSX file
         var wb = XLSX.utils.book_new();
